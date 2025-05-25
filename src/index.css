@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+/* @font-face {
+    font-family: 'Agrandir';
+    src: url('../src/assets/Fonts/Agrandir-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+} */
+
+@theme {
+    /* Colors */
+    --color-blueColor: #005bff;
+    --color-whiteColor: #ffffff;
+    --color-blackColor: #000000;
+    --color-greenColor: #00e2c5;
+
+    /* Fonts */
+    --font-Agrandir: 'Agrandir';
+}
