@@ -15,7 +15,7 @@ const Header = () => {
 
     return (
         <>
-            <header className="bg-white shadow-xs border-gray-500 h-16 flex items-center justify-between px-6">
+            <header className="bg-whiteColor shadow-xs border-gray-500 h-16 flex items-center justify-between px-6">
                 {/* Left side */}
                 <div className="flex items-center space-x-4">
                     <h1>Harvest Hub</h1>
@@ -25,13 +25,13 @@ const Header = () => {
                 <div className="flex items-center space-x-4">
                     <button
                         onClick={handleLogin}
-                        className="px-6 py-1.5 rounded-md bg-green-500 text-white cursor-pointer">
+                        className="px-6 py-1.5 rounded-md bg-greenColor text-whiteColor cursor-pointer">
                         Login
                     </button>
 
                     <button
                         onClick={handleRegister}
-                        className="px-6 py-1.5 rounded-md bg-green-500 text-white cursor-pointer">
+                        className="px-6 py-1.5 rounded-md bg-greenColor text-whiteColor cursor-pointer">
                         Register
                     </button>
                 </div>

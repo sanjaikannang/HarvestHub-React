@@ -12,6 +12,7 @@ interface InputBoxProps
     placeholder?: string;
     value?: string;
     onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
     icon?: IconType | LucideIcon | React.ComponentType<any>;
     label?: string;
     error?: string;
@@ -30,6 +31,7 @@ const Input: React.FC<InputBoxProps> = ({
     placeholder = "",
     value,
     onChange,
+    onBlur,
     icon,
     label,
     error,
@@ -68,8 +70,11 @@ const Input: React.FC<InputBoxProps> = ({
         setIsFocused(true);
     };
 
-    const handleBlur = (): void => {
+   const handleBlur = (e: React.FocusEvent<HTMLInputElement>): void => {
         setIsFocused(false);
+        if (onBlur) {
+            onBlur(e);
+        }
     };
 
     // Size configurations
@@ -104,16 +109,16 @@ const Input: React.FC<InputBoxProps> = ({
         const focusClasses = isFocused ? "" : "";
 
         return `${baseClasses} ${focusClasses} bg-white border border-gray-300 rounded-lg
-          focus:border-blue-500 focus:ring-blue-500 shadow-sm
-          ${error ? "border-red-500 focus:border-red-500 focus:ring-red-500" : ""}
-          ${success ? "border-green-500 focus:border-green-500 focus:ring-green-500" : ""}
+          focus:border-greenColor focus:ring-greenColor shadow-sm
+          ${error ? "border-redColor focus:border-redColor focus:ring-redColor" : ""}
+          ${success ? "border-greenColor focus:border-greenColor focus:ring-greenColor" : ""}
           ${disabled ? "bg-gray-50 border-gray-200 cursor-not-allowed" : "hover:border-gray-400"}`;
     };
 
     const getLabelClasses = () => {
         const baseClasses = `block font-medium transition-all duration-200 mb-2 ${sizeConfig[size].label}`;
 
-        return `${baseClasses} ${error ? "text-red-700" : success ? "text-green-700" : "text-gray-700"
+        return `${baseClasses} ${error ? "text-redColor" : success ? "text-greenColor" : "text-gray-700"
             }`;
     };
 
@@ -125,7 +130,7 @@ const Input: React.FC<InputBoxProps> = ({
                     label && (
                         <label htmlFor={id} className={getLabelClasses()}>
                             {label}
-                            {required && <span className="text-red-500 ml-1">*</span>}
+                            {required && <span className="text-redColor">*</span>}
                         </label>
                     )
                 }
@@ -138,10 +143,10 @@ const Input: React.FC<InputBoxProps> = ({
                             <IconComponent
                                 className={`${sizeConfig[size].icon} transition-colors duration-200 ${isFocused
                                     ? error
-                                        ? "text-red-500"
+                                        ? "text-redColor"
                                         : success
-                                            ? "text-green-500"
-                                            : "text-blue-500"
+                                            ? "text-greenColor"
+                                            : "text-greenColor"
                                     : "text-gray-400"
                                     }`}
                             />
@@ -175,12 +180,12 @@ const Input: React.FC<InputBoxProps> = ({
                     <div className={`absolute inset-y-0 right-0 ${size === 'sm' ? 'pr-2' : size === 'lg' ? 'pr-4' : 'pr-3'} flex items-center space-x-1`}>
                         {/* Success Icon */}
                         {success && !error && (
-                            <Check className={`${sizeConfig[size].icon} text-green-500 animate-pulse`} />
+                            <Check className={`${sizeConfig[size].icon} text-greenColor animate-pulse`} />
                         )}
 
                         {/* Error Icon */}
                         {error && (
-                            <AlertCircle className={`${sizeConfig[size].icon} text-red-500`} />
+                            <AlertCircle className={`${sizeConfig[size].icon} text-redColor`} />
                         )}
 
                         {/* Password Toggle */}
@@ -188,7 +193,7 @@ const Input: React.FC<InputBoxProps> = ({
                             <button
                                 type="button"
                                 onClick={handlePasswordToggle}
-                                className="text-gray-400 hover:text-gray-600 transition-colors duration-200 focus:outline-none focus:text-blue-500"
+                                className="text-gray-400 hover:text-gray-600 transition-colors duration-200 focus:outline-none focus:text-greenColor"
                                 tabIndex={-1}
                             >
                                 {showPassword ? (
@@ -204,7 +209,7 @@ const Input: React.FC<InputBoxProps> = ({
                 {/* Helper Text and Error Message */}
                 < div className="mt-2 min-h-[1.25rem]" >
                     {error && (
-                        <p className="text-xs text-red-600 flex items-center animate-slide-down">
+                        <p className="text-xs text-redColor flex items-center animate-slide-down">
                             <AlertCircle className="h-4 w-4 mr-1 flex-shrink-0" />
                             {error}
                         </p>

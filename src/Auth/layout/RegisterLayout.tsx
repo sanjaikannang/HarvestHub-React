@@ -1,81 +1,63 @@
 import Button from '../ui/Button';
 import { useNavigate } from 'react-router-dom';
 import Input from '../ui/Input';
-import { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { useRegisterMutation } from '../../Services/authAPI';
+import { RegisterRequest } from '../../Types/authTypes';
+import { setCredentials } from '../../State/Slices/authSlice';
+import { initialValues, registerValidationSchema } from '../Schema/registerSchema';
+import { Formik, FormikHelpers } from 'formik';
+
+interface RegisterFormValues {
+    name: string;
+    email: string;
+    password: string;
+    role: string;
+}
 
 const RegisterLayout = () => {
 
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
-    // State for form data
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        password: ''
-    });
-
-    // State for form errors
-    const [errors, setErrors] = useState({
-        nameError: '',
-        emailError: '',
-        passwordError: ''
-    });
-
-    // Handle input changes
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-
-        // Clear error when user starts typing
-        if (errors[`${name}Error` as keyof typeof errors]) {
-            setErrors(prev => ({
-                ...prev,
-                [`${name}Error`]: ''
-            }));
-        }
-    };
-
-    // Basic form validation
-    const validateForm = () => {
-        const newErrors = { nameError: '', emailError: '', passwordError: '' };
-        let isValid = true;
-
-        if (!formData.name.trim()) {
-            newErrors.nameError = 'Full name is required';
-            isValid = false;
-        }
-
-        if (!formData.email.trim()) {
-            newErrors.emailError = 'Email is required';
-            isValid = false;
-        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            newErrors.emailError = 'Please enter a valid email address';
-            isValid = false;
-        }
-
-        if (!formData.password) {
-            newErrors.passwordError = 'Password is required';
-            isValid = false;
-        } else if (formData.password.length < 6) {
-            newErrors.passwordError = 'Password must be at least 6 characters';
-            isValid = false;
-        }
-
-        setErrors(newErrors);
-        return isValid;
-    };
+    // Initialize the register mutation hook
+    const [register, { isLoading }] = useRegisterMutation();
 
     // Handle form submission
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (validateForm()) {
-            // Handle successful form submission here
-            console.log('Form submitted:', formData);
-            // You can add your registration logic here
+    const handleSubmit = async (
+        values: RegisterFormValues,
+        { setSubmitting, setStatus }: FormikHelpers<RegisterFormValues>
+    ) => {
+
+        try {
+            // Clear any previous status messages
+            setStatus('');
+
+            // Prepare the registration data (excluding confirmPassword)
+            const registerData: RegisterRequest = {
+                name: values.name,
+                email: values.email,
+                password: values.password,
+                role: values.role
+            };
+
+            // Call the register mutation
+            const result = await register(registerData).unwrap();
+
+            // If registration is successful, store credentials and navigate
+            dispatch(setCredentials({
+                user: result.user,
+                token: result.token
+            }));
+
+            // Navigate to login page after successful registration
+            navigate('/login');
+        } catch (error) {
+            console.error('Registration failed:', error);
+        } finally {
+            setSubmitting(false);
         }
+
     };
 
     const handleLogin = () => {
@@ -92,80 +74,100 @@ const RegisterLayout = () => {
                         <p className="text-gray-600">Join our platform and get started today</p>
                     </div>
 
-                    {/* Register Form */}
-                    <form
-                        className='border border-gray-300 p-6 rounded-lg shadow-md bg-white'
-                        onSubmit={handleSubmit}>
-                        <div>
+                    <Formik
+                        initialValues={initialValues}
+                        validationSchema={registerValidationSchema}
+                        onSubmit={handleSubmit}
+                    >
+                        {({ values, errors, touched, handleChange, handleBlur, isSubmitting, status }) => (
+                            <form
+                                className='border border-gray-300 p-6 rounded-lg shadow-md bg-whiteColor'                                >
+                                <div>
 
-                            {/* Name Field */}
-                            <Input
-                                id='name'
-                                label="Full Name"
-                                name="name"
-                                type="text"
-                                placeholder="Enter your full name"
-                                value={formData.name}
-                                onChange={handleChange}
-                                icon={'user'}
-                                error={errors.nameError}
-                                required
-                            />
+                                    {/* Display general error message */}
+                                    {status && (
+                                        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                                            <p className="text-sm text-red-600">{status}</p>
+                                        </div>
+                                    )}
 
-                            {/* Email Field */}
-                            <Input
-                                id="email"
-                                label="Email"
-                                name="email"
-                                type="email"
-                                placeholder="Enter your email address"
-                                value={formData.email}
-                                onChange={handleChange}
-                                icon="email"
-                                error={errors.emailError}
-                                required
-                            />
+                                    {/* Name Field */}
+                                    <Input
+                                        id='name'
+                                        label="Full Name"
+                                        name="name"
+                                        type="text"
+                                        placeholder="Enter your full name"
+                                        value={values.name}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        icon={'user'}
+                                        error={touched.name && errors.name ? errors.name : ''}
+                                        success={touched.name && !errors.name && values.name !== ''}
+                                        required
+                                    />
 
-                            {/* Password Field */}
-                            <Input
-                                id="password"
-                                label="Password"
-                                name="password"
-                                type="password"
-                                placeholder="Enter your password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                icon="password"
-                                error={errors.passwordError}
-                                required
-                                helperText="Password must be at least 6 characters"
-                            />
+                                    {/* Email Field */}
+                                    <Input
+                                        id="email"
+                                        label="Email"
+                                        name="email"
+                                        type="email"
+                                        placeholder="Enter your email address"
+                                        value={values.email}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        icon="email"
+                                        error={touched.email && errors.email ? errors.email : ''}
+                                        success={touched.email && !errors.email && values.email !== ''}
+                                        required
+                                    />
+
+                                    {/* Password Field */}
+                                    <Input
+                                        id="password"
+                                        label="Password"
+                                        name="password"
+                                        type="password"
+                                        placeholder="Enter your password"
+                                        value={values.password}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        icon="password"
+                                        error={touched.password && errors.password ? errors.password : ''}
+                                        success={touched.password && !errors.password && values.password !== ''}
+                                        required
+                                        helperText="Password must contain uppercase, lowercase, and number"
+                                    />
 
 
-                            {/* Submit Button */}
-                            <Button
-                                type="submit"
-                                variant="primary"
-                                size="md"
-                                className="w-full mt-6"
-                            >
-                                Create Account
-                            </Button>
-                        </div>
+                                    {/* Submit Button */}
+                                    <Button
+                                        type="submit"
+                                        variant="primary"
+                                        size="md"
+                                        className="w-full mt-6"
+                                    // disabled={isSubmitting || isLoading}
+                                    >
+                                        {isSubmitting || isLoading ? 'Creating Account...' : 'Create Account'}
+                                    </Button>
+                                </div>
 
-                        {/* Login Link */}
-                        <div className="mt-6 text-center">
-                            <p className="text-gray-600">
-                                Already have an account?{' '}
-                                <button
-                                    type="button"
-                                    onClick={handleLogin}
-                                    className="text-green-600 hover:text-green-500 font-semibold transition-colors duration-200">
-                                    Sign in here
-                                </button>
-                            </p>
-                        </div>
-                    </form>
+                                {/* Login Link */}
+                                <div className="mt-6 text-center">
+                                    <p className="text-gray-600">
+                                        Already have an account?{' '}
+                                        <button
+                                            type="button"
+                                            onClick={handleLogin}
+                                            className="text-greenColor hover:text-greenColor font-semibold transition-colors duration-200">
+                                            Sign in here
+                                        </button>
+                                    </p>
+                                </div>
+                            </form>
+                        )}
+                    </Formik>
                 </div>
             </div>
         </>
