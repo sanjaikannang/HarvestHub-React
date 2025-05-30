@@ -1,5 +1,5 @@
 import React from "react";
-import { Search, Mail, Lock, User, Phone, Eye, EyeOff, LucideIcon, AlertCircle, Check } from "lucide-react";
+import { Search, Mail, Lock, User, Phone, Eye, EyeOff, LucideIcon } from "lucide-react";
 
 type IconType = "search" | "mail" | "email" | "lock" | "password" | "user" | "phone"
 
@@ -21,7 +21,6 @@ interface InputBoxProps
     required?: boolean;
     className?: string;
     size?: InputSize;
-    helperText?: string;
 }
 
 
@@ -40,7 +39,6 @@ const Input: React.FC<InputBoxProps> = ({
     required = false,
     className = "",
     size = "md",
-    helperText,
     ...props
 }) => {
 
@@ -70,7 +68,7 @@ const Input: React.FC<InputBoxProps> = ({
         setIsFocused(true);
     };
 
-   const handleBlur = (e: React.FocusEvent<HTMLInputElement>): void => {
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement>): void => {
         setIsFocused(false);
         if (onBlur) {
             onBlur(e);
@@ -118,13 +116,13 @@ const Input: React.FC<InputBoxProps> = ({
     const getLabelClasses = () => {
         const baseClasses = `block font-medium transition-all duration-200 mb-2 ${sizeConfig[size].label}`;
 
-        return `${baseClasses} ${error ? "text-redColor" : success ? "text-greenColor" : "text-gray-700"
-            }`;
+        return baseClasses;
     };
 
     return (
         <>
             <div className={`w-full ${className}`}>
+
                 {/* Label */}
                 {
                     label && (
@@ -178,16 +176,6 @@ const Input: React.FC<InputBoxProps> = ({
 
                     {/* Right Icons Container */}
                     <div className={`absolute inset-y-0 right-0 ${size === 'sm' ? 'pr-2' : size === 'lg' ? 'pr-4' : 'pr-3'} flex items-center space-x-1`}>
-                        {/* Success Icon */}
-                        {success && !error && (
-                            <Check className={`${sizeConfig[size].icon} text-greenColor animate-pulse`} />
-                        )}
-
-                        {/* Error Icon */}
-                        {error && (
-                            <AlertCircle className={`${sizeConfig[size].icon} text-redColor`} />
-                        )}
-
                         {/* Password Toggle */}
                         {isPasswordType && (
                             <button
@@ -207,26 +195,12 @@ const Input: React.FC<InputBoxProps> = ({
                 </div >
 
                 {/* Helper Text and Error Message */}
-                < div className="mt-2 min-h-[1.25rem]" >
+                < div className="mt-1 min-h-[1.25rem]" >
                     {error && (
-                        <p className="text-xs text-redColor flex items-center animate-slide-down">
-                            <AlertCircle className="h-4 w-4 mr-1 flex-shrink-0" />
+                        <p className="text-[11px] text-redColor flex items-center animate-slide-down">
                             {error}
                         </p>
                     )}
-                    {
-                        !error && helperText && (
-                            <p className="text-xs text-gray-500">{helperText}</p>
-                        )
-                    }
-                    {
-                        success && !error && (
-                            <p className="text-xs text-green-600 flex items-center animate-slide-down">
-                                <Check className="h-4 w-4 mr-1 flex-shrink-0" />
-                                Looks good!
-                            </p>
-                        )
-                    }
                 </div >
             </div >
         </>

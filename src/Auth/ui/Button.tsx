@@ -8,6 +8,7 @@ interface ButtonProps {
     onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
     className?: string;
     fullWidth?: boolean;
+    disabled?: boolean;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -18,6 +19,7 @@ const Button: React.FC<ButtonProps> = ({
     onClick,
     className = '',
     fullWidth = false,
+    disabled = false,
     ...props
 }) => {
     // Base styles
@@ -31,8 +33,9 @@ const Button: React.FC<ButtonProps> = ({
     // Variant styles
     const variantStyles = {
         primary: `
-            bg-greenColor text-white hover:bg-greenColor
+            bg-greenColor text-white hover:bg-greenColor cursor-pointer
             shadow-sm hover:shadow-md
+            disabled:hover:bg-greenColor disabled:hover:shadow-sm
         `,
     };
 
@@ -47,6 +50,7 @@ const Button: React.FC<ButtonProps> = ({
         <button
             type={type}
             onClick={onClick}
+            disabled={disabled}
             className={`
                 ${baseStyles}
                 ${variantStyles[variant]}

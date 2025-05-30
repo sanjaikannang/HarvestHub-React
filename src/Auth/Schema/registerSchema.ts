@@ -20,6 +20,9 @@ export const registerValidationSchema = Yup.object({
             'Password must contain at least one uppercase letter, one lowercase letter, and one number'
         )
         .required('Password is required'),
+
+    role: Yup.string()
+        .required('Role is required'),
 });
 
 

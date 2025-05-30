@@ -2,11 +2,16 @@ import Button from '../ui/Button';
 import { useNavigate } from 'react-router-dom';
 import Input from '../ui/Input';
 import { useDispatch } from 'react-redux';
-import { useRegisterMutation } from '../../Services/authAPI';
 import { RegisterRequest } from '../../Types/authTypes';
-import { setCredentials } from '../../State/Slices/authSlice';
+import { setCredentials, setError, setLoading } from '../../State/Slices/authSlice';
 import { initialValues, registerValidationSchema } from '../Schema/registerSchema';
 import { Formik, FormikHelpers } from 'formik';
+import { useState } from 'react';
+import { RegisterApi } from '../../Services/authAPI';
+import { Spinner } from '../ui/Spinner';
+import { ShoppingCart, User } from 'lucide-react';
+import Select from '../ui/Select';
+
 
 interface RegisterFormValues {
     name: string;
@@ -19,21 +24,33 @@ const RegisterLayout = () => {
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Initialize the register mutation hook
-    const [register, { isLoading }] = useRegisterMutation();
+    // Role options with icons
+    const roleOptions = [
+        {
+            value: 'Farmer',
+            label: 'Farmer',
+            icon: User
+        },
+        {
+            value: 'Buyer',
+            label: 'Buyer',
+            icon: ShoppingCart
+        }
+    ];
 
     // Handle form submission
     const handleSubmit = async (
         values: RegisterFormValues,
         { setSubmitting, setStatus }: FormikHelpers<RegisterFormValues>
     ) => {
-
         try {
-            // Clear any previous status messages
-            setStatus('');
+            setIsSubmitting(true);
+            dispatch(setLoading(true));
+            dispatch(setError(null));
 
-            // Prepare the registration data (excluding confirmPassword)
+            // Prepare the registration data
             const registerData: RegisterRequest = {
                 name: values.name,
                 email: values.email,
@@ -41,8 +58,8 @@ const RegisterLayout = () => {
                 role: values.role
             };
 
-            // Call the register mutation
-            const result = await register(registerData).unwrap();
+            // Call the register API
+            const result = await RegisterApi(registerData);
 
             // If registration is successful, store credentials and navigate
             dispatch(setCredentials({
@@ -52,10 +69,16 @@ const RegisterLayout = () => {
 
             // Navigate to login page after successful registration
             navigate('/login');
-        } catch (error) {
+        } catch (error: any) {
             console.error('Registration failed:', error);
+
+            const errorMessage = error.message || 'Registration failed. Please try again.';
+            setStatus(errorMessage);
+            dispatch(setError(errorMessage));
         } finally {
             setSubmitting(false);
+            setIsSubmitting(false);
+            dispatch(setLoading(false));
         }
 
     };
@@ -66,7 +89,7 @@ const RegisterLayout = () => {
 
     return (
         <>
-            <div className="min-h-screen flex items-center justify-center px-4 py-8">
+            <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50 flex items-center justify-center px-4 py-8">
                 <div className="w-full max-w-md">
                     {/* Header */}
                     <div className="text-center mb-8">
@@ -75,21 +98,20 @@ const RegisterLayout = () => {
                     </div>
 
                     <Formik
-                        initialValues={initialValues}
+                        initialValues={
+                            {
+                                ...initialValues,
+                                role: 'Farmer'
+                            }
+                        }
                         validationSchema={registerValidationSchema}
                         onSubmit={handleSubmit}
                     >
-                        {({ values, errors, touched, handleChange, handleBlur, isSubmitting, status }) => (
+                        {({ values, errors, touched, handleChange, handleBlur, handleSubmit, setFieldValue, isSubmitting: formikSubmitting }) => (
                             <form
+                                onSubmit={handleSubmit}
                                 className='border border-gray-300 p-6 rounded-lg shadow-md bg-whiteColor'                                >
                                 <div>
-
-                                    {/* Display general error message */}
-                                    {status && (
-                                        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                                            <p className="text-sm text-red-600">{status}</p>
-                                        </div>
-                                    )}
 
                                     {/* Name Field */}
                                     <Input
@@ -103,8 +125,7 @@ const RegisterLayout = () => {
                                         onBlur={handleBlur}
                                         icon={'user'}
                                         error={touched.name && errors.name ? errors.name : ''}
-                                        success={touched.name && !errors.name && values.name !== ''}
-                                        required
+                                        success={values.name !== '' && !errors.name && touched.name}
                                     />
 
                                     {/* Email Field */}
@@ -119,8 +140,7 @@ const RegisterLayout = () => {
                                         onBlur={handleBlur}
                                         icon="email"
                                         error={touched.email && errors.email ? errors.email : ''}
-                                        success={touched.email && !errors.email && values.email !== ''}
-                                        required
+                                        success={values.email !== '' && !errors.email && touched.email}
                                     />
 
                                     {/* Password Field */}
@@ -135,11 +155,22 @@ const RegisterLayout = () => {
                                         onBlur={handleBlur}
                                         icon="password"
                                         error={touched.password && errors.password ? errors.password : ''}
-                                        success={touched.password && !errors.password && values.password !== ''}
-                                        required
-                                        helperText="Password must contain uppercase, lowercase, and number"
+                                        success={values.password !== '' && !errors.password && touched.password}
                                     />
 
+                                    {/* Role Selection */}
+                                    <Select
+                                        id="role"
+                                        name="role"
+                                        label="Select Role"
+                                        placeholder="Choose your role"
+                                        value={values.role}
+                                        onChange={(value) => setFieldValue('role', value)}
+                                        onBlur={handleBlur}
+                                        options={roleOptions}
+                                        error={touched.role && errors.role ? errors.role : ''}
+                                        success={values.role !== '' && !errors.role && touched.role}
+                                    />
 
                                     {/* Submit Button */}
                                     <Button
@@ -147,9 +178,15 @@ const RegisterLayout = () => {
                                         variant="primary"
                                         size="md"
                                         className="w-full mt-6"
-                                    // disabled={isSubmitting || isLoading}
+                                        disabled={formikSubmitting || isSubmitting}
                                     >
-                                        {isSubmitting || isLoading ? 'Creating Account...' : 'Create Account'}
+                                        {formikSubmitting || isSubmitting ? (
+                                            <>
+                                                <Spinner /> <span className='ml-3.5'>Registering...</span>
+                                            </>
+                                        ) : (
+                                            'Register'
+                                        )}
                                     </Button>
                                 </div>
 
@@ -160,8 +197,8 @@ const RegisterLayout = () => {
                                         <button
                                             type="button"
                                             onClick={handleLogin}
-                                            className="text-greenColor hover:text-greenColor font-semibold transition-colors duration-200">
-                                            Sign in here
+                                            className="text-greenColor hover:text-greenColor font-semibold transition-colors duration-200 cursor-pointer">
+                                            Log in here
                                         </button>
                                     </p>
                                 </div>
