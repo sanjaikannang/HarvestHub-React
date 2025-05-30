@@ -30,9 +30,11 @@ export async function RegisterApi(registerData: RegisterRequest): Promise<AuthRe
 // Login API
 export async function LoginApi(loginData: LoginRequest): Promise<AuthResponse> {
     try {
+
         const response = await apiClient.post<AuthResponse>('/auth/login', loginData);
 
         return response.data;
+        
     } catch (error) {
         console.log(error);
         throw new Error('Login failed. Please try again.');
