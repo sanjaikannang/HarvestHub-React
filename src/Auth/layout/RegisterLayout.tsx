@@ -110,7 +110,7 @@ const RegisterLayout = () => {
                         {({ values, errors, touched, handleChange, handleBlur, handleSubmit, setFieldValue, isSubmitting: formikSubmitting }) => (
                             <form
                                 onSubmit={handleSubmit}
-                                className='border border-gray-300 p-6 rounded-lg shadow-md bg-whiteColor'                                >
+                                className='border border-gray-300 p-6 rounded-lg shadow-md bg-whiteColor'>
                                 <div>
 
                                     {/* Name Field */}

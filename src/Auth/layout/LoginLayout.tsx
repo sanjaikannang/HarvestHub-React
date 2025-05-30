@@ -1,22 +1,67 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Input from '../ui/Input';
+import Button from '../ui/Button';
+import { Formik, FormikHelpers } from 'formik';
+import { initialValues, loginValidationSchema } from '../Schema/loginSchema';
+import { Spinner } from '../ui/Spinner';
+import { useDispatch } from 'react-redux';
+import { useState } from 'react';
+import { setCredentials, setError, setLoading } from '../../State/Slices/authSlice';
+import { LoginRequest } from '../../Types/authTypes';
+import { LoginApi } from '../../Services/authAPI';
+
+
+interface LoginFormValues {
+    email: string;
+    password: string;
+}
+
 
 const LoginLayout = () => {
 
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const [showPassword, setShowPassword] = useState(false);
-    const [formData, setFormData] = useState({
-        email: '',
-        password: ''
-    });
+    // Handle form submission
+    const handleSubmit = async (
+        values: LoginFormValues,
+        { setSubmitting, setStatus }: FormikHelpers<LoginFormValues>
+    ) => {
+        try {
+            setIsSubmitting(true);
+            dispatch(setLoading(true));
+            dispatch(setError(null));
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
+            // Prepare the registration data
+            const registerData: LoginRequest = {
+                email: values.email,
+                password: values.password,
+            };
+
+            // Call the register API
+            const result = await LoginApi(registerData);
+
+            // If Login is successful, store credentials and navigate
+            dispatch(setCredentials({
+                user: result.user,
+                token: result.token
+            }));
+
+            // Navigate to respective dashboard page after successful login
+            navigate('/login');
+        } catch (error: any) {
+            console.error('Login failed:', error);
+
+            const errorMessage = error.message || 'Login failed. Please try again.';
+            setStatus(errorMessage);
+            dispatch(setError(errorMessage));
+        } finally {
+            setSubmitting(false);
+            setIsSubmitting(false);
+            dispatch(setLoading(false));
+        }
+
     };
 
     const handleRegister = () => {
@@ -24,102 +69,91 @@ const LoginLayout = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center px-4 py-8">
-            <div className="w-full max-w-md">
-                {/* Header */}
-                <div className="text-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-                    <p className="text-gray-600">Sign in to your account to continue</p>
-                </div>
-
-                {/* Login Form */}
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8">
-                    <div className="space-y-6">
-                        {/* Email Field */}
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                                Email Address
-                            </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <Mail className="h-5 w-5 text-gray-400" />
-                                </div>
-                                <input
-                                    type="email"
-                                    id="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleInputChange}
-                                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50"
-                                    placeholder="Enter your email"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Password Field */}
-                        <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                                Password
-                            </label>
-                            <div className="relative">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <Lock className="h-5 w-5 text-gray-400" />
-                                </div>
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    id="password"
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={handleInputChange}
-                                    className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50"
-                                    placeholder="Enter your password"
-                                />
-                                <button
-                                    type="button"
-                                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                >
-                                    {showPassword ? (
-                                        <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-                                    ) : (
-                                        <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Remember Me & Forgot Password */}
-                        <div className="flex items-center justify-end">
-                            <div className="text-sm">
-                                <a href="#" className="text-blue-600 hover:text-blue-500 font-medium transition-colors duration-200">
-                                    Forgot password?
-                                </a>
-                            </div>
-                        </div>
-
-                        {/* Submit Button */}
-                        <button
-                            type="submit"
-                            className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-3 px-4 rounded-xl font-semibold hover:from-blue-600 hover:to-purple-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transform hover:scale-[1.02] transition-all duration-200 shadow-lg"
-                        >
-                            Sign In
-                        </button>
+        <>
+            <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50 flex items-center justify-center px-4 py-8">
+                <div className="w-full max-w-md">
+                    {/* Header */}
+                    <div className="text-center mb-8">
+                        <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
+                        <p className="text-gray-600">Sign in to your account to continue</p>
                     </div>
 
-                    {/* Register Link */}
-                    <div className="mt-6 text-center">
-                        <p className="text-gray-600">
-                            Don't have an account?{' '}
-                            <button
-                                onClick={handleRegister}
-                                className="text-blue-600 hover:text-blue-500 font-semibold transition-colors duration-200">
-                                Create one now
-                            </button>
-                        </p>
-                    </div>
+                    <Formik
+                        initialValues={initialValues}
+                        validationSchema={loginValidationSchema}
+                        onSubmit={handleSubmit}
+                    >
+                        {({ values, errors, touched, handleChange, handleBlur, handleSubmit, isSubmitting: formikSubmitting }) => (
+                            <form
+                            onSubmit={handleSubmit}
+                                className='border border-gray-300 p-6 rounded-lg shadow-md bg-whiteColor'>
+                                <div>
+
+                                    {/* Email Field */}
+                                    <Input
+                                        id="email"
+                                        label="Email"
+                                        name="email"
+                                        type="email"
+                                        placeholder="Enter your email address"
+                                        value={values.email}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        icon="email"
+                                        error={touched.email && errors.email ? errors.email : ''}
+                                        success={values.email !== '' && !errors.email && touched.email}
+                                    />
+
+                                    {/* Password Field */}
+                                    <Input
+                                        id="password"
+                                        label="Password"
+                                        name="password"
+                                        type="password"
+                                        placeholder="Enter your password"
+                                        value={values.password}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        icon="password"
+                                        error={touched.password && errors.password ? errors.password : ''}
+                                        success={values.password !== '' && !errors.password && touched.password}
+                                    />
+
+                                    {/* Submit Button */}
+                                    <Button
+                                        type="submit"
+                                        variant="primary"
+                                        size="md"
+                                        className="w-full mt-6"
+                                        disabled={formikSubmitting || isSubmitting}
+                                    >
+                                        {formikSubmitting || isSubmitting ? (
+                                            <>
+                                                <Spinner /> <span className='ml-3.5'>Login...</span>
+                                            </>
+                                        ) : (
+                                            'Login'
+                                        )}
+                                    </Button>
+                                </div>
+
+                                {/* Register Link */}
+                                <div className="mt-6 text-center">
+                                    <p className="text-gray-600">
+                                        Don't have an account?{' '}
+                                        <button
+                                            onClick={handleRegister}
+                                            className="text-greenColor hover:text-greenColor font-semibold transition-colors duration-200">
+                                            Register now
+                                        </button>
+                                    </p>
+                                </div>
+                            </form>
+                        )}
+                    </Formik>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 
