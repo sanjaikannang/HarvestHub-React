@@ -1,29 +1,34 @@
-import { useNavigate } from "react-router-dom";
-import { clearCredentials } from "../../State/Slices/authSlice";
-import { useAppDispatch } from "../../State/hooks";
+import React, { useState } from 'react';
+import Header from '../components/Header';
+import Sidebar from '../components/Sidebar';
+import MainContent from '../components/MainContent';
 
-const FarmerLayout = () => {
-
-    const navigate = useNavigate();
-    const dispatch = useAppDispatch();
-
-    const handleLogout = () => {
-        dispatch(clearCredentials());
-        navigate('/login');
-    };
+const FarmerLayout: React.FC = () => {
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     return (
         <>
-            <div className="flex h-screen justify-center items-center">
-                <h1>FarmerLayout</h1>
-                <br />
-                <button
-                    onClick={handleLogout}
-                    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
-                >Logout</button>
+            <div className="flex h-screen">
+                {/* Sidebar */}
+                <Sidebar
+                    isSidebarOpen={isSidebarOpen}
+                    setIsSidebarOpen={setIsSidebarOpen}                    
+                />
+
+                {/* Main Content Area */}
+                <div className="flex-1 flex flex-col">
+                    {/* Header */}
+                    <Header
+                        isSidebarOpen={isSidebarOpen}
+                        setIsSidebarOpen={setIsSidebarOpen}
+                    />
+
+                    {/* Main Content */}
+                    <MainContent />
+                </div>
             </div>
         </>
-    )
-}
+    );
+};
 
-export default FarmerLayout
+export default FarmerLayout;
