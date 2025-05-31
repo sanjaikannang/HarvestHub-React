@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { setCredentials, setError, setLoading } from '../../State/Slices/authSlice';
 import { LoginRequest } from '../../Types/authTypes';
 import { LoginApi } from '../../Services/authAPI';
+import toast from 'react-hot-toast';
 
 
 interface LoginFormValues {
@@ -22,6 +23,24 @@ const LoginLayout = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Function to navigate based on user role
+    const navigateByRole = (role: string) => {
+        switch (role.toLowerCase()) {
+            case 'admin':
+                navigate('/admin');
+                break;
+            case 'buyer':
+                navigate('/buyer');
+                break;
+            case 'farmer':
+                navigate('/farmer');
+                break;
+            default:
+                navigate('/'); // Default to landing page if role is not recognized
+                break;
+        }
+    };
 
     // Handle form submission
     const handleSubmit = async (
@@ -48,12 +67,22 @@ const LoginLayout = () => {
                 token: result.token
             }));
 
-            // Navigate to respective dashboard page after successful login
-            navigate('/login');
+            // Show success toast
+            toast.success(result.message || 'Registration successful!');
+
+            // Navigate to login page after successful registration
+            setTimeout(() => {
+                navigateByRole(result.user.role ?? '');
+            }, 1500); // Small delay to show the toast
+
         } catch (error: any) {
             console.error('Login failed:', error);
 
             const errorMessage = error.message || 'Login failed. Please try again.';
+
+            // Show error toast
+            toast.error(errorMessage);
+
             setStatus(errorMessage);
             dispatch(setError(errorMessage));
         } finally {
@@ -85,7 +114,7 @@ const LoginLayout = () => {
                     >
                         {({ values, errors, touched, handleChange, handleBlur, handleSubmit, isSubmitting: formikSubmitting }) => (
                             <form
-                            onSubmit={handleSubmit}
+                                onSubmit={handleSubmit}
                                 className='border border-gray-300 p-6 rounded-lg shadow-md bg-whiteColor'>
                                 <div>
 

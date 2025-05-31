@@ -22,6 +22,15 @@ export async function RegisterApi(registerData: RegisterRequest): Promise<AuthRe
 
     } catch (error) {
         console.log(error);
+
+        // Extract error message from API response
+        if (axios.isAxiosError(error)) {
+            const errorMessage = error.response?.data?.message ||
+                error.response?.data?.error ||
+                'Registration failed. Please try again.';
+            throw new Error(errorMessage);
+        }
+
         throw new Error('Registration failed. Please try again.');
     }
 }
@@ -34,9 +43,18 @@ export async function LoginApi(loginData: LoginRequest): Promise<AuthResponse> {
         const response = await apiClient.post<AuthResponse>('/auth/login', loginData);
 
         return response.data;
-        
+
     } catch (error) {
         console.log(error);
+
+        // Extract error message from API response
+        if (axios.isAxiosError(error)) {
+            const errorMessage = error.response?.data?.message ||
+                error.response?.data?.error ||
+                'Login failed. Please try again.';
+            throw new Error(errorMessage);
+        }
+
         throw new Error('Login failed. Please try again.');
     }
 }

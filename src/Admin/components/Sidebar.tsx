@@ -1,7 +1,13 @@
 import { Home, LogOut } from "lucide-react";
 import { useState } from "react";
+import { clearCredentials } from "../../State/Slices/authSlice";
+import { useNavigate } from "react-router-dom";
+import { useAppDispatch } from "../../State/hooks";
 
 const Sidebar = () => {
+
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const [activeItem, setActiveItem] = useState('dashboard');
 
@@ -10,7 +16,8 @@ const Sidebar = () => {
   ];
 
   const handleLogout = () => {
-    console.log('Logout....');
+    dispatch(clearCredentials());
+    navigate('/login');
   };
 
   return (
