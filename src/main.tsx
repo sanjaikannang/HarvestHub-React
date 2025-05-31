@@ -6,7 +6,7 @@ import CustomToaster from './Auth/ui/Toaster.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <CustomToaster/>
-    <App />
+      <CustomToaster />
+      <App />
   </StrictMode>,
 )

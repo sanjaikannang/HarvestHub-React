@@ -69,10 +69,7 @@ const RegisterLayout = () => {
             }));
 
             // Show success toast
-            toast.success(result.message || 'Registration successful!', {
-                duration: 4000,
-                position: 'top-right',
-            });
+            toast.success(result.message || 'Registration successful!');
 
             // Navigate to login page after successful registration
             setTimeout(() => {
@@ -85,10 +82,7 @@ const RegisterLayout = () => {
             const errorMessage = error.message || 'Registration failed. Please try again.';
 
             // Show error toast
-            toast.error(errorMessage, {
-                duration: 4000,
-                position: 'top-right',
-            });
+            toast.error(errorMessage);
             
             setStatus(errorMessage);
             dispatch(setError(errorMessage));

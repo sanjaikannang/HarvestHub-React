@@ -2,7 +2,7 @@ import { Toaster } from 'react-hot-toast'
 
 const CustomToaster = () => (
     <Toaster
-        position="top-right"
+        position="top-center"
         toastOptions={{
             duration: 5000,
             className:
