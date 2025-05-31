@@ -3,6 +3,10 @@
 @theme {
     --color-whiteColor: #ffffff;
     --color-blackColor: #000000;
-    --color-greenColor: #00c951;
+    --color-greenColor: #00c951; 
+    --color-lightgreenColor: #F3F4F3;
+    --color-darkgreenColor: #2D9971;
     --color-redColor: #fb2c36;
+    --color-darkredColor: #dc201a;
+    --color-lightredColor: #fff;
 }
