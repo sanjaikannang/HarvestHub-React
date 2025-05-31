@@ -11,6 +11,7 @@ import { RegisterApi } from '../../Services/authAPI';
 import { Spinner } from '../ui/Spinner';
 import { ShoppingCart, User } from 'lucide-react';
 import Select from '../ui/Select';
+import toast from 'react-hot-toast';
 
 
 interface RegisterFormValues {
@@ -29,7 +30,7 @@ const RegisterLayout = () => {
     // Role options with icons
     const roleOptions = [
         {
-            value: 'Farmer',
+            value: 'Farme',
             label: 'Farmer',
             icon: User
         },
@@ -67,12 +68,28 @@ const RegisterLayout = () => {
                 token: result.token
             }));
 
+            // Show success toast
+            toast.success(result.message || 'Registration successful!', {
+                duration: 4000,
+                position: 'top-right',
+            });
+
             // Navigate to login page after successful registration
-            navigate('/login');
+            setTimeout(() => {
+                navigate('/login');
+            }, 1500); // Small delay to show the toast
+
         } catch (error: any) {
             console.error('Registration failed:', error);
 
             const errorMessage = error.message || 'Registration failed. Please try again.';
+
+            // Show error toast
+            toast.error(errorMessage, {
+                duration: 4000,
+                position: 'top-right',
+            });
+            
             setStatus(errorMessage);
             dispatch(setError(errorMessage));
         } finally {
