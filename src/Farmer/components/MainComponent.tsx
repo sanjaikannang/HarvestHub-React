@@ -6,7 +6,7 @@ import MyProduct from '../components/MyProduct';
 import Orders from '../components/Orders';
 import Bidding from '../components/Bidding';
 
-const MainContent: React.FC = () => {
+const MainComponent: React.FC = () => {
     return (
         <main className="flex-1 bg-gray-50 overflow-auto">
             <div className="max-w-7xl mx-auto px-4">
@@ -22,4 +22,4 @@ const MainContent: React.FC = () => {
     );
 };
 
-export default MainContent;
+export default MainComponent;

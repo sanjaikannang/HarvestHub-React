@@ -30,8 +30,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, setIsSidebarOpen }) =>
 
     const navigation: NavigationItem[] = [
         { name: 'Dashboard', href: '/farmer', icon: BarChart3 },
-        { name: 'My Products', href: '/farmer/products', icon: Wheat },
         { name: 'Create Product', href: '/farmer/create-product', icon: Plus },
+        { name: 'My Products', href: '/farmer/products', icon: Wheat },
         { name: 'Orders', href: '/farmer/orders', icon: Package },
         { name: 'Bidding', href: '/farmer/bidding', icon: TrendingUp },
     ];
@@ -100,7 +100,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, setIsSidebarOpen }) =>
             {/* Overlay for mobile */}
             {isSidebarOpen && (
                 <div
-                    className="md:hidden fixed inset-0 z-40 bg-gray-600 bg-opacity-75"
+                    className="md:hidden fixed inset-0 z-40 bg-gray-100 backdrop-blur-3xl"
                     onClick={() => setIsSidebarOpen(false)}
                 />
             )}
