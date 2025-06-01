@@ -107,13 +107,6 @@ const MyProduct: React.FC = () => {
         return matchesSearch && matchesStatus && matchesCategory;
     });
 
-    const handleDeleteProduct = (productId: number) => {
-        if (window.confirm('Are you sure you want to delete this product?')) {
-            // Handle delete logic here
-            alert('Product deleted successfully!');
-        }
-    };
-
     return (
         <div className="p-6 space-y-6">
             {/* Header */}
@@ -284,13 +277,7 @@ const MyProduct: React.FC = () => {
                                 </button>
                                 <button className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors">
                                     Edit
-                                </button>
-                                <button
-                                    onClick={() => handleDeleteProduct(product.id)}
-                                    className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
-                                >
-                                    🗑️
-                                </button>
+                                </button>                                
                             </div>
                         </div>
                     </div>
