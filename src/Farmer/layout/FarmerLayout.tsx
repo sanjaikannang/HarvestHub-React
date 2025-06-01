@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
-import MainContent from '../components/MainContent';
+import MainComponent from '../components/MainComponent';
 
 const FarmerLayout: React.FC = () => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -24,7 +24,7 @@ const FarmerLayout: React.FC = () => {
                     />
 
                     {/* Main Content */}
-                    <MainContent />
+                    <MainComponent />
                 </div>
             </div>
         </>

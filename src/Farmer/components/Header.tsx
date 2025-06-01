@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAppSelector } from '../../State/hooks';
+import { AlignLeft } from 'lucide-react';
 
 interface HeaderProps {
     isSidebarOpen: boolean;
@@ -11,7 +12,7 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, setIsSidebarOpen }) => {
 
     return (
         <>
-            <header className="bg-whiteColor shadow-lg border-gray-200">
+            <header className="bg-whiteColor">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
                         {/* Left side */}
@@ -21,9 +22,7 @@ const Header: React.FC<HeaderProps> = ({ isSidebarOpen, setIsSidebarOpen }) => {
                                 className="md:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
                             >
                                 <span className="sr-only">Open menu</span>
-                                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                                </svg>
+                                <AlignLeft />
                             </button>                            
                         </div>
 

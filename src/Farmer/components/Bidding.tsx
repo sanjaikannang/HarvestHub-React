@@ -265,7 +265,7 @@ const Bidding: React.FC = () => {
                         <h3 className="text-lg font-medium text-gray-900 mb-4">Current Status</h3>
                         <div className="space-y-3">
                             <div className="flex justify-between">
-                                <span className Name="text-gray-600">Current Highest Bid:</span>
+                                <span className="text-gray-600">Current Highest Bid:</span>
                                 <span className="font-bold text-green-600">₹{product.currentPrice}</span>
                             </div>
                             <div className="flex justify-between">
