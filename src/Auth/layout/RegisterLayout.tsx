@@ -30,7 +30,7 @@ const RegisterLayout = () => {
     // Role options with icons
     const roleOptions = [
         {
-            value: 'Farme',
+            value: 'Farmer',
             label: 'Farmer',
             icon: User
         },
