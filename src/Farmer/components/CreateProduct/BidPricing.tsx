@@ -7,8 +7,7 @@ interface BidPricingProps {
         startingPrice: string;
         bidStartDate: string;
         bidEndDate: string;
-        bidStartTime: string;
-        bidEndTime: string;
+        bidTiming: string; // New field for combined date and time range
     };
     onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onDateTimeChange: (field: string, value: string) => void;
@@ -28,13 +27,9 @@ const BidPricing: React.FC<BidPricingProps> = ({
         }
     };
 
-    // Handle individual datetime changes
-    const handleStartTimeChange = (value: string) => {
-        onDateTimeChange('bidStartTime', value);
-    };
-
-    const handleEndTimeChange = (value: string) => {
-        onDateTimeChange('bidEndTime', value);
+    // Handle bid timing change (combined date and time range)
+    const handleBidTimingChange = (value: string) => {
+        onDateTimeChange('bidTiming', value);
     };
 
     // Create date range value for display
@@ -53,99 +48,66 @@ const BidPricing: React.FC<BidPricingProps> = ({
     };
 
     return (
-        <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Starting Price */}
-                <div className="md:col-span-1">
-                    <Input
-                        id="startingPrice"
-                        type="number"
-                        label="Starting Price (₹)"
-                        placeholder="250"
-                        value={formData.startingPrice}
-                        onChange={(e) => onInputChange(e as React.ChangeEvent<HTMLInputElement>)}
-                        icon="product"
-                        required
-                        min={1}
-                        size="md"
-                    />
-                </div>
-
-                {/* Empty space for layout */}
-                <div className="md:col-span-1"></div>
-
-                {/* Bid Duration (Date Range) */}
-                <div className="md:col-span-2">
-                    <DateTimePicker
-                        id="bidDateRange"
-                        label="Bid Duration"
-                        type="daterange"
-                        value={getDateRangeValue()}
-                        onChange={handleDateRangeChange}
-                        placeholder="Select bid start and end dates"
-                        defaultDays={3}
-                        required
-                        className="w-full"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                        Default duration is set to 3 days. You can adjust the dates as needed.
-                    </p>
-                </div>
-
-                {/* Bid Start Time */}
-                <div className="md:col-span-1">
-                    <DateTimePicker
-                        id="bidStartTime"
-                        label="Bid Start Time"
-                        type="datetime"
-                        value={formData.bidStartTime}
-                        onChange={handleStartTimeChange}
-                        placeholder="Select start date and time"
-                        startDate={formData.bidStartDate}
-                        endDate={formData.bidEndDate}
-                        required
-                    />
-                </div>
-
-                {/* Bid End Time */}
-                <div className="md:col-span-1">
-                    <DateTimePicker
-                        id="bidEndTime"
-                        label="Bid End Time"
-                        type="datetime"
-                        value={formData.bidEndTime}
-                        onChange={handleEndTimeChange}
-                        placeholder="Select end date and time"
-                        startDate={formData.bidStartDate}
-                        endDate={formData.bidEndDate}
-                        required
-                    />
-                </div>
-            </div>
-
-            {/* Additional Information */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-start">
-                    <div className="flex-shrink-0">
-                        <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                        </svg>
+        <>
+            <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Starting Price */}
+                    <div className="md:col-span-1">
+                        <Input
+                            id="startingPrice"
+                            type="number"
+                            label="Starting Price (₹)"
+                            placeholder="250"
+                            value={formData.startingPrice}
+                            onChange={(e) => onInputChange(e as React.ChangeEvent<HTMLInputElement>)}
+                            icon="product"
+                            required
+                            min={1}
+                            size="md"
+                        />
                     </div>
-                    <div className="ml-3">
-                        <h3 className="text-sm font-medium text-blue-800">
-                            Bid Timing Guidelines
-                        </h3>
-                        <div className="mt-2 text-sm text-blue-700">
-                            <ul className="list-disc pl-5 space-y-1">
-                                <li>Bid start and end times must be within the selected date range</li>
-                                <li>Ensure sufficient time between start and end for meaningful bidding</li>
-                                <li>Consider your target audience's active hours when setting times</li>
-                            </ul>
-                        </div>
+
+                    {/* Bid Duration (Date Range) */}
+                    <div className="md:col-span-1">
+                        <DateTimePicker
+                            id="bidDateRange"
+                            label="Bid Duration"
+                            type="daterange"
+                            value={getDateRangeValue()}
+                            onChange={handleDateRangeChange}
+                            placeholder="Select bid start and end dates"
+                            defaultDays={1}
+                            maxRangeDays={3}
+                            required
+                            className="w-full"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                            Minimum 1 day, Maximum 3 days.
+                        </p>
+                    </div>
+
+                    {/* Bid Timing (Combined Date and Time Range) */}
+                    <div className="md:col-span-1">
+                        <DateTimePicker
+                            id="bidTiming"
+                            label="Bid Timing"
+                            type="datetimerange"
+                            value={formData.bidTiming}
+                            onChange={handleBidTimingChange}
+                            placeholder="Select bid date and time range"
+                            startDate={formData.bidStartDate}
+                            endDate={formData.bidEndDate}
+                            minTimeDuration={30} // 30 minutes minimum
+                            maxTimeDuration={120} // 2 hours maximum
+                            required
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                            Select a date within your bid duration and set start/end times. Minimum 30 minutes, Maximum 2 hours.
+                        </p>
                     </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 

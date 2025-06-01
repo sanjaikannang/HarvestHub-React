@@ -15,8 +15,8 @@ const CreateProduct: React.FC = () => {
         startingPrice: '',
         bidStartDate: '',
         bidEndDate: '',
-        bidStartTime: '',
-        bidEndTime: '',
+        bidTiming: '',
+       
         category: '',
         images: [] as string[]
     });
@@ -61,7 +61,7 @@ const CreateProduct: React.FC = () => {
                 return formData.name && formData.description && formData.quantity && formData.category;
             case 2:
                 return formData.startingPrice && formData.bidStartDate && formData.bidEndDate &&
-                    formData.bidStartTime && formData.bidEndTime;
+                    formData.bidTiming;
             case 3:
                 return true; // Images are optional
             default:
@@ -153,8 +153,7 @@ const CreateProduct: React.FC = () => {
                             startingPrice: formData.startingPrice,
                             bidStartDate: formData.bidStartDate,
                             bidEndDate: formData.bidEndDate,
-                            bidStartTime: formData.bidStartTime,
-                            bidEndTime: formData.bidEndTime
+                            bidTiming: formData.bidTiming                           
                         }}
                         onInputChange={handleInputChange}
                         onDateTimeChange={handleDateTimeChange}
