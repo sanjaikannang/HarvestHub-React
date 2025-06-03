@@ -92,12 +92,12 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                 if (parts.length === 2) {
                     const dateTimePart = parts[0].split(' ');
                     const endTime = parts[1];
-                    
+
                     if (dateTimePart.length === 2) {
                         const [datePart, startTime] = dateTimePart;
                         const [startHour, startMinute] = startTime.split(':');
                         const [endHour, endMinute] = endTime.split(':');
-                        
+
                         setSelectedDate(new Date(datePart));
                         setTimeRange({
                             startHour,
@@ -160,6 +160,20 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
         });
     };
 
+    // Updated function for datetimerange to only allow dates within the bid duration range
+    const isDateInAllowedRange = (date: Date): boolean => {
+        if (type === 'datetimerange' && startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            // Set time to start of day for proper comparison
+            start.setHours(0, 0, 0, 0);
+            end.setHours(23, 59, 59, 999);
+            date.setHours(0, 0, 0, 0);
+            return date >= start && date <= end;
+        }
+        return true;
+    };
+
     const isDateInRange = (date: Date): boolean => {
         if (startDate && endDate) {
             const start = new Date(startDate);
@@ -187,9 +201,9 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
         }
 
         const duration = getTimeDifferenceInMinutes(
-            timeRange.startHour, 
-            timeRange.startMinute, 
-            timeRange.endHour, 
+            timeRange.startHour,
+            timeRange.startMinute,
+            timeRange.endHour,
             timeRange.endMinute
         );
 
@@ -203,6 +217,12 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
         // Past dates are disabled
         if (date < today) return true;
 
+        // For datetimerange, only allow dates within the bid duration range
+        if (type === 'datetimerange' && !isDateInAllowedRange(date)) {
+            return true;
+        }
+
+        // For datetime, check if date is in allowed range
         if (type === 'datetime' && !isDateInRange(date)) {
             return true;
         }
@@ -313,8 +333,8 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
         if (type === 'daterange' && dateRange.start && dateRange.end) {
             return `${formatDisplayDate(dateRange.start)} - ${formatDisplayDate(dateRange.end)}`;
         } else if (type === 'datetime' && selectedDate) {
-            const timeStr = selectedHour !== '' && selectedMinute !== '' 
-                ? `${selectedHour}:${selectedMinute}` 
+            const timeStr = selectedHour !== '' && selectedMinute !== ''
+                ? `${selectedHour}:${selectedMinute}`
                 : '00:00';
             return `${formatDisplayDate(selectedDate)} ${timeStr}`;
         } else if (type === 'datetimerange' && selectedDate && timeRange.startHour && timeRange.endHour) {
@@ -365,9 +385,10 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
         return options;
     };
 
+    // Updated to generate minutes from 1-59
     const generateMinuteOptions = (): string[] => {
         const options: string[] = [];
-        for (let minute = 0; minute < 60; minute += 15) { // 15-minute intervals
+        for (let minute = 1; minute <= 59; minute++) {
             options.push(minute.toString().padStart(2, '0'));
         }
         return options;
@@ -412,11 +433,10 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                                     <button
                                         type="button"
                                         onClick={() => setActiveTab('date')}
-                                        className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-                                            activeTab === 'date' 
-                                                ? 'bg-green-50 text-green-700 border-b-2 border-green-600' 
-                                                : 'text-gray-500 hover:text-gray-700'
-                                        }`}
+                                        className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'date'
+                                            ? 'bg-green-50 text-green-700 border-b-2 border-green-600'
+                                            : 'text-gray-500 hover:text-gray-700'
+                                            }`}
                                     >
                                         <Calendar className="h-4 w-4 inline mr-2" />
                                         Select Date
@@ -425,11 +445,10 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                                         type="button"
                                         onClick={() => setActiveTab('time')}
                                         disabled={!selectedDate}
-                                        className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-                                            activeTab === 'time' 
-                                                ? 'bg-green-50 text-green-700 border-b-2 border-green-600' 
-                                                : 'text-gray-500 hover:text-gray-700'
-                                        } ${!selectedDate ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${activeTab === 'time'
+                                            ? 'bg-green-50 text-green-700 border-b-2 border-green-600'
+                                            : 'text-gray-500 hover:text-gray-700'
+                                            } ${!selectedDate ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     >
                                         <Clock className="h-4 w-4 inline mr-2" />
                                         Select Time
@@ -551,7 +570,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                                 </div>
                             )}
 
-                            {/* Time Range Picker for datetimerange type */}
+                            {/* Updated Time Range Picker for datetimerange type with scrollable dropdowns */}
                             {type === 'datetimerange' && activeTab === 'time' && (
                                 <div className="p-4 bg-gray-50">
                                     <div className="space-y-4">
@@ -560,26 +579,32 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">Start Time</label>
                                                 <div className="flex space-x-2">
-                                                    <select
-                                                        value={timeRange.startHour}
-                                                        onChange={(e) => setTimeRange(prev => ({ ...prev, startHour: e.target.value }))}
-                                                        className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                                                    >
-                                                        <option value="">HH</option>
-                                                        {generateHourOptions().map(hour => (
-                                                            <option key={hour} value={hour}>{hour}</option>
-                                                        ))}
-                                                    </select>
-                                                    <select
-                                                        value={timeRange.startMinute}
-                                                        onChange={(e) => setTimeRange(prev => ({ ...prev, startMinute: e.target.value }))}
-                                                        className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                                                    >
-                                                        <option value="">MM</option>
-                                                        {generateMinuteOptions().map(minute => (
-                                                            <option key={minute} value={minute}>{minute}</option>
-                                                        ))}
-                                                    </select>
+                                                    <div className="flex-1">
+                                                        <select
+                                                            value={timeRange.startHour}
+                                                            onChange={(e) => setTimeRange(prev => ({ ...prev, startHour: e.target.value }))}
+                                                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 max-h-32 overflow-y-auto"
+                                                            size={6}
+                                                        >
+                                                            <option value="">HH</option>
+                                                            {generateHourOptions().map(hour => (
+                                                                <option key={hour} value={hour}>{hour}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <select
+                                                            value={timeRange.startMinute}
+                                                            onChange={(e) => setTimeRange(prev => ({ ...prev, startMinute: e.target.value }))}
+                                                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 max-h-32 overflow-y-auto"
+                                                            size={6}
+                                                        >
+                                                            <option value="">MM</option>
+                                                            {generateMinuteOptions().map(minute => (
+                                                                <option key={minute} value={minute}>{minute}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
                                                 </div>
                                             </div>
 
@@ -587,102 +612,45 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">End Time</label>
                                                 <div className="flex space-x-2">
-                                                    <select
-                                                        value={timeRange.endHour}
-                                                        onChange={(e) => setTimeRange(prev => ({ ...prev, endHour: e.target.value }))}
-                                                        className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                                                    >
-                                                        <option value="">HH</option>
-                                                        {generateHourOptions().map(hour => (
-                                                            <option key={hour} value={hour}>{hour}</option>
-                                                        ))}
-                                                    </select>
-                                                    <select
-                                                        value={timeRange.endMinute}
-                                                        onChange={(e) => setTimeRange(prev => ({ ...prev, endMinute: e.target.value }))}
-                                                        className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                                                    >
-                                                        <option value="">MM</option>
-                                                        {generateMinuteOptions().map(minute => (
-                                                            <option key={minute} value={minute}>{minute}</option>
-                                                        ))}
-                                                    </select>
+                                                    <div className="flex-1">
+                                                        <select
+                                                            value={timeRange.endHour}
+                                                            onChange={(e) => setTimeRange(prev => ({ ...prev, endHour: e.target.value }))}
+                                                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 max-h-32 overflow-y-auto"
+                                                            size={6}
+                                                        >
+                                                            <option value="">HH</option>
+                                                            {generateHourOptions().map(hour => (
+                                                                <option key={hour} value={hour}>{hour}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <select
+                                                            value={timeRange.endMinute}
+                                                            onChange={(e) => setTimeRange(prev => ({ ...prev, endMinute: e.target.value }))}
+                                                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 max-h-32 overflow-y-auto"
+                                                            size={6}
+                                                        >
+                                                            <option value="">MM</option>
+                                                            {generateMinuteOptions().map(minute => (
+                                                                <option key={minute} value={minute}>{minute}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-
-                                        {/* Duration Info */}
-                                        {timeRange.startHour && timeRange.startMinute && timeRange.endHour && timeRange.endMinute && (
-                                            <div className="text-sm">
-                                                {(() => {
-                                                    const duration = getTimeDifferenceInMinutes(
-                                                        timeRange.startHour, 
-                                                        timeRange.startMinute, 
-                                                        timeRange.endHour, 
-                                                        timeRange.endMinute
-                                                    );
-                                                    const hours = Math.floor(duration / 60);
-                                                    const minutes = duration % 60;
-                                                    const isValid = duration >= minTimeDuration && duration <= maxTimeDuration;
-                                                    
-                                                    return (
-                                                        <div className={`p-3 rounded-lg ${isValid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                                            <p className="font-medium">
-                                                                Duration: {hours}h {minutes}m
-                                                            </p>
-                                                            <p className="text-xs mt-1">
-                                                                {isValid 
-                                                                    ? '✓ Valid duration' 
-                                                                    : `Duration must be between ${minTimeDuration} minutes and ${maxTimeDuration} minutes`
-                                                                }
-                                                            </p>
-                                                        </div>
-                                                    );
-                                                })()}
-                                            </div>
-                                        )}
-
-                                        <button
-                                            type="button"
-                                            onClick={handleApplyDateTimeRange}
-                                            disabled={!selectedDate || !isTimeRangeValid()}
-                                            className="w-full px-6 py-3 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                        >
-                                            Apply Date & Time Range
-                                        </button>
                                     </div>
                                 </div>
-                            )}
-
-                            {/* Range Selection Info */}
-                            {type === 'daterange' && selectingEnd && (
-                                <div className="border-t border-gray-200 p-4 bg-blue-50">
-                                    <p className="text-sm text-blue-700 font-medium">
-                                        Select end date (max {maxRangeDays} days)
-                                    </p>
-                                </div>
-                            )}
-
-                            {/* Range Summary */}
-                            {type === 'daterange' && dateRange.start && dateRange.end && (
-                                <div className="border-t border-gray-200 p-3 bg-green-50">
-                                    <p className="text-sm text-green-700 font-medium">
-                                        Selected: {getDaysDifference(dateRange.start, dateRange.end) + 1} day(s)
-                                    </p>
-                                </div>
-                            )}
+                            )
+                            }
                         </div>
                     )}
                 </div>
-
-                {error && (
-                    <p className="text-sm text-red-500 mt-2 flex items-center">
-                        {error}
-                    </p>
-                )}
             </div>
         </>
-    );
-};
+    )
+}
 
 export default DateTimePicker;
