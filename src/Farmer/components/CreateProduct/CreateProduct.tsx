@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight, Check, Package, DollarSign, ImageIcon } from
 import ProductInfo from './ProductInfo';
 import BidPricing from './BidPricing';
 import ImageUpload from './ImageUpload';
-import Button from '../../../Auth/ui/Button';
+import Button from '../../../Common/ui/Button';
 
 const CreateProduct: React.FC = () => {
     const [currentStep, setCurrentStep] = useState(1);
@@ -16,8 +16,6 @@ const CreateProduct: React.FC = () => {
         bidStartDate: '',
         bidEndDate: '',
         bidTiming: '',
-       
-        category: '',
         images: [] as string[]
     });
 
@@ -58,7 +56,7 @@ const CreateProduct: React.FC = () => {
     const validateStep = (step: number) => {
         switch (step) {
             case 1:
-                return formData.name && formData.description && formData.quantity && formData.category;
+                return formData.name && formData.description && formData.quantity;
             case 2:
                 return formData.startingPrice && formData.bidStartDate && formData.bidEndDate &&
                     formData.bidTiming;
@@ -141,7 +139,6 @@ const CreateProduct: React.FC = () => {
                             description: formData.description,
                             quantity: formData.quantity,
                             unit: formData.unit,
-                            category: formData.category
                         }}
                         onInputChange={handleInputChange}
                     />

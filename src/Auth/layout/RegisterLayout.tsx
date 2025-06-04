@@ -1,6 +1,6 @@
-import Button from '../ui/Button';
+import Button from '../../Common/ui/Button';
 import { useNavigate } from 'react-router-dom';
-import Input from '../ui/Input';
+import Input from '../../Common/ui/Input';
 import { useDispatch } from 'react-redux';
 import { RegisterRequest } from '../../Types/authTypes';
 import { setCredentials, setError, setLoading } from '../../State/Slices/authSlice';
@@ -8,9 +8,9 @@ import { initialValues, registerValidationSchema } from '../Schema/registerSchem
 import { Formik, FormikHelpers } from 'formik';
 import { useState } from 'react';
 import { RegisterApi } from '../../Services/authAPI';
-import { Spinner } from '../ui/Spinner';
+import { Spinner } from '../../Common/ui/Spinner';
 import { ShoppingCart, User } from 'lucide-react';
-import Select from '../ui/Select';
+import Select from '../../Common/ui/Select';
 import toast from 'react-hot-toast';
 
 

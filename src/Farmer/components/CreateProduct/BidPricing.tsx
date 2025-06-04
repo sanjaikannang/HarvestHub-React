@@ -1,6 +1,6 @@
 import React from 'react';
-import DateTimePicker from '../../../Auth/ui/DateTimePicker';
-import Input from '../../../Auth/ui/Input';
+import DateTimePicker from '../../../Common/ui/DateTimePicker';
+import Input from '../../../Common/ui/Input';
 
 interface BidPricingProps {
     formData: {
