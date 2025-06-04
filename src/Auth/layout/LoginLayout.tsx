@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router-dom';
-import Input from '../ui/Input';
-import Button from '../ui/Button';
+import Input from '../../Common/ui/Input';
+import Button from '../../Common/ui/Button';
 import { Formik, FormikHelpers } from 'formik';
 import { initialValues, loginValidationSchema } from '../Schema/loginSchema';
-import { Spinner } from '../ui/Spinner';
+import { Spinner } from '../../Common/ui/Spinner';
 import { useDispatch } from 'react-redux';
 import { useState } from 'react';
 import { setCredentials, setError, setLoading } from '../../State/Slices/authSlice';
