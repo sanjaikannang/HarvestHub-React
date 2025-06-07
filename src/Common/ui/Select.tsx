@@ -56,8 +56,8 @@ const Select: React.FC<SelectProps> = ({
             label: "text-xs",
         },
         md: {
-            select: "px-4 py-3 text-sm",
-            option: "px-4 py-3 text-sm",
+            select: "px-4 py-2.5 text-sm",
+            option: "px-4 py-2.5 text-sm",
             icon: "h-5 w-5",
             label: "text-sm",
         },
@@ -122,7 +122,7 @@ const Select: React.FC<SelectProps> = ({
     };
 
     const getLabelClasses = () => {
-        const baseClasses = `block font-medium transition-all duration-200 mb-2 ${sizeConfig[size].label}`;
+        const baseClasses = `block font-medium transition-all duration-200 mb-1 ${sizeConfig[size].label}`;
         return baseClasses;
     };
 
@@ -214,7 +214,7 @@ const Select: React.FC<SelectProps> = ({
                 </div>
 
                 {/* Error Message */}
-                <div className="mt-1 min-h-[1.25rem]">
+                <div className="mt-1">
                     {error && (
                         <p className="text-[11px] text-redColor flex items-center animate-slide-down">
                             {error}
