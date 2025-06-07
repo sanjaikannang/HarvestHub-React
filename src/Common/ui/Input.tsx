@@ -1,7 +1,7 @@
 import React from "react";
-import { Search, Mail, Lock, User, Phone, Eye, EyeOff, LucideIcon, Wheat } from "lucide-react";
+import { Search, Mail, Lock, User, Phone, Eye, EyeOff, LucideIcon, Wheat, IndianRupee, Weight } from "lucide-react";
 
-type IconType = "search" | "mail" | "email" | "lock" | "password" | "user" | "phone" | "product"
+type IconType = "search" | "mail" | "email" | "lock" | "password" | "user" | "phone" | "product" | "rupee" | "weight";
 
 type InputSize = "sm" | "md" | "lg";
 
@@ -22,7 +22,7 @@ interface BaseInputProps {
 }
 
 interface InputFieldProps extends BaseInputProps {
-    type?: "text" | "email" | "password" | "tel" | "number" | "url" | "search" | "product";
+    type?: "text" | "email" | "password" | "tel" | "number" | "url" | "search" | "product" | "rupee" | "weight";
     min?: string | number;
     max?: string | number;
     step?: string | number;
@@ -69,7 +69,9 @@ const Input: React.FC<InputBoxProps> = ({
         password: Lock,
         user: User,
         phone: Phone,
-        product: Wheat
+        product: Wheat,
+        rupee: IndianRupee,
+        weight: Weight
     };
 
     const IconComponent = typeof icon === "string" ? iconMap[icon] : icon;
@@ -103,8 +105,8 @@ const Input: React.FC<InputBoxProps> = ({
             rightPadding: "pr-8",
         },
         md: {
-            input: "px-4 py-3 text-sm",
-            textarea: "px-3 py-2 text-sm",
+            input: "px-4 py-2.5 text-sm",
+            textarea: "px-3 py-2.5 text-sm",
             icon: "h-5 w-5",
             label: "text-sm",
             leftPadding: "pl-11",
@@ -133,7 +135,7 @@ const Input: React.FC<InputBoxProps> = ({
     };
 
     const getLabelClasses = () => {
-        const baseClasses = `block font-medium transition-all duration-200 mb-2 ${sizeConfig[size].label}`;
+        const baseClasses = `block font-medium transition-all duration-200 mb-1 ${sizeConfig[size].label}`;
         return baseClasses;
     };
 
@@ -257,7 +259,7 @@ const Input: React.FC<InputBoxProps> = ({
                 </div>
 
                 {/* Helper Text and Error Message */}
-                <div className="mt-1 min-h-[1.25rem]">
+                <div className="mt-1">
                     {error && (
                         <p className="text-[11px] text-redColor flex items-center animate-slide-down">
                             {error}

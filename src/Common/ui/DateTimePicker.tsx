@@ -377,7 +377,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
         <>
             <div className={`w-full ${className}`}>
                 {label && (
-                    <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
                         {label}
                         {required && <span className="text-red-500">*</span>}
                     </label>
@@ -386,7 +386,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                 <div className="relative" ref={dropdownRef}>
                     <div
                         className={`
-                            w-full px-4 py-3 text-sm bg-white border border-gray-300 rounded-lg
+                            w-full px-4 py-2.5 text-sm bg-white border border-gray-300 rounded-lg
                             focus:border-green-500 focus:ring-green-500 shadow-sm cursor-pointer
                             transition-all duration-200 ease-in-out
                             ${error ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'hover:border-gray-400'}
