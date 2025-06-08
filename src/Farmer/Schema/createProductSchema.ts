@@ -1,7 +1,7 @@
 import * as Yup from 'yup';
 
 export const createProductValidationSchema = Yup.object({
-    productName: Yup.string()
+    name: Yup.string()
         .required('Product name is required')
         .max(100, 'Product name cannot exceed 100 characters'),
 
@@ -37,20 +37,20 @@ export const createProductValidationSchema = Yup.object({
     bidEndTime: Yup.string()
         .required('Bid end time is required'),
 
-    image1: Yup.string()
-        .required('At least one image is required'),
+    // image1: Yup.string()
+    //     .required('At least one image is required'),
 
-    image2: Yup.string()
-        .nullable(), // Optional
+    // image2: Yup.string()
+    //     .nullable(), // Optional
 
-    image3: Yup.string()
-        .nullable() // Optional
+    // image3: Yup.string()
+    //     .nullable() // Optional
 });
 
 
 // Initial form values
 export const initialValues = {
-    productName: '',
+    name: '',
     description: '',
     quantity: '',
     unit: '',

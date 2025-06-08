@@ -74,13 +74,16 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
             if (type === 'daterange') {
                 const dates = value.split(' - ');
                 if (dates.length === 2) {
+                    // Create date objects with explicit local timezone
+                    const startDate = new Date(dates[0] + 'T00:00:00');
+                    const endDate = new Date(dates[1] + 'T00:00:00');
                     setDateRange({
-                        start: new Date(dates[0]),
-                        end: new Date(dates[1])
+                        start: startDate,
+                        end: endDate
                     });
                 }
             } else if (type === 'datetime') {
-                const date = new Date(value);
+                const date = new Date(value + (value.includes('T') ? '' : 'T00:00:00'));
                 setSelectedDate(date);
                 setSelectedHour(date.getHours().toString().padStart(2, '0'));
                 setSelectedMinute(date.getMinutes().toString().padStart(2, '0'));
@@ -96,7 +99,8 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                         const [startHour, startMinute] = startTime.split(':');
                         const [endHour, endMinute] = endTime.split(':');
 
-                        setSelectedDate(new Date(datePart));
+                        // Create date with explicit local timezone
+                        setSelectedDate(new Date(datePart + 'T00:00:00'));
                         setTimeRange({
                             startHour,
                             startMinute,
@@ -106,7 +110,8 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                     }
                 }
             } else {
-                setSelectedDate(new Date(value));
+                // For simple date, add time to ensure local timezone
+                setSelectedDate(new Date(value + 'T00:00:00'));
             }
         }
     }, [value, type]);
@@ -143,7 +148,11 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
     }, []);
 
     const formatDate = (date: Date): string => {
-        return date.toISOString().split('T')[0];
+        // Get the local date components to avoid timezone issues
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     };
 
     const formatDisplayDate = (date: Date): string => {
@@ -464,7 +473,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                                     {/* Calendar Grid */}
                                     <div className="p-4">
                                         <div className="grid grid-cols-7 gap-1 mb-3">
-                                            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(day => (
+                                            {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
                                                 <div key={day} className="text-sm font-medium text-gray-500 text-center p-1.5">
                                                     {day}
                                                 </div>
@@ -526,7 +535,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                                                             {generateHourOptions().map(hour => (
                                                                 <option
                                                                     className="py-1 text-sm rounded-md font-medium text-center text-gray-600 bg-white hover:bg-green-500"
-                                                                    key={hour} 
+                                                                    key={hour}
                                                                     value={hour}>{hour}</option>
                                                             ))}
                                                         </select>
