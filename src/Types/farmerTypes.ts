@@ -4,7 +4,7 @@ export interface ProductQuantity {
 }
 
 export interface CreateProductRequest {
-    name: string;
+    productName: string;
     description: string;
     quantity: ProductQuantity;
     startingPrice: number;
