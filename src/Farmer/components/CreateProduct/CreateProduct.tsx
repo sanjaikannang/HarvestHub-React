@@ -14,7 +14,7 @@ import { useState } from 'react';
 
 
 interface CreateProductFormValues {
-    productName: string;
+    name: string;
     description: string;
     quantity: string;
     unit: string;
@@ -30,6 +30,13 @@ interface CreateProductFormValues {
 
 const CreateProduct = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Dummy image URLs
+    const dummyImages = [
+        'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=600&fit=crop',
+        'https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&h=600&fit=crop',
+        'https://images.unsplash.com/photo-1574226516831-e1dff420e562?w=800&h=600&fit=crop'
+    ];
 
     // Units
     const unitOptions = [
@@ -50,15 +57,12 @@ const CreateProduct = () => {
             setIsSubmitting(true);
             setStatus(null);
 
-            // Prepare the images array
-            const images: string[] = [];
-            if (values.image1) images.push(values.image1);
-            if (values.image2) images.push(values.image2);
-            if (values.image3) images.push(values.image3);
+            // Use dummy images
+            const images: string[] = dummyImages;
 
             // Prepare the product data according to API payload structure
             const createProductData: CreateProductRequest = {
-                productName: values.productName,
+                name: values.name,
                 description: values.description,
                 quantity: {
                     value: parseInt(values.quantity),
@@ -72,11 +76,13 @@ const CreateProduct = () => {
                 images: images,
             };
 
+            console.log('Submitting product data:', createProductData);
+
             // Call the register API
             const result = await createProductAPI(createProductData);
 
             // Show success toast
-            toast.success(result.message || 'Registration successful!');
+            toast.success(result.message || 'Product created successfully!');
 
             // Reset form on success
             resetForm();
@@ -139,7 +145,9 @@ const CreateProduct = () => {
                                     <form
                                         onSubmit={handleSubmit}>
                                         <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
+
                                             <div className="space-y-4">
+
                                                 {/* Product Basic Information Section */}
                                                 <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
                                                     <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -148,17 +156,17 @@ const CreateProduct = () => {
                                                     </h3>
                                                     <div className="space-y-4">
                                                         <Input
-                                                            id="productName"
+                                                            id="name"
                                                             label="Product Name"
-                                                            name="productName"
+                                                            name="name"
                                                             type="text"
-                                                            value={values.productName}
+                                                            value={values.name}
                                                             onChange={handleChange}
+                                                            onBlur={handleBlur}
                                                             placeholder="E.g : Organic Tomatoes"
                                                             icon={'product'}
-                                                            required
-                                                            error={touched.productName && errors.productName ? errors.productName : ''}
-                                                            success={values.productName !== '' && !errors.productName && touched.productName}
+                                                            error={touched.name && errors.name ? errors.name : ''}
+                                                            success={values.name !== '' && !errors.name && touched.name}
                                                         />
 
                                                         <div className="grid grid-cols-2 gap-4">
@@ -171,7 +179,6 @@ const CreateProduct = () => {
                                                                     value={values.quantity}
                                                                     onChange={handleChange}
                                                                     onBlur={handleBlur}
-                                                                    required
                                                                     min={1}
                                                                     icon="weight"
                                                                     placeholder="100"
@@ -187,10 +194,9 @@ const CreateProduct = () => {
                                                                     label="Unit"
                                                                     placeholder="Select Unit"
                                                                     value={values.unit}
-                                                                    onChange={handleChange}
+                                                                    onChange={(value) => setFieldValue('unit', value)}
                                                                     onBlur={handleBlur}
                                                                     options={unitOptions}
-                                                                    required
                                                                     error={touched.unit && errors.unit ? errors.unit : ''}
                                                                     success={values.unit !== '' && !errors.unit && touched.unit}
                                                                 />
@@ -205,7 +211,6 @@ const CreateProduct = () => {
                                                             value={values.description}
                                                             onChange={handleChange}
                                                             onBlur={handleBlur}
-                                                            required
                                                             rows={4}
                                                             placeholder="Describe your product quality, farming methods, etc."
                                                             error={touched.description && errors.description ? errors.description : ''}
@@ -226,12 +231,12 @@ const CreateProduct = () => {
                                                             id="startingPrice"
                                                             type="number"
                                                             label="Starting Price (₹)"
+                                                            name="startingPrice"
                                                             placeholder="250"
                                                             value={values.startingPrice}
                                                             onChange={handleChange}
                                                             onBlur={handleBlur}
                                                             icon="rupee"
-                                                            required
                                                             min={1}
                                                             size="md"
                                                             error={touched.startingPrice && errors.startingPrice ? errors.startingPrice : ''}
@@ -245,8 +250,8 @@ const CreateProduct = () => {
                                                 </div>
                                             </div>
 
-                                            {/* Product Bid Schedule Section */}
                                             <div className="space-y-4">
+                                                {/* Product Bid Schedule Section */}
                                                 <div className="bg-green-50 rounded-xl p-4 border border-gray-200">
                                                     <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                                                         <Calendar className="w-5 h-5 text-green-600" />
@@ -269,7 +274,7 @@ const CreateProduct = () => {
                                                                 placeholder="Select bid start and end dates"
                                                                 defaultDays={1}
                                                                 maxRangeDays={3}
-                                                                required
+
                                                                 error={touched.bidStartDate && errors.bidStartDate ? errors.bidStartDate : ''}
                                                             />
                                                             <p className="text-xs text-gray-500 mt-1">
@@ -301,7 +306,7 @@ const CreateProduct = () => {
                                                             endDate={values.bidEndDate}
                                                             minTimeDuration={30} // 30 minutes minimum
                                                             maxTimeDuration={120} // 2 hours maximum
-                                                            required
+
                                                             error={touched.bidStartTime && errors.bidStartTime ? errors.bidStartTime : ''}
                                                         />
                                                         <p className="text-xs text-gray-500 mt-1">
@@ -330,7 +335,7 @@ const CreateProduct = () => {
                                                                 setFieldValue('image2', images[1] || '');
                                                                 setFieldValue('image3', images[2] || '');
                                                             }}
-                                                            required
+                                                            
                                                             size="md"
                                                             error={touched.image1 && errors.image1 ? errors.image1 : ''}
                                                             success={values.image1 !== '' && !errors.image1 && touched.image1}
@@ -338,32 +343,32 @@ const CreateProduct = () => {
                                                     </div>
                                                 </div>
                                             </div>
+
                                         </div>
+
+                                        <div className="border-t border-gray-200 px-6 pt-6 mt-6">
+                                            <div className="flex justify-end">
+                                                <Button
+                                                    className='px-10'
+                                                    type="submit"
+                                                    variant="primary"
+                                                    size="md"
+                                                    disabled={isSubmitting}
+                                                >
+                                                    {isSubmitting ? (
+                                                        <>
+                                                            <Spinner /> <span className='ml-3.5'>Creating...</span>
+                                                        </>
+                                                    ) : (
+                                                        'Create Product'
+                                                    )}
+                                                </Button>
+                                            </div>
+                                        </div>
+
                                     </form>
                                 )}
                             </Formik>
-                        </div>
-
-
-                        <div className="border-t border-gray-200 px-6 py-4">
-                            <div className="flex justify-end">
-                                <Button
-                                    className='px-10'
-                                    type="submit"
-                                    variant="primary"
-                                    size="md"
-                                    disabled={isSubmitting}
-                                >
-
-                                    {isSubmitting ? (
-                                        <>
-                                            <Spinner /> <span className='ml-3.5'>Creating...</span>
-                                        </>
-                                    ) : (
-                                        'Create Product'
-                                    )}
-                                </Button>
-                            </div>
                         </div>
                     </div>
 
