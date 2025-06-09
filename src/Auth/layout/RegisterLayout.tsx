@@ -74,7 +74,7 @@ const RegisterLayout = () => {
             // Navigate to login page after successful registration
             setTimeout(() => {
                 navigate('/login');
-            }, 1500); // Small delay to show the toast
+            }, 500); // Small delay to show the toast
 
         } catch (error: any) {
             console.error('Registration failed:', error);

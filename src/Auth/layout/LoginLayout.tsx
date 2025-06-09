@@ -73,7 +73,7 @@ const LoginLayout = () => {
             // Navigate to login page after successful registration
             setTimeout(() => {
                 navigateByRole(result.user.role ?? '');
-            }, 1500); // Small delay to show the toast
+            }, 500); // Small delay to show the toast
 
         } catch (error: any) {
             console.error('Login failed:', error);
