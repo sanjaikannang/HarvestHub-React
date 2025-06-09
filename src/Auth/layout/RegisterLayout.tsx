@@ -122,7 +122,7 @@ const RegisterLayout = () => {
                             <form
                                 onSubmit={handleSubmit}
                                 className='border border-gray-300 p-6 rounded-lg shadow-md bg-whiteColor'>
-                                <div>
+                                <div className='space-y-4'>
 
                                     {/* Name Field */}
                                     <Input
