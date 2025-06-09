@@ -20,11 +20,15 @@ const getUserFromStorage = (): User | null => {
     }
 };
 
+// Initialize auth state from localStorage
+const token = localStorage.getItem('accessToken');
+const user = getUserFromStorage();
+
 const initialState: AuthState = {
-    user: null,
-    token: localStorage.getItem('accessToken'),
+    user,
+    token,
     isLoading: false,
-    isAuthenticated: !!localStorage.getItem('accessToken'),
+    isAuthenticated: !!(token && user),
     error: null,
 };
 
@@ -73,6 +77,7 @@ const authSlice = createSlice({
                 state.token = null;
                 state.isAuthenticated = false;
             }
+            state.isLoading = false;
         },
     },
 });

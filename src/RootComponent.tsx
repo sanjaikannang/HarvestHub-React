@@ -1,6 +1,3 @@
-import { useEffect } from "react";
-import { useAppDispatch } from "./State/hooks";
-import { restoreAuthFromStorage } from "./State/Slices/authSlice";
 import { Route, Routes, BrowserRouter as Router, Navigate } from "react-router-dom"
 import LandingPage from "./Landing/LandingPage"
 import RegisterLayout from "./Auth/layout/RegisterLayout"
@@ -12,13 +9,6 @@ import ProtectedRoute from "./ProtectedRoute";
 
 
 const RootComponent = () => {
-
-    const dispatch = useAppDispatch();
-
-    // Restore auth state from localStorage on app load
-    useEffect(() => {
-        dispatch(restoreAuthFromStorage());
-    }, [dispatch]);
 
     return (
         <>
