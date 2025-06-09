@@ -14,12 +14,12 @@ interface DateTimePickerProps {
     className?: string;
     minDate?: string;
     maxDate?: string;
-    defaultDays?: number; // For date range default selection
-    startDate?: string; // For datetime picker to restrict date selection
-    endDate?: string; // For datetime picker to restrict date selection
-    maxRangeDays?: number; // Maximum days allowed in range (for bid duration)
-    minTimeDuration?: number; // Minimum time duration in minutes (for bid timing)
-    maxTimeDuration?: number; // Maximum time duration in minutes (for bid timing)
+    defaultDays?: number;
+    startDate?: string;
+    endDate?: string;
+    maxRangeDays?: number;
+    minTimeDuration?: number;
+    maxTimeDuration?: number;
 }
 
 interface DateRange {
@@ -47,10 +47,11 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
     className = '',
     minDate,
     maxDate,
-    defaultDays = 3,
     startDate,
     endDate,
     maxRangeDays = 3,
+    minTimeDuration = 30,
+    maxTimeDuration = 120,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -66,73 +67,72 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
         endHour: '',
         endMinute: ''
     });
+    const [timeDurationError, setTimeDurationError] = useState<string>('');
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    // Parse existing value on mount
+    // Updated: Parse value and respond to changes (including empty values)
     useEffect(() => {
-        if (value) {
-            if (type === 'daterange') {
-                const dates = value.split(' - ');
-                if (dates.length === 2) {
-                    // Create date objects with explicit local timezone
-                    const startDate = new Date(dates[0] + 'T00:00:00');
-                    const endDate = new Date(dates[1] + 'T00:00:00');
-                    setDateRange({
-                        start: startDate,
-                        end: endDate
+        // If value is empty, reset all internal state
+        if (!value || value.trim() === '') {
+            setSelectedDate(null);
+            setSelectedHour('');
+            setSelectedMinute('');
+            setDateRange({ start: null, end: null });
+            setSelectingEnd(false);
+            setActiveTab('date');
+            setTimeRange({
+                startHour: '',
+                startMinute: '',
+                endHour: '',
+                endMinute: ''
+            });
+            setTimeDurationError('');
+            return;
+        }
+
+        // Parse non-empty values
+        if (type === 'daterange') {
+            const dates = value.split(' - ');
+            if (dates.length === 2) {
+                const startDate = new Date(dates[0] + 'T00:00:00');
+                const endDate = new Date(dates[1] + 'T00:00:00');
+                setDateRange({
+                    start: startDate,
+                    end: endDate
+                });
+            }
+        } else if (type === 'datetime') {
+            const date = new Date(value + (value.includes('T') ? '' : 'T00:00:00'));
+            setSelectedDate(date);
+            setSelectedHour(date.getHours().toString().padStart(2, '0'));
+            setSelectedMinute(date.getMinutes().toString().padStart(2, '0'));
+        } else if (type === 'datetimerange') {
+            const parts = value.split(' - ');
+            if (parts.length === 2) {
+                const dateTimePart = parts[0].split(' ');
+                const endTime = parts[1];
+
+                if (dateTimePart.length === 2) {
+                    const [datePart, startTime] = dateTimePart;
+                    const [startHour, startMinute] = startTime.split(':');
+                    const [endHour, endMinute] = endTime.split(':');
+
+                    setSelectedDate(new Date(datePart + 'T00:00:00'));
+                    setTimeRange({
+                        startHour,
+                        startMinute,
+                        endHour,
+                        endMinute
                     });
                 }
-            } else if (type === 'datetime') {
-                const date = new Date(value + (value.includes('T') ? '' : 'T00:00:00'));
-                setSelectedDate(date);
-                setSelectedHour(date.getHours().toString().padStart(2, '0'));
-                setSelectedMinute(date.getMinutes().toString().padStart(2, '0'));
-            } else if (type === 'datetimerange') {
-                // Parse format: "2024-01-15 09:00 - 11:00"
-                const parts = value.split(' - ');
-                if (parts.length === 2) {
-                    const dateTimePart = parts[0].split(' ');
-                    const endTime = parts[1];
-
-                    if (dateTimePart.length === 2) {
-                        const [datePart, startTime] = dateTimePart;
-                        const [startHour, startMinute] = startTime.split(':');
-                        const [endHour, endMinute] = endTime.split(':');
-
-                        // Create date with explicit local timezone
-                        setSelectedDate(new Date(datePart + 'T00:00:00'));
-                        setTimeRange({
-                            startHour,
-                            startMinute,
-                            endHour,
-                            endMinute
-                        });
-                    }
-                }
-            } else {
-                // For simple date, add time to ensure local timezone
-                setSelectedDate(new Date(value + 'T00:00:00'));
             }
+        } else {
+            setSelectedDate(new Date(value + 'T00:00:00'));
         }
-    }, [value, type]);
+    }, [value, type]); // This effect now properly handles empty values
 
-    // Set default date range
-    useEffect(() => {
-        if (type === 'daterange' && !value) {
-            const today = new Date();
-            const endDate = new Date();
-            endDate.setDate(today.getDate() + Math.min(defaultDays, maxRangeDays) - 1);
-
-            setDateRange({
-                start: today,
-                end: endDate
-            });
-
-            const formattedStart = formatDate(today);
-            const formattedEnd = formatDate(endDate);
-            onChange?.(`${formattedStart} - ${formattedEnd}`);
-        }
-    }, [type, defaultDays, maxRangeDays, onChange, value]);
+    // Remove the auto-default date range effect for better control
+    // The parent component should handle setting default values if needed
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -147,8 +147,25 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    // Validate time duration whenever timeRange changes
+    useEffect(() => {
+        if (type === 'datetimerange' && timeRange.startHour && timeRange.startMinute && timeRange.endHour && timeRange.endMinute) {
+            const durationMinutes = getTimeDurationInMinutes();
+            if (durationMinutes <= 0) {
+                setTimeDurationError('End time must be after start time');
+            } else if (durationMinutes < minTimeDuration) {
+                setTimeDurationError(`Minimum duration is ${minTimeDuration} minutes`);
+            } else if (durationMinutes > maxTimeDuration) {
+                setTimeDurationError(`Maximum duration is ${maxTimeDuration} minutes (${Math.floor(maxTimeDuration / 60)}h ${maxTimeDuration % 60}m)`);
+            } else {
+                setTimeDurationError('');
+            }
+        } else {
+            setTimeDurationError('');
+        }
+    }, [timeRange, minTimeDuration, maxTimeDuration, type]);
+
     const formatDate = (date: Date): string => {
-        // Get the local date components to avoid timezone issues
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
@@ -163,12 +180,22 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
         });
     };
 
-    // Updated function for datetimerange to only allow dates within the bid duration range
+    const getTimeDurationInMinutes = (): number => {
+        if (!timeRange.startHour || !timeRange.startMinute || !timeRange.endHour || !timeRange.endMinute) {
+            return 0;
+        }
+
+        const startTime = parseInt(timeRange.startHour) * 60 + parseInt(timeRange.startMinute);
+        const endTime = parseInt(timeRange.endHour) * 60 + parseInt(timeRange.endMinute);
+
+        return endTime - startTime;
+    };
+
+
     const isDateInAllowedRange = (date: Date): boolean => {
         if (type === 'datetimerange' && startDate && endDate) {
             const start = new Date(startDate);
             const end = new Date(endDate);
-            // Set time to start of day for proper comparison
             start.setHours(0, 0, 0, 0);
             end.setHours(23, 59, 59, 999);
             date.setHours(0, 0, 0, 0);
@@ -196,15 +223,12 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        // Past dates are disabled
         if (date < today) return true;
 
-        // For datetimerange, only allow dates within the bid duration range
         if (type === 'datetimerange' && !isDateInAllowedRange(date)) {
             return true;
         }
 
-        // For datetime, check if date is in allowed range
         if (type === 'datetime' && !isDateInRange(date)) {
             return true;
         }
@@ -212,7 +236,6 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
         if (minDate && date < new Date(minDate)) return true;
         if (maxDate && date > new Date(maxDate)) return true;
 
-        // For date range, check if selecting this date would exceed max range
         if (type === 'daterange' && dateRange.start && selectingEnd) {
             const daysDiff = getDaysDifference(dateRange.start, date) + 1;
             if (daysDiff > maxRangeDays) return true;
@@ -230,13 +253,11 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
 
         const days: Date[] = [];
 
-        // Add empty cells for days before the first day of the month
         const startDay = firstDay.getDay();
         for (let i = 0; i < startDay; i++) {
             days.push(new Date(year, month, -startDay + i + 1));
         }
 
-        // Add days of the current month
         for (let day = 1; day <= daysInMonth; day++) {
             days.push(new Date(year, month, day));
         }
@@ -249,19 +270,15 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
 
         if (type === 'daterange') {
             if (!selectingEnd && (!dateRange.start || dateRange.end)) {
-                // Start new selection
                 setDateRange({ start: date, end: null });
                 setSelectingEnd(true);
             } else if (selectingEnd) {
-                // Complete selection
                 const start = dateRange.start!;
                 const end = date >= start ? date : start;
                 const newStart = date >= start ? start : date;
 
-                // Validate range doesn't exceed max days
                 const daysDiff = getDaysDifference(newStart, end) + 1;
                 if (daysDiff > maxRangeDays) {
-                    // Auto-adjust to max range
                     const adjustedEnd = new Date(newStart);
                     adjustedEnd.setDate(newStart.getDate() + maxRangeDays - 1);
                     setDateRange({ start: newStart, end: adjustedEnd });
@@ -292,7 +309,6 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
         }
     };
 
-
     const isValidTimeRange = (): boolean => {
         if (!timeRange.startHour || !timeRange.startMinute || !timeRange.endHour || !timeRange.endMinute) {
             return false;
@@ -304,7 +320,6 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
         return endTime > startTime;
     };
 
-    // Handle time range confirmation
     const handleTimeRangeConfirm = () => {
         if (!selectedDate || !isValidTimeRange()) return;
 
@@ -315,7 +330,6 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
         onChange?.(formattedValue);
         setIsOpen(false);
     };
-
 
     const getInputValue = (): string => {
         if (type === 'daterange' && dateRange.start && dateRange.end) {
@@ -373,7 +387,6 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
         return options;
     };
 
-    // Updated to generate minutes from 1-59
     const generateMinuteOptions = (): string[] => {
         const options: string[] = [];
         for (let minute = 1; minute <= 59; minute++) {
@@ -398,7 +411,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                             w-full px-4 py-2.5 text-sm bg-white border border-gray-300 rounded-lg
                             focus:border-green-500 focus:ring-green-500 shadow-sm cursor-pointer
                             transition-all duration-200 ease-in-out
-                            ${error ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'hover:border-gray-400'}
+                            ${error || timeDurationError ? 'border-red  -500 focus:border-red-500 focus:ring-red-500' : 'hover:border-gray-400'}
                             ${disabled ? 'bg-gray-50 border-gray-200 cursor-not-allowed' : ''}
                             flex items-center justify-between
                         `}
@@ -516,10 +529,10 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                                 </>
                             )}
 
-                            {/* Updated Time Range Picker for datetimerange type with scrollable dropdowns */}
+                            {/* Time Range Picker for datetimerange type */}
                             {type === 'datetimerange' && activeTab === 'time' && (
                                 <div className="p-4 bg-gray-50">
-                                    <div className="space-y-4">
+                                    <div className="">
                                         <div className="grid grid-cols-2 gap-4">
                                             {/* Start Time */}
                                             <div>
@@ -532,6 +545,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                                                             className="w-full text-sm border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 focus:outline-none max-h-60 overflow-y-auto"
                                                             size={14}
                                                         >
+                                                            <option value="">HH</option>
                                                             {generateHourOptions().map(hour => (
                                                                 <option
                                                                     className="py-1 text-sm rounded-md font-medium text-center text-gray-600 bg-white hover:bg-green-500"
@@ -547,6 +561,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                                                             className="w-full text-sm border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 focus:outline-none max-h-60 overflow-y-auto"
                                                             size={14}
                                                         >
+                                                            <option value="">MM</option>
                                                             {generateMinuteOptions().map(minute => (
                                                                 <option
                                                                     className="py-1 text-sm rounded-md font-medium text-center text-gray-600 bg-white hover:bg-green-500"
@@ -568,6 +583,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                                                             className="w-full text-sm border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 focus:outline-none max-h-60 overflow-y-auto"
                                                             size={14}
                                                         >
+                                                            <option value="">HH</option>
                                                             {generateHourOptions().map(hour => (
                                                                 <option
                                                                     className="py-1 text-sm rounded-md font-medium text-center text-gray-600 bg-white hover:bg-green-500"
@@ -582,6 +598,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                                                             className="w-full text-sm border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 focus:outline-none max-h-60 overflow-y-auto"
                                                             size={14}
                                                         >
+                                                            <option value="">MM</option>
                                                             {generateMinuteOptions().map(minute => (
                                                                 <option
                                                                     className="py-1 text-sm rounded-md font-medium text-center text-gray-600 bg-white hover:bg-green-500"
@@ -594,9 +611,9 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                                         </div>
 
                                         {/* Validation Message */}
-                                        {timeRange.startHour && timeRange.startMinute && timeRange.endHour && timeRange.endMinute && !isValidTimeRange() && (
-                                            <div className="text-red-500 text-sm">
-                                                End time must be after start time
+                                        {timeDurationError && (
+                                            <div className="text-red-500 text-xs">
+                                                {timeDurationError}
                                             </div>
                                         )}
 
@@ -621,7 +638,6 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                                                 Confirm
                                             </button>
                                         </div>
-
                                     </div>
                                 </div>
                             )}
@@ -630,7 +646,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                 </div>
 
                 {error && (
-                    <p className="mt-1 text-sm text-red-600">{error}</p>
+                    <p className="mt-1 text-[10px] text-red-600">{error}</p>
                 )}
             </div>
         </>
