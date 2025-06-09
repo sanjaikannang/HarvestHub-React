@@ -74,7 +74,7 @@ const RegisterLayout = () => {
             // Navigate to login page after successful registration
             setTimeout(() => {
                 navigate('/login');
-            }, 1500); // Small delay to show the toast
+            }, 500); // Small delay to show the toast
 
         } catch (error: any) {
             console.error('Registration failed:', error);
@@ -122,7 +122,7 @@ const RegisterLayout = () => {
                             <form
                                 onSubmit={handleSubmit}
                                 className='border border-gray-300 p-6 rounded-lg shadow-md bg-whiteColor'>
-                                <div>
+                                <div className='space-y-4'>
 
                                     {/* Name Field */}
                                     <Input

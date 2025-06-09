@@ -60,6 +60,23 @@ const CreateProduct = () => {
             // Use dummy images
             const images: string[] = dummyImages;
 
+            // Format datetime strings to ISO format
+            const formatDateTime = (date: string, time: string): string => {
+                // Parse time in format "HH:MM" or "YYYY-MM-DD HH:MM"
+                let timeOnly = time;
+                if (time.includes(' ')) {
+                    // If time contains date, extract only the time part
+                    timeOnly = time.split(' ')[1];
+                }
+
+                // Combine date and time in ISO format
+                return `${date}T${timeOnly}:00`;
+            };
+
+            // Format bid start and end times
+            const formattedBidStartTime = formatDateTime(values.bidStartDate, values.bidStartTime);
+            const formattedBidEndTime = formatDateTime(values.bidStartDate, values.bidEndTime);
+
             // Prepare the product data according to API payload structure
             const createProductData: CreateProductRequest = {
                 name: values.name,
@@ -71,12 +88,10 @@ const CreateProduct = () => {
                 startingPrice: parseFloat(values.startingPrice),
                 bidStartDate: values.bidStartDate,
                 bidEndDate: values.bidEndDate,
-                bidStartTime: values.bidStartTime,
-                bidEndTime: values.bidEndTime,
+                bidStartTime: formattedBidStartTime,
+                bidEndTime: formattedBidEndTime,
                 images: images,
             };
-
-            console.log('Submitting product data:', createProductData);
 
             // Call the register API
             const result = await createProductAPI(createProductData);
@@ -103,9 +118,14 @@ const CreateProduct = () => {
 
     };
 
+    // Handle clear form
+    const handleClearForm = (resetForm: () => void) => {
+        resetForm();
+    };
+
     return (
         <>
-            <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50 py-8 px-6">
+            <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50 py-8 px-4">
                 <div className="max-w-7xl mx-auto">
                     {/* Header */}
                     <div className="text-center mb-8">
@@ -122,12 +142,12 @@ const CreateProduct = () => {
                     </div>
 
                     {/* Main Form Card */}
-                    <div className="bg-white rounded-2xl shadow-xl border border-gray-100">
-                        <div className="border-b border-gray-200 px-4 py-5">
+                    <div className="bg-white rounded-2xl shadow-xl border border-gray-200">
+                        <div className="border-b border-gray-200 px-3 py-5">
                             <h2 className="text-xl font-semibold text-blackColor">Create New Product</h2>
                         </div>
 
-                        <div className="px-4 py-6">
+                        <div className="px-2 py-4">
                             <Formik
                                 initialValues={initialValues}
                                 validationSchema={createProductValidationSchema}
@@ -141,12 +161,13 @@ const CreateProduct = () => {
                                     handleBlur,
                                     handleSubmit,
                                     setFieldValue,
+                                    resetForm
                                 }) => (
                                     <form
                                         onSubmit={handleSubmit}>
-                                        <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
+                                        <div className='grid grid-cols-1 lg:grid-cols-2 gap-2'>
 
-                                            <div className="space-y-4">
+                                            <div className="space-y-2">
 
                                                 {/* Product Basic Information Section */}
                                                 <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
@@ -180,7 +201,7 @@ const CreateProduct = () => {
                                                                     onChange={handleChange}
                                                                     onBlur={handleBlur}
                                                                     min={1}
-                                                                    icon="weight"
+                                                                    icon={'weight'}
                                                                     placeholder="100"
                                                                     error={touched.quantity && errors.quantity ? errors.quantity : ''}
                                                                     success={values.quantity !== '' && !errors.quantity && touched.quantity}
@@ -236,7 +257,7 @@ const CreateProduct = () => {
                                                             value={values.startingPrice}
                                                             onChange={handleChange}
                                                             onBlur={handleBlur}
-                                                            icon="rupee"
+                                                            icon={'rupee'}
                                                             min={1}
                                                             size="md"
                                                             error={touched.startingPrice && errors.startingPrice ? errors.startingPrice : ''}
@@ -250,7 +271,7 @@ const CreateProduct = () => {
                                                 </div>
                                             </div>
 
-                                            <div className="space-y-4">
+                                            <div className="space-y-2">
                                                 {/* Product Bid Schedule Section */}
                                                 <div className="bg-green-50 rounded-xl p-4 border border-gray-200">
                                                     <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -274,10 +295,9 @@ const CreateProduct = () => {
                                                                 placeholder="Select bid start and end dates"
                                                                 defaultDays={1}
                                                                 maxRangeDays={3}
-
                                                                 error={touched.bidStartDate && errors.bidStartDate ? errors.bidStartDate : ''}
                                                             />
-                                                            <p className="text-xs text-gray-500 mt-1">
+                                                            <p className="text-[10px] text-gray-500 mt-1">
                                                                 Minimum 1 day, Maximum 3 days.
                                                             </p>
                                                         </div>
@@ -285,7 +305,7 @@ const CreateProduct = () => {
                                                         <div className="bg-green-100 rounded-lg p-3">
                                                             <p className="text-sm text-green-800 flex items-center gap-2">
                                                                 <Clock className="w-4 h-4" />
-                                                                Bidding window: 1-3 days, 30 minutes - 2 hours daily
+                                                                Bidding window : 1-3 days, 30 minutes - 2 hours daily
                                                             </p>
                                                         </div>
 
@@ -306,15 +326,13 @@ const CreateProduct = () => {
                                                             endDate={values.bidEndDate}
                                                             minTimeDuration={30} // 30 minutes minimum
                                                             maxTimeDuration={120} // 2 hours maximum
-
                                                             error={touched.bidStartTime && errors.bidStartTime ? errors.bidStartTime : ''}
                                                         />
-                                                        <p className="text-xs text-gray-500 mt-1">
+                                                        <p className="text-[10px] text-gray-500">
                                                             Select a date within your bid duration and set start/end times. Minimum 30 minutes, Maximum 2 hours.
                                                         </p>
                                                     </div>
                                                 </div>
-
 
                                                 {/* Product Image Upload Section */}
                                                 <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
@@ -343,16 +361,25 @@ const CreateProduct = () => {
                                                     </div>
                                                 </div>
                                             </div>
-
                                         </div>
 
-                                        <div className="border-t border-gray-200 px-6 pt-6 mt-6">
-                                            <div className="flex justify-end">
+                                        <div className="border-t border-gray-200 pt-4 mt-4 px-2">
+                                            <div className="flex justify-end gap-4">
                                                 <Button
-                                                    className='px-10'
+                                                    type="reset"
+                                                    variant="primary"
+                                                    size="md"
+                                                    onClick={() => handleClearForm(resetForm)}
+                                                    className="px-4 flex items-center gap-2"
+                                                    disabled={isSubmitting}
+                                                >
+                                                    Clear Form
+                                                </Button>
+                                                <Button
                                                     type="submit"
                                                     variant="primary"
                                                     size="md"
+                                                    className='px-4 flex items-center gap-2'
                                                     disabled={isSubmitting}
                                                 >
                                                     {isSubmitting ? (
@@ -371,26 +398,6 @@ const CreateProduct = () => {
                             </Formik>
                         </div>
                     </div>
-
-                    {/* Tips Section */}
-                    <div className="mt-8 rounded-2xl p-6 text-blackColor border border-gray-300 bg-gray-50">
-                        <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                            <Sparkles className="w-5 h-5" />
-                            Pro Tips for Better Sales
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                            <div className="flex items-start gap-2">
-                                <span>Use high-quality, well-lit photos showing your product from multiple angles</span>
-                            </div>
-                            <div className="flex items-start gap-2">
-                                <span>Write detailed descriptions including quality, origin, and harvest information</span>
-                            </div>
-                            <div className="flex items-start gap-2">
-                                <span>Set competitive starting prices to attract more bidders and increase final value</span>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
             </div >
         </>

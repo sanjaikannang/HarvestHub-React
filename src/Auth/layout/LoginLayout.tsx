@@ -73,7 +73,7 @@ const LoginLayout = () => {
             // Navigate to login page after successful registration
             setTimeout(() => {
                 navigateByRole(result.user.role ?? '');
-            }, 1500); // Small delay to show the toast
+            }, 500); // Small delay to show the toast
 
         } catch (error: any) {
             console.error('Login failed:', error);
@@ -116,7 +116,7 @@ const LoginLayout = () => {
                             <form
                                 onSubmit={handleSubmit}
                                 className='border border-gray-300 p-6 rounded-lg shadow-md bg-whiteColor'>
-                                <div>
+                                <div className='space-y-4'>
 
                                     {/* Email Field */}
                                     <Input
