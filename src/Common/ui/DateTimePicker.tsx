@@ -544,8 +544,14 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                                                             onChange={(e) => setTimeRange(prev => ({ ...prev, startHour: e.target.value }))}
                                                             className="w-full text-sm border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 focus:outline-none max-h-60 overflow-y-auto"
                                                             size={14}
+                                                            style={{
+                                                                backgroundColor: 'white',
+                                                                accentColor: '#10b981',
+                                                                scrollbarWidth: 'none', // Firefox
+                                                                msOverflowStyle: 'none', // IE/Edge
+                                                            }}
                                                         >
-                                                            <option value="">HH</option>
+                                                            {/* <option value="">HH</option> */}
                                                             {generateHourOptions().map(hour => (
                                                                 <option
                                                                     className="py-1 text-sm rounded-md font-medium text-center text-gray-600 bg-white hover:bg-green-500"
@@ -560,8 +566,14 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                                                             onChange={(e) => setTimeRange(prev => ({ ...prev, startMinute: e.target.value }))}
                                                             className="w-full text-sm border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 focus:outline-none max-h-60 overflow-y-auto"
                                                             size={14}
+                                                            style={{
+                                                                backgroundColor: 'white',
+                                                                accentColor: '#10b981',
+                                                                scrollbarWidth: 'none', // Firefox
+                                                                msOverflowStyle: 'none', // IE/Edge
+                                                            }}
                                                         >
-                                                            <option value="">MM</option>
+                                                            {/* <option value="">MM</option> */}
                                                             {generateMinuteOptions().map(minute => (
                                                                 <option
                                                                     className="py-1 text-sm rounded-md font-medium text-center text-gray-600 bg-white hover:bg-green-500"
@@ -582,8 +594,14 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                                                             onChange={(e) => setTimeRange(prev => ({ ...prev, endHour: e.target.value }))}
                                                             className="w-full text-sm border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 focus:outline-none max-h-60 overflow-y-auto"
                                                             size={14}
+                                                            style={{
+                                                                backgroundColor: 'white',
+                                                                accentColor: '#10b981',
+                                                                scrollbarWidth: 'none', // Firefox
+                                                                msOverflowStyle: 'none', // IE/Edge
+                                                            }}
                                                         >
-                                                            <option value="">HH</option>
+                                                            {/* <option value="">HH</option> */}
                                                             {generateHourOptions().map(hour => (
                                                                 <option
                                                                     className="py-1 text-sm rounded-md font-medium text-center text-gray-600 bg-white hover:bg-green-500"
@@ -597,8 +615,14 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                                                             onChange={(e) => setTimeRange(prev => ({ ...prev, endMinute: e.target.value }))}
                                                             className="w-full text-sm border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 focus:outline-none max-h-60 overflow-y-auto"
                                                             size={14}
+                                                            style={{
+                                                                backgroundColor: 'white',
+                                                                accentColor: '#10b981',
+                                                                scrollbarWidth: 'none', // Firefox
+                                                                msOverflowStyle: 'none', // IE/Edge
+                                                            }}
                                                         >
-                                                            <option value="">MM</option>
+                                                            {/* <option value="">MM</option> */}
                                                             {generateMinuteOptions().map(minute => (
                                                                 <option
                                                                     className="py-1 text-sm rounded-md font-medium text-center text-gray-600 bg-white hover:bg-green-500"
@@ -622,7 +646,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                                             <button
                                                 type="button"
                                                 onClick={() => setIsOpen(false)}
-                                                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+                                                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors border border-gray-300 rounded-md cursor-pointer"
                                             >
                                                 Cancel
                                             </button>

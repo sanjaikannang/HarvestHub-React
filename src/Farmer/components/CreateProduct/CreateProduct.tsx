@@ -93,8 +93,6 @@ const CreateProduct = () => {
                 images: images,
             };
 
-            console.log('Submitting product data:', createProductData);
-
             // Call the register API
             const result = await createProductAPI(createProductData);
 
@@ -127,7 +125,7 @@ const CreateProduct = () => {
 
     return (
         <>
-            <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50 py-8 px-6">
+            <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50 py-8 px-4">
                 <div className="max-w-7xl mx-auto">
                     {/* Header */}
                     <div className="text-center mb-8">
@@ -144,12 +142,12 @@ const CreateProduct = () => {
                     </div>
 
                     {/* Main Form Card */}
-                    <div className="bg-white rounded-2xl shadow-xl border border-gray-100">
-                        <div className="border-b border-gray-200 px-4 py-5">
+                    <div className="bg-white rounded-2xl shadow-xl border border-gray-200">
+                        <div className="border-b border-gray-200 px-3 py-5">
                             <h2 className="text-xl font-semibold text-blackColor">Create New Product</h2>
                         </div>
 
-                        <div className="px-4 py-6">
+                        <div className="px-2 py-4">
                             <Formik
                                 initialValues={initialValues}
                                 validationSchema={createProductValidationSchema}
@@ -167,9 +165,9 @@ const CreateProduct = () => {
                                 }) => (
                                     <form
                                         onSubmit={handleSubmit}>
-                                        <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
+                                        <div className='grid grid-cols-1 lg:grid-cols-2 gap-2'>
 
-                                            <div className="space-y-4">
+                                            <div className="space-y-2">
 
                                                 {/* Product Basic Information Section */}
                                                 <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
@@ -273,7 +271,7 @@ const CreateProduct = () => {
                                                 </div>
                                             </div>
 
-                                            <div className="space-y-4">
+                                            <div className="space-y-2">
                                                 {/* Product Bid Schedule Section */}
                                                 <div className="bg-green-50 rounded-xl p-4 border border-gray-200">
                                                     <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -336,7 +334,6 @@ const CreateProduct = () => {
                                                     </div>
                                                 </div>
 
-
                                                 {/* Product Image Upload Section */}
                                                 <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
                                                     <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -364,26 +361,25 @@ const CreateProduct = () => {
                                                     </div>
                                                 </div>
                                             </div>
-
                                         </div>
 
-                                        <div className="border-t border-gray-200 px-6 pt-6 mt-6">
+                                        <div className="border-t border-gray-200 pt-4 mt-4 px-2">
                                             <div className="flex justify-end gap-4">
                                                 <Button
                                                     type="reset"
                                                     variant="primary"
                                                     size="md"
                                                     onClick={() => handleClearForm(resetForm)}
-                                                    className="px-8 flex items-center gap-2"
+                                                    className="px-4 flex items-center gap-2"
                                                     disabled={isSubmitting}
                                                 >
                                                     Clear Form
                                                 </Button>
                                                 <Button
-                                                    className='px-10'
                                                     type="submit"
                                                     variant="primary"
                                                     size="md"
+                                                    className='px-4 flex items-center gap-2'
                                                     disabled={isSubmitting}
                                                 >
                                                     {isSubmitting ? (
