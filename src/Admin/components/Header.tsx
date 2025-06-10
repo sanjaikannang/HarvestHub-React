@@ -1,24 +1,45 @@
-import { Bell } from "lucide-react";
+import { AlignLeft } from "lucide-react";
+import React from "react"
+import { useAppSelector } from "../../State/hooks";
 
-const Header = () => {
+interface HeaderProps {
+  isSidebarOpen: boolean;
+  setIsSidebarOpen: (open: boolean) => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ isSidebarOpen, setIsSidebarOpen }) => {
+
+  const { user } = useAppSelector((state) => state.auth);
 
   return (
     <>
-      <header className="bg-white shadow-xs border-gray-200 h-16 flex items-center justify-between px-6">
-        {/* Left side */}
-        <div className="flex items-center space-x-4">
+      <header className="bg-whiteColor border-b border-gray-200 shadow-xl">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Left side */}
+            <div className="flex items-center">
+              <button
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="md:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+              >
+                <span className="sr-only">Open menu</span>
+                <AlignLeft />
+              </button>
+            </div>
 
-        </div>
-
-        {/* Right side */}
-        <div className="flex items-center space-x-4">
-          {/* Notifications */}
-          <button className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors">
-            <Bell className="w-5 h-5 text-gray-600" />
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-              3
-            </span>
-          </button>
+            {/* Right side */}
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
+                <div className="flex flex-col text-right">
+                  <span className="text-sm font-medium text-gray-900">{user?.name || 'Admin'}</span>
+                  <span className="text-xs text-gray-500">{user?.email}</span>
+                </div>
+                <div className="h-8 w-8 bg-greenColor rounded-full flex items-center justify-center text-whiteColor font-medium">
+                  {user?.name?.charAt(0)}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </header>
     </>
