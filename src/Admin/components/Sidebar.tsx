@@ -26,7 +26,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, setIsSidebarOpen }) =>
   const dispatch = useAppDispatch();
 
   const navigation: NavigationItem[] = [
-    { name: 'Dashboard', href: '/admin', icon: BarChart3 },
+    { name: 'All Products', href: '/admin', icon: BarChart3 },
   ];
 
   const isActive = (path: string) => {
