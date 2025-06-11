@@ -1,9 +1,3 @@
-export interface GetAllProductRequest {
-    page?: number;
-    limit?: number;
-    productStatus?: ProductStatus;
-}
-
 export interface ProductResponse {
     _id: string;
     name: string;
@@ -38,22 +32,20 @@ export interface GetAllProductResponse {
     product: ProductResponse[];
 }
 
-export enum ProductStatus {
-    ACTIVE = 'ACTIVE',
-    INACTIVE = 'INACTIVE',
-    SOLD = 'SOLD',
-    EXPIRED = 'EXPIRED'
+export interface GetAllProductRequest {
+    page?: number;
+    limit?: number;
+    productStatus?: string;
 }
 
-// Admin State Interface
 export interface AdminState {
     products: ProductResponse[];
     pagination: PaginationInfo | null;
-    isLoading: boolean;
+    loading: boolean;
     error: string | null;
     filters: {
         page: number;
         limit: number;
-        productStatus?: ProductStatus;
+        productStatus?: string;
     };
 }

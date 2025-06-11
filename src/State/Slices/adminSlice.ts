@@ -1,73 +1,70 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { AdminState, ProductStatus, ProductResponse, PaginationInfo } from '../../Types/adminTypes';
+import { AdminState, GetAllProductResponse } from '../../Types/adminTypes';
 
 const initialState: AdminState = {
     products: [],
     pagination: null,
-    isLoading: false,
+    loading: false,
     error: null,
     filters: {
         page: 1,
         limit: 10,
-    }
+    },
 };
 
 const adminSlice = createSlice({
     name: 'admin',
     initialState,
     reducers: {
-        setFilters: (state, action: PayloadAction<Partial<AdminState['filters']>>) => {
-            state.filters = { ...state.filters, ...action.payload };
-        },
+        // Filter actions
         setPage: (state, action: PayloadAction<number>) => {
             state.filters.page = action.payload;
         },
         setLimit: (state, action: PayloadAction<number>) => {
             state.filters.limit = action.payload;
+            state.filters.page = 1; // Reset to first page when changing limit
         },
-        setProductStatusFilter: (state, action: PayloadAction<ProductStatus | undefined>) => {
+        setProductStatus: (state, action: PayloadAction<string | undefined>) => {
             state.filters.productStatus = action.payload;
+            state.filters.page = 1; // Reset to first page when changing filter
         },
-        clearFilters: (state) => {
+        resetFilters: (state) => {
             state.filters = {
                 page: 1,
                 limit: 10,
             };
         },
+
+        // Async operation actions
+        fetchProductsStart: (state) => {
+            state.loading = true;
+            state.error = null;
+        },
+        fetchProductsSuccess: (state, action: PayloadAction<GetAllProductResponse>) => {
+            state.loading = false;
+            state.products = action.payload.product;
+            state.pagination = action.payload.pagination;
+            state.error = null;
+        },
+        fetchProductsFailure: (state, action: PayloadAction<string>) => {
+            state.loading = false;
+            state.error = action.payload;
+        },
         clearError: (state) => {
             state.error = null;
         },
-        resetProducts: (state) => {
-            state.products = [];
-            state.pagination = null;
-        },
-        setProducts: (state, action: PayloadAction<ProductResponse[]>) => {
-            state.products = action.payload;
-        },
-        setPagination: (state, action: PayloadAction<PaginationInfo>) => {
-            state.pagination = action.payload;
-        },
-        setLoading: (state, action: PayloadAction<boolean>) => {
-            state.isLoading = action.payload;
-        },
-        setError: (state, action: PayloadAction<string>) => {
-            state.error = action.payload;
-        }
     },
 });
 
 export const {
-    setFilters,
     setPage,
     setLimit,
-    setProductStatusFilter,
-    clearFilters,
+    setProductStatus,
+    resetFilters,
+    fetchProductsStart,
+    fetchProductsSuccess,
+    fetchProductsFailure,
     clearError,
-    resetProducts,
-    setProducts,
-    setPagination,
-    setLoading,
-    setError
 } = adminSlice.actions;
 
 export default adminSlice.reducer;

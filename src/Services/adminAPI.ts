@@ -1,5 +1,5 @@
 import axios from "axios";
-import { GetAllProductRequest, GetAllProductResponse } from "../Types/adminTypes";
+import { GetAllProductRequest } from "../Types/adminTypes";
 
 const API_BASE_URL = import.meta.env.VITE_BASE_API_URL || 'http://localhost:8000';
 
@@ -24,41 +24,26 @@ apiClient.interceptors.request.use(
     }
 );
 
-// Response interceptor for handling common errors
-apiClient.interceptors.response.use(
-    (response) => response,
-    (error) => {
-        if (error.response?.status === 401) {
-            // Handle unauthorized access
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('user');
-            window.location.href = '/login';
-        }
-        return Promise.reject(error);
-    }
-);
-
 // Get All Products API
-export async function getAllProductsAPI(params?: GetAllProductRequest): Promise<GetAllProductResponse> {
+export async function getAllProductsAPI(params?: GetAllProductRequest) {
     try {
         const queryParams = new URLSearchParams();
-
+        
         if (params?.page) {
             queryParams.append('page', params.page.toString());
         }
-
+        
         if (params?.limit) {
             queryParams.append('limit', params.limit.toString());
         }
-
+        
         if (params?.productStatus) {
             queryParams.append('productStatus', params.productStatus);
         }
 
-        const url = `/product/get-all-product${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-        const response = await apiClient.get<GetAllProductResponse>(url);
-
+        const response = await apiClient.get(`/product/get-all-product?${queryParams.toString()}`);
         return response.data;
+
     } catch (error) {
         console.error('Get all products error:', error);
 

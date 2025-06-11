@@ -1,248 +1,307 @@
-import React from 'react';
+import React from "react";
+import { LucideIcon } from "lucide-react";
 
-// Card Component Props Interface
-export interface CardProps {
+type CardSize = "sm" | "md" | "lg";
+type StatusType = "sold" | "active" | "inactive" | "pending" | "featured" | "new";
+type ButtonVariant = "primary" | "secondary" | "outline" | "ghost";
+
+interface CardData {
+    title?: string;
+    subtitle?: string;
+    description?: string;
+    price?: string | number;
+    originalPrice?: string | number;
+    tags?: string[];
+    metadata?: { label: string; value: string | number }[];
+}
+
+interface CardButton {
+    label: string;
+    onClick: () => void;
+    variant?: ButtonVariant;
+    disabled?: boolean;
+    icon?: LucideIcon;
+    loading?: boolean;
+}
+
+interface CardProps {
+    // Image props
+    image?: string;
+    imageAlt?: string;
+    imageHeight?: string;
+
+    // Status badge
+    status?: StatusType | string;
+    statusColor?: string;
+
+    // Card data
+    data?: CardData;
+
+    // Buttons
+    primaryButton?: CardButton;
+    secondaryButton?: CardButton;
+
+    // Card styling
+    size?: CardSize;
     className?: string;
-    children?: React.ReactNode;
-    onClick?: () => void;
+    shadow?: boolean;
     hover?: boolean;
-    shadow?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
-    rounded?: 'none' | 'sm' | 'md' | 'lg' | 'xl' | 'full';
-    padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
-}
+    rounded?: boolean;
 
-export interface CardHeaderProps {
-    className?: string;
+    // Events
+    onCardClick?: () => void;
+
+    // Custom content
     children?: React.ReactNode;
+    customHeader?: React.ReactNode;
+    customFooter?: React.ReactNode;
 }
 
-export interface CardBodyProps {
-    className?: string;
-    children?: React.ReactNode;
-}
-
-export interface CardFooterProps {
-    className?: string;
-    children?: React.ReactNode;
-}
-
-export interface CardTitleProps {
-    className?: string;
-    children?: React.ReactNode;
-    as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-}
-
-export interface CardDescriptionProps {
-    className?: string;
-    children?: React.ReactNode;
-}
-
-// Main Card Component
 const Card: React.FC<CardProps> = ({
-    className = '',
+    image,
+    imageAlt = "Card image",
+    imageHeight = "200px",
+    status,
+    statusColor,
+    data,
+    primaryButton,
+    secondaryButton,
+    size = "md",
+    className = "",
+    shadow = true,
+    hover = true,
+    rounded = true,
+    onCardClick,
     children,
-    onClick,
-    hover = false,
-    shadow = 'md',
-    rounded = 'lg',
-    padding = 'md',
+    customHeader,
+    customFooter,
 }) => {
-    const baseClasses = 'bg-white border border-gray-200';
-
-    const shadowClasses = {
-        none: '',
-        sm: 'shadow-sm',
-        md: 'shadow-md',
-        lg: 'shadow-lg',
-        xl: 'shadow-xl',
+    // Size configurations
+    const sizeConfig = {
+        sm: {
+            padding: "p-2",
+            spacing: "space-y-2",
+            title: "text-sm font-semibold",
+            subtitle: "text-xs text-gray-600",
+            description: "text-xs text-gray-500",
+            price: "text-sm font-bold",
+            originalPrice: "text-xs text-gray-400 line-through",
+            button: "px-3 py-1.5 text-xs",
+            status: "px-2 py-1 text-[10px]",
+        },
+        md: {
+            padding: "p-2",
+            spacing: "space-y-3",
+            title: "text-base font-semibold",
+            subtitle: "text-sm text-gray-600",
+            description: "text-sm text-gray-500",
+            price: "text-lg font-bold",
+            originalPrice: "text-sm text-gray-400 line-through",
+            button: "px-4 py-2 text-sm",
+            status: "px-2 py-0.5 text-[10px]",
+        },
+        lg: {
+            padding: "p-2",
+            spacing: "space-y-4",
+            title: "text-lg font-semibold",
+            subtitle: "text-base text-gray-600",
+            description: "text-base text-gray-500",
+            price: "text-xl font-bold",
+            originalPrice: "text-base text-gray-400 line-through",
+            button: "px-6 py-3 text-base",
+            status: "px-3 py-1.5 text-sm",
+        },
     };
 
-    const roundedClasses = {
-        none: '',
-        sm: 'rounded-sm',
-        md: 'rounded-md',
-        lg: 'rounded-lg',
-        xl: 'rounded-xl',
-        full: 'rounded-full',
+    // Status color mapping
+    const statusColors: Record<StatusType, string> = {
+        sold: "bg-red-100 text-red-800 border-red-200",
+        active: "bg-green-100 text-green-800 border-green-200",
+        inactive: "bg-gray-100 text-gray-800 border-gray-200",
+        pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
+        featured: "bg-purple-100 text-purple-800 border-purple-200",
+        new: "bg-blue-100 text-blue-800 border-blue-200",
     };
 
-    const paddingClasses = {
-        none: '',
-        sm: 'p-2',
-        md: 'p-4',
-        lg: 'p-6',
-        xl: 'p-8',
+    // Button variant styles
+    const buttonVariants: Record<ButtonVariant, string> = {
+        primary: "bg-greenColor text-white hover:bg-green-600 cursor-pointer",
+        secondary: "bg-gray-600 text-white hover:bg-gray-600 cursor-pointer",
+        outline: "border-2 border-greenColor text-greenColor hover:bg-greenColor hover:text-white cursor-pointer",
+        ghost: "text-greenColor hover:bg-green-50 cursor-pointer",
     };
 
-    const hoverClasses = hover ? 'hover:shadow-lg transition-shadow duration-200 cursor-pointer' : '';
-    const clickableClasses = onClick ? 'cursor-pointer' : '';
+    // Get status styling
+    const getStatusClasses = () => {
+        if (!status) return "";
 
-    const cardClasses = [
-        baseClasses,
-        shadowClasses[shadow],
-        roundedClasses[rounded],
-        paddingClasses[padding],
-        hoverClasses,
-        clickableClasses,
-        className
-    ].filter(Boolean).join(' ');
+        const baseClasses = `inline-flex items-center font-medium rounded-full border ${sizeConfig[size].status}`;
+        const colorClasses = statusColor || statusColors[status as StatusType] || statusColors.active;
 
-    return (
-        <div className={cardClasses} onClick={onClick}>
-            {children}
-        </div>
-    );
-};
-
-// Card Header Component
-const CardHeader: React.FC<CardHeaderProps> = ({ className = '', children }) => {
-    return (
-        <div className={`mb-4 ${className}`}>
-            {children}
-        </div>
-    );
-};
-
-// Card Body Component
-const CardBody: React.FC<CardBodyProps> = ({ className = '', children }) => {
-    return (
-        <div className={`flex-1 ${className}`}>
-            {children}
-        </div>
-    );
-};
-
-// Card Footer Component
-const CardFooter: React.FC<CardFooterProps> = ({ className = '', children }) => {
-    return (
-        <div className={`mt-4 pt-4 border-t border-gray-200 ${className}`}>
-            {children}
-        </div>
-    );
-};
-
-// Card Title Component
-const CardTitle: React.FC<CardTitleProps> = ({
-    className = '',
-    children,
-    as: Component = 'h3'
-}) => {
-    const titleClasses = `font-semibold text-gray-900 ${className}`;
-
-    return (
-        <Component className={titleClasses}>
-            {children}
-        </Component>
-    );
-};
-
-// Card Description Component
-const CardDescription: React.FC<CardDescriptionProps> = ({ className = '', children }) => {
-    return (
-        <p className={`text-gray-600 text-sm ${className}`}>
-            {children}
-        </p>
-    );
-};
-
-// Export all components
-export default Card;
-export { CardHeader, CardBody, CardFooter, CardTitle, CardDescription };
-
-// Example usage component
-export const ProductCard: React.FC<{
-    product: {
-        _id: string;
-        name: string;
-        description: string;
-        images: string[];
-        startingPrice: number;
-        currentHighestBid: number;
-        productStatus: string;
-        quantity: {
-            value: number;
-            unit: string;
-        };
+        return `${baseClasses} ${colorClasses}`;
     };
-    onEdit?: (id: string) => void;
-    onDelete?: (id: string) => void;
-    onView?: (id: string) => void;
-}> = ({ product, onEdit, onDelete, onView }) => {
+
+    // Get button classes
+    const getButtonClasses = (variant: ButtonVariant = "primary") => {
+        const baseClasses = `inline-flex items-center justify-center font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 ${sizeConfig[size].button}`;
+        return `${baseClasses} ${buttonVariants[variant]}`;
+    };
+
+    // Get card classes
+    const getCardClasses = () => {
+        const baseClasses = `bg-white border border-gray-200 overflow-hidden ${sizeConfig[size].padding}`;
+        const shadowClasses = shadow ? "shadow-sm hover:shadow-md" : "";
+        const hoverClasses = hover ? "transition-all duration-200" : "";
+        const roundedClasses = rounded ? "rounded-lg" : "";
+        const clickableClasses = onCardClick ? "cursor-pointer" : "";
+
+        return `${baseClasses} ${shadowClasses} ${hoverClasses} ${roundedClasses} ${clickableClasses} ${className}`;
+    };
+
     return (
-        <Card hover shadow="md" className="w-full max-w-sm">
-            <CardHeader>
-                {product.images && product.images.length > 0 && (
+        <div
+            className={getCardClasses()}
+            onClick={onCardClick}
+        >
+            {/* Custom Header */}
+            {customHeader}
+
+            {/* Image Section */}
+            {image && (
+                <div className="relative mb-4">
                     <img
-                        src={product.images[0]}
-                        alt={product.name}
-                        className="w-full h-48 object-cover rounded-md mb-3"
-                        onError={(e) => {
-                            (e.target as HTMLImageElement).src = '/placeholder-image.jpg';
-                        }}
+                        src={image}
+                        alt={imageAlt}
+                        className="w-full object-cover rounded-lg"
+                        style={{ height: imageHeight }}
                     />
+
+                    {/* Status Badge - Top Right */}
+                    {status && (
+                        <div className="absolute top-2 right-2">
+                            <span className={getStatusClasses()}>
+                                {status.charAt(0).toUpperCase() + status.slice(1)}
+                            </span>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Card Content */}
+            <div className={sizeConfig[size].spacing}>
+                {/* Title and Subtitle */}
+                {(data?.title || data?.subtitle) && (
+                    <div>
+                        {data.title && (
+                            <h3 className={sizeConfig[size].title}>{data.title}</h3>
+                        )}
+                        {data.subtitle && (
+                            <p className={sizeConfig[size].subtitle}>{data.subtitle}</p>
+                        )}
+                    </div>
                 )}
-                <CardTitle className="text-lg">{product.name}</CardTitle>
-                <CardDescription className="line-clamp-2">
-                    {product.description}
-                </CardDescription>
-            </CardHeader>
 
-            <CardBody>
-                <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-500">Starting Price:</span>
-                        <span className="font-medium">₹{product.startingPrice}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-500">Current Bid:</span>
-                        <span className="font-medium text-green-600">₹{product.currentHighestBid}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-500">Quantity:</span>
-                        <span className="font-medium">{product.quantity.value} {product.quantity.unit}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-500">Status:</span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${product.productStatus === 'ACTIVE'
-                                ? 'bg-green-100 text-green-800'
-                                : product.productStatus === 'SOLD'
-                                    ? 'bg-blue-100 text-blue-800'
-                                    : 'bg-red-100 text-red-800'
-                            }`}>
-                            {product.productStatus}
-                        </span>
-                    </div>
-                </div>
-            </CardBody>
+                {/* Description */}
+                {data?.description && (
+                    <p className={sizeConfig[size].description}>{data.description}</p>
+                )}
 
-            <CardFooter>
-                <div className="flex justify-between gap-2">
-                    {onView && (
-                        <button
-                            onClick={() => onView(product._id)}
-                            className="flex-1 px-3 py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                        >
-                            View
-                        </button>
-                    )}
-                    {onEdit && (
-                        <button
-                            onClick={() => onEdit(product._id)}
-                            className="flex-1 px-3 py-2 text-sm bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition-colors"
-                        >
-                            Edit
-                        </button>
-                    )}
-                    {onDelete && (
-                        <button
-                            onClick={() => onDelete(product._id)}
-                            className="flex-1 px-3 py-2 text-sm bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
-                        >
-                            Delete
-                        </button>
-                    )}
-                </div>
-            </CardFooter>
-        </Card>
+                {/* Price Section */}
+                {(data?.price || data?.originalPrice) && (
+                    <div className="flex items-center space-x-2">
+                        {data.price && (
+                            <span className={`${sizeConfig[size].price} text-greenColor`}>
+                                {typeof data.price === 'number' ? `₹${data.price.toLocaleString()}` : data.price}
+                            </span>
+                        )}
+                        {data.originalPrice && (
+                            <span className={sizeConfig[size].originalPrice}>
+                                {typeof data.originalPrice === 'number' ? `₹${data.originalPrice.toLocaleString()}` : data.originalPrice}
+                            </span>
+                        )}
+                    </div>
+                )}
+
+                {/* Tags */}
+                {data?.tags && data.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                        {data.tags.map((tag, index) => (
+                            <span
+                                key={index}
+                                className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"
+                            >
+                                {tag}
+                            </span>
+                        ))}
+                    </div>
+                )}
+
+                {/* Metadata */}
+                {data?.metadata && data.metadata.length > 0 && (
+                    <div className="grid grid-cols-2 gap-2">
+                        {data.metadata.map((item, index) => (
+                            <div key={index} className="text-sm">
+                                <span className="text-gray-500">{item.label}: </span>
+                                <span className="font-medium">{item.value}</span>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {/* Custom Children Content */}
+                {children}
+
+                {/* Buttons */}
+                {(primaryButton || secondaryButton) && (
+                    <div className="flex space-x-2">
+                        {primaryButton && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    primaryButton.onClick();
+                                }}
+                                disabled={primaryButton.disabled || primaryButton.loading}
+                                className={`${getButtonClasses(primaryButton.variant)} ${primaryButton.disabled || primaryButton.loading
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : ""
+                                    } flex-1`}
+                            >
+                                {primaryButton.loading ? (
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                ) : primaryButton.icon ? (
+                                    <primaryButton.icon className="w-4 h-4 mr-2" />
+                                ) : null}
+                                {primaryButton.label}
+                            </button>
+                        )}
+                        {secondaryButton && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    secondaryButton.onClick();
+                                }}
+                                disabled={secondaryButton.disabled || secondaryButton.loading}
+                                className={`${getButtonClasses(secondaryButton.variant)} ${secondaryButton.disabled || secondaryButton.loading
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : ""
+                                    } flex-1`}
+                            >
+                                {secondaryButton.loading ? (
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                                ) : secondaryButton.icon ? (
+                                    <secondaryButton.icon className="w-4 h-4 mr-2" />
+                                ) : null}
+                                {secondaryButton.label}
+                            </button>
+                        )}
+                    </div>
+                )}
+            </div>
+
+            {/* Custom Footer */}
+            {customFooter}
+        </div>
     );
 };
+
+export default Card;
