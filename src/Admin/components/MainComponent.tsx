@@ -1,136 +1,234 @@
-import { BarChart3, FileText, Settings, ShoppingCart, User, Users } from "lucide-react"
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import Card from "../../Common/ui/Card";
+import { AppDispatch, RootState } from "../../State/store";
+import { clearError, setLimit, setPage, setProductStatus } from "../../State/Slices/adminSlice";
+import { fetchProducts } from "../../Services/adminActions";
 
-const MainComponent = () => {
+
+const MainComponent: React.FC = () => {
+    const dispatch = useDispatch<AppDispatch>();
+    const {
+        products,
+        pagination,
+        loading,
+        error,
+        filters
+    } = useSelector((state: RootState) => state.admin);
+
+    // Fetch products on component mount and when filters change
+    useEffect(() => {
+        dispatch(fetchProducts(filters));
+    }, [dispatch, filters]);
+
+    // Handle page change
+    const handlePageChange = (newPage: number) => {
+        dispatch(setPage(newPage));
+    };
+
+    // Handle limit change
+    const handleLimitChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        dispatch(setLimit(Number(event.target.value)));
+    };
+
+    // Handle status filter change
+    const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = event.target.value;
+        dispatch(setProductStatus(value === '' ? undefined : value));
+    };
+
+    // Handle error dismissal
+    const handleClearError = () => {
+        dispatch(clearError());
+    };
+
+    // Generate page numbers for pagination
+    const getPageNumbers = () => {
+        if (!pagination) return [];
+
+        const pages = [];
+        const totalPages = pagination.totalPages;
+        const currentPage = pagination.currentPage;
+
+        // Show max 5 page numbers at a time
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, currentPage + 2);
+
+        if (endPage - startPage < 4) {
+            if (startPage === 1) {
+                endPage = Math.min(totalPages, startPage + 4);
+            } else if (endPage === totalPages) {
+                startPage = Math.max(1, endPage - 4);
+            }
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            pages.push(i);
+        }
+
+        return pages;
+    };
+
     return (
         <>
             <main className="flex-1 p-6 bg-gray-50 overflow-auto">
-                {/* Page Header */}
+                {/* Header */}
                 <div className="mb-6">
-                    <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-                    <p className="text-gray-600 mt-1">Welcome back! Here's what's happening with your admin panel.</p>
-                </div>
-
-                {/* Stats Cards */}
-                <div className="grid grid-cols-4 gap-6 mb-8">
-                    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">Total Users</p>
-                                <p className="text-2xl font-bold text-gray-900">2,547</p>
-                            </div>
-                            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <Users className="w-6 h-6 text-blue-600" />
-                            </div>
-                        </div>
-                        <div className="mt-4">
-                            <span className="text-sm text-green-600">+12% from last month</span>
-                        </div>
-                    </div>
-
-                    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                                <p className="text-2xl font-bold text-gray-900">1,423</p>
-                            </div>
-                            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                                <ShoppingCart className="w-6 h-6 text-green-600" />
-                            </div>
-                        </div>
-                        <div className="mt-4">
-                            <span className="text-sm text-green-600">+8% from last month</span>
-                        </div>
-                    </div>
-
-                    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">Revenue</p>
-                                <p className="text-2xl font-bold text-gray-900">$45,231</p>
-                            </div>
-                            <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                                <BarChart3 className="w-6 h-6 text-yellow-600" />
-                            </div>
-                        </div>
-                        <div className="mt-4">
-                            <span className="text-sm text-green-600">+15% from last month</span>
-                        </div>
-                    </div>
-
-                    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">Reports</p>
-                                <p className="text-2xl font-bold text-gray-900">89</p>
-                            </div>
-                            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                                <FileText className="w-6 h-6 text-purple-600" />
-                            </div>
-                        </div>
-                        <div className="mt-4">
-                            <span className="text-sm text-red-600">-3% from last month</span>
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                                Product Management
+                            </h1>
+                            <p className="text-gray-600">Manage all products in the system</p>
                         </div>
                     </div>
                 </div>
 
-                {/* Content Sections */}
-                <div className="grid grid-cols-3 gap-6">
-                    {/* Recent Activity */}
-                    <div className="col-span-2 bg-white rounded-lg shadow-sm border border-gray-200">
-                        <div className="p-6 border-b border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
+                {/* Error Message */}
+                {error && (
+                    <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                        <div className="flex justify-between items-center">
+                            <span>{error}</span>
+                            <button
+                                onClick={handleClearError}
+                                className="text-red-500 hover:text-red-700"
+                            >
+                                ×
+                            </button>
                         </div>
-                        <div className="p-6">
-                            <div className="space-y-4">
-                                {[1, 2, 3, 4, 5].map((item) => (
-                                    <div key={item} className="flex items-center space-x-4">
-                                        <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                                            <User className="w-5 h-5 text-gray-600" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="text-sm font-medium text-gray-900">
-                                                User John Doe completed an action
-                                            </p>
-                                            <p className="text-xs text-gray-500">2 minutes ago</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                    </div>
+                )}
+
+                {/* Filters */}
+                <div className="mb-6 flex flex-wrap gap-4 items-center">
+                    <div className="flex items-center gap-2">
+                        <label htmlFor="status-filter" className="text-sm font-medium text-gray-700">
+                            Status:
+                        </label>
+                        <select
+                            id="status-filter"
+                            value={filters.productStatus || ''}
+                            onChange={handleStatusChange}
+                            disabled={loading}
+                            className="border border-gray-300 rounded-md px-3 py-1 text-sm disabled:opacity-50"
+                        >
+                            <option value="">All Statuses</option>
+                            <option value="ACTIVE">Active</option>
+                            <option value="INACTIVE">Inactive</option>
+                            <option value="SOLD">Sold</option>
+                            <option value="EXPIRED">Expired</option>
+                        </select>
                     </div>
 
-                    {/* Quick Actions */}
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-                        <div className="p-6 border-b border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
-                        </div>
-                        <div className="p-6">
-                            <div className="space-y-3">
-                                <button className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-                                    <div className="flex items-center space-x-3">
-                                        <Users className="w-5 h-5 text-blue-600" />
-                                        <span className="text-sm font-medium">Add New User</span>
-                                    </div>
-                                </button>
-                                <button className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-                                    <div className="flex items-center space-x-3">
-                                        <FileText className="w-5 h-5 text-green-600" />
-                                        <span className="text-sm font-medium">Generate Report</span>
-                                    </div>
-                                </button>
-                                <button className="w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-                                    <div className="flex items-center space-x-3">
-                                        <Settings className="w-5 h-5 text-gray-600" />
-                                        <span className="text-sm font-medium">System Settings</span>
-                                    </div>
-                                </button>
-                            </div>
-                        </div>
+                    <div className="flex items-center gap-2">
+                        <label htmlFor="limit-select" className="text-sm font-medium text-gray-700">
+                            Per Page:
+                        </label>
+                        <select
+                            id="limit-select"
+                            value={filters.limit}
+                            onChange={handleLimitChange}
+                            disabled={loading}
+                            className="border border-gray-300 rounded-md px-3 py-1 text-sm disabled:opacity-50"
+                        >
+                            <option value={5}>5</option>
+                            <option value={10}>10</option>
+                            <option value={20}>20</option>
+                            <option value={50}>50</option>
+                        </select>
                     </div>
+
+                    {pagination && (
+                        <div className="text-sm text-gray-600">
+                            Showing {((pagination.currentPage - 1) * filters.limit) + 1} to{' '}
+                            {Math.min(pagination.currentPage * filters.limit, pagination.totalProducts)} of{' '}
+                            {pagination.totalProducts} products
+                        </div>
+                    )}
                 </div>
+
+                {/* Loading State */}
+                {loading && (
+                    <div className="flex justify-center items-center py-12">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                    </div>
+                )}
+
+                {/* Product Cards */}
+                {!loading && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        {products.length > 0 ? (
+                            products.map((product) => (
+                                <Card
+                                    key={product._id}
+                                    image={product.images?.[0] || ""}
+                                    status={product.productStatus.toLowerCase()}
+                                    data={{
+                                        title: product.name,
+                                        subtitle: `Quantity: ${product.quantity.value} ${product.quantity.unit}`,
+                                        description: product.description,
+                                        price: product.currentHighestBid,
+                                        originalPrice: product.startingPrice,                                                                              
+                                    }}
+                                    primaryButton={{
+                                        label: "View Product",
+                                        onClick: () => console.log(`View product ${product._id}`)
+                                    }}
+                                />
+                            ))
+                        ) : (
+                            <div className="col-span-full text-center py-12">
+                                <p className="text-gray-500">No products found.</p>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Pagination */}
+                {pagination && pagination.totalPages > 1 && !loading && (
+                    <div className="flex justify-center items-center space-x-2">
+                        {/* Previous Button */}
+                        <button
+                            onClick={() => handlePageChange(pagination.currentPage - 1)}
+                            disabled={!pagination.hasPrevPage}
+                            className={`px-3 py-2 rounded-md text-sm font-medium ${pagination.hasPrevPage
+                                ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                }`}
+                        >
+                            Previous
+                        </button>
+
+                        {/* Page Numbers */}
+                        {getPageNumbers().map((pageNumber) => (
+                            <button
+                                key={pageNumber}
+                                onClick={() => handlePageChange(pageNumber)}
+                                className={`px-3 py-2 rounded-md text-sm font-medium ${pageNumber === pagination.currentPage
+                                    ? 'bg-blue-500 text-white'
+                                    : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                                    }`}
+                            >
+                                {pageNumber}
+                            </button>
+                        ))}
+
+                        {/* Next Button */}
+                        <button
+                            onClick={() => handlePageChange(pagination.currentPage + 1)}
+                            disabled={!pagination.hasNextPage}
+                            className={`px-3 py-2 rounded-md text-sm font-medium ${pagination.hasNextPage
+                                ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                }`}
+                        >
+                            Next
+                        </button>
+                    </div>
+                )}
             </main>
         </>
-    )
-}
+    );
+};
 
-export default MainComponent
+export default MainComponent;

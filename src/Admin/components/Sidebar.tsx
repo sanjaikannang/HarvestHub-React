@@ -1,19 +1,39 @@
-import { Home, LogOut } from "lucide-react";
-import { useState } from "react";
 import { clearCredentials } from "../../State/Slices/authSlice";
-import { useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../State/hooks";
+import React from "react";
+import {
+  BarChart3,
+  LogOut,
+} from 'lucide-react';
 
-const Sidebar = () => {
+interface SidebarProps {
+  isSidebarOpen: boolean;
+  setIsSidebarOpen: (open: boolean) => void;
+}
 
+
+interface NavigationItem {
+  name: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, setIsSidebarOpen }) => {
+
+  const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
-  const [activeItem, setActiveItem] = useState('dashboard');
-
-  const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: Home }
+  const navigation: NavigationItem[] = [
+    { name: 'All Products', href: '/admin', icon: BarChart3 },
   ];
+
+  const isActive = (path: string) => {
+    if (path === '/admin' && location.pathname === '/admin') return true;
+    if (path !== '/admin' && location.pathname.startsWith(path)) return true;
+    return false;
+  };
 
   const handleLogout = () => {
     dispatch(clearCredentials());
@@ -22,46 +42,58 @@ const Sidebar = () => {
 
   return (
     <>
-      <aside className="bg-gray-900 text-white transition-all duration-300 w-64 min-h-screen flex flex-col">
+      {/* Sidebar */}
+      <aside className={`${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:static inset-y-0 left-0 z-50 w-64 bg-whiteColor shadow-lg transform transition-transform duration-300 ease-in-out flex flex-col`}>
+
         {/* Logo */}
-        <div className="h-16 border-b border-gray-800 flex items-center justify-center">
-          <span className="text-xl font-bold">Admin</span>
+        <div className="h-16 flex items-center justify-center flex-shrink-0">
+          <h1 className="text-xl font-semibold text-gray-900">HarvestHub</h1>          
         </div>
 
         {/* Navigation */}
-        <nav className="mt-6 flex-1">
-          <ul className="space-y-2 px-3">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <li key={item.id}>
-                  <button
-                    onClick={() => setActiveItem(item.id)}
-                    className={`w-full flex items-center space-x-3 px-3 py-3 rounded-lg transition-colors ${activeItem === item.id
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                      }`}
+        <div className="flex-1 flex flex-col">
+          <div className="flex-1">
+            <nav className="space-y-2 px-3">
+              {navigation.map((item) => {
+                const IconComponent = item.icon;
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className={`${isActive(item.href)
+                      ? 'bg-green-50 border-greenColor text-darkgreenColor'
+                      : 'border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      } group flex items-center px-3 py-3 text-sm font-medium border-l-4 transition-colors -mx-3`}
+                    onClick={() => setIsSidebarOpen(false)}
                   >
-                    <Icon className="w-5 h-5 flex-shrink-0" />
-                    <span className="text-sm font-medium">{item.label}</span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
+                    <IconComponent className="mr-3 h-5 w-5" />
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
 
-        {/* Logout Button */}
-        <div className="p-3 border-t border-gray-800">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg transition-colors text-gray-300 hover:bg-red-600 hover:text-white"
-          >
-            <LogOut className="w-5 h-5 flex-shrink-0" />
-            <span className="text-sm font-medium">Logout</span>
-          </button>
+          {/* Logout Button at Bottom */}
+          <div className="flex-shrink-0 p-2 h-16 border-t border-gray-200">
+            <button
+              onClick={handleLogout}
+              className="group flex items-center w-full px-3 py-3 text-sm font-medium text-gray-600 hover:bg-lightredColor hover:text-darkredColor transition-colors rounded-md"
+            >
+              <LogOut className="mr-3 h-5 w-5" />
+              Logout
+            </button>
+          </div>
         </div>
       </aside>
+
+      {/* Overlay for mobile */}
+      {isSidebarOpen && (
+        <div
+          className="md:hidden fixed inset-0 z-40 bg-gray-100 backdrop-blur-3xl"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
     </>
   )
 }
