@@ -5,6 +5,7 @@ const initialState: AdminState = {
     products: [],
     pagination: null,
     loading: false,
+    message: null,
     error: null,
     filters: {
         page: 1,
@@ -45,6 +46,7 @@ const adminSlice = createSlice({
             state.products = action.payload.product;
             state.pagination = action.payload.pagination;
             state.error = null;
+            state.message = action.payload.message;
         },
         fetchProductsFailure: (state, action: PayloadAction<string>) => {
             state.loading = false;
