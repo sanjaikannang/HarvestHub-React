@@ -41,6 +41,7 @@ export interface GetAllProductRequest {
 export interface AdminState {
     products: ProductResponse[];
     pagination: PaginationInfo | null;
+    message: string | null;
     loading: boolean;
     error: string | null;
     filters: {
