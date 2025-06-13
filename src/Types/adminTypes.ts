@@ -38,8 +38,14 @@ export interface GetAllProductRequest {
     productStatus?: string;
 }
 
+export interface GetSpecificProductResponse {
+    message: string;
+    product: ProductResponse;
+}
+
 export interface AdminState {
     products: ProductResponse[];
+    currentProduct: ProductResponse | null; 
     pagination: PaginationInfo | null;
     message: string | null;
     loading: boolean;
