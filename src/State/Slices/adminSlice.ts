@@ -1,8 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { AdminState, GetAllProductResponse } from '../../Types/adminTypes';
+import { AdminState, GetAllProductResponse, GetSpecificProductResponse } from '../../Types/adminTypes';
 
 const initialState: AdminState = {
     products: [],
+    currentProduct: null,
     pagination: null,
     loading: false,
     message: null,
@@ -52,8 +53,33 @@ const adminSlice = createSlice({
             state.loading = false;
             state.error = action.payload;
         },
+
+        // Async operation actions for specific product
+        fetchSpecificProductStart: (state) => {
+            state.loading = true;
+            state.error = null;
+            state.currentProduct = null;
+        },
+        fetchSpecificProductSuccess: (state, action: PayloadAction<GetSpecificProductResponse>) => {
+            state.loading = false;
+            state.currentProduct = action.payload.product;
+            state.error = null;
+            state.message = action.payload.message;
+        },
+        fetchSpecificProductFailure: (state, action: PayloadAction<string>) => {
+            state.loading = false;
+            state.error = action.payload;
+            state.currentProduct = null;
+        },
+
         clearError: (state) => {
             state.error = null;
+        },
+        clearCurrentProduct: (state) => {
+            state.currentProduct = null;
+        },
+        clearMessage: (state) => {
+            state.message = null;
         },
     },
 });
@@ -66,7 +92,12 @@ export const {
     fetchProductsStart,
     fetchProductsSuccess,
     fetchProductsFailure,
+    fetchSpecificProductStart,
+    fetchSpecificProductSuccess,
+    fetchSpecificProductFailure,
     clearError,
+    clearCurrentProduct,
+    clearMessage,
 } = adminSlice.actions;
 
 export default adminSlice.reducer;

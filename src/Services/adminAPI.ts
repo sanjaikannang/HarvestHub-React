@@ -57,3 +57,24 @@ export async function getAllProductsAPI(params?: GetAllProductRequest) {
         throw new Error('Failed to fetch products. Please try again.');
     }
 }
+
+
+// Get Specific Product API
+export async function getSpecificProductAPI(productId: string) {
+    try {
+        const response = await apiClient.get(`/product/get-specific-product/${productId}`);
+        return response.data;
+
+    } catch (error) {
+        console.error('Get specific product error:', error);
+
+        if (axios.isAxiosError(error)) {
+            const errorMessage = error.response?.data?.message ||
+                error.response?.data?.error ||
+                'Failed to fetch product details. Please try again.';
+            throw new Error(errorMessage);
+        }
+
+        throw new Error('Failed to fetch product details. Please try again.');
+    }
+}
