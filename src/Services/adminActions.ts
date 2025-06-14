@@ -15,10 +15,13 @@ import {
     deleteUserStart,
     deleteUserSuccess,
     deleteUserFailure,
+    reviewProductStart,
+    reviewProductSuccess,
+    reviewProductFailure,
 } from '../State/Slices/adminSlice';
 import { AppDispatch } from '../State/store';
-import { GetAllProductRequest } from '../Types/adminTypes';
-import { deleteUserAPI, getAllProductsAPI, getAllUsersAPI, getSpecificProductAPI, getSpecificUserAPI } from './adminAPI';
+import { GetAllProductRequest, ReviewProductRequest } from '../Types/adminTypes';
+import { deleteUserAPI, getAllProductsAPI, getAllUsersAPI, getSpecificProductAPI, getSpecificUserAPI, reviewProductAPI } from './adminAPI';
 
 
 // Action creator for fetching products
@@ -90,6 +93,23 @@ export const deleteUser = (userId: string) => {
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Failed to delete user';
             dispatch(deleteUserFailure(errorMessage));
+            throw error; // Re-throw for error handling in component
+        }
+    };
+};
+
+
+// Review product action
+export const reviewProduct = (productId: string, reviewData: ReviewProductRequest) => {
+    return async (dispatch: AppDispatch) => {
+        try {
+            dispatch(reviewProductStart());
+            const response = await reviewProductAPI(productId, reviewData);
+            dispatch(reviewProductSuccess(response));
+            return response; // Return response for success handling
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Failed to review product';
+            dispatch(reviewProductFailure(errorMessage));
             throw error; // Re-throw for error handling in component
         }
     };

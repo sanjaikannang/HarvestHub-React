@@ -1,5 +1,5 @@
 import axios from "axios";
-import { GetAllProductRequest } from "../Types/adminTypes";
+import { GetAllProductRequest, ReviewProductRequest } from "../Types/adminTypes";
 
 const API_BASE_URL = import.meta.env.VITE_BASE_API_URL || 'http://localhost:8000';
 
@@ -136,5 +136,25 @@ export async function deleteUserAPI(userId: string) {
         }
 
         throw new Error('Failed to delete user. Please try again.');
+    }
+}
+
+
+// Review Product API
+export async function reviewProductAPI(productId: string, reviewData: ReviewProductRequest) {
+    try {
+        const response = await apiClient.post(`/product/review-product/${productId}`, reviewData);
+        return response.data;
+    } catch (error) {
+        console.error('Review product error:', error);
+
+        if (axios.isAxiosError(error)) {
+            const errorMessage = error.response?.data?.message ||
+                error.response?.data?.error ||
+                'Failed to review product. Please try again.';
+            throw new Error(errorMessage);
+        }
+
+        throw new Error('Failed to review product. Please try again.');
     }
 }

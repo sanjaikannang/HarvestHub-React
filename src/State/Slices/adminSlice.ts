@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { AdminState, DeleteUserResponse, GetAllProductResponse, GetAllUsersResponse, GetSpecificProductResponse, GetSpecificUserResponse } from '../../Types/adminTypes';
+import { AdminState, DeleteUserResponse, GetAllProductResponse, GetAllUsersResponse, GetSpecificProductResponse, GetSpecificUserResponse, ReviewProductResponse } from '../../Types/adminTypes';
 
 const initialState: AdminState = {
     products: [],
@@ -22,6 +22,9 @@ const initialState: AdminState = {
     specificUserError: null,
     deleteUserLoading: false,
     deleteUserError: null,
+    reviewProductLoading: false,
+    reviewProductError: null,
+    reviewProductMessage: null,
 };
 
 const adminSlice = createSlice({
@@ -131,6 +134,26 @@ const adminSlice = createSlice({
             state.deleteUserError = action.payload;
         },
 
+        // Product review actions
+        reviewProductStart: (state) => {
+            state.reviewProductLoading = true;
+            state.reviewProductError = null;
+            state.reviewProductMessage = null;
+        },
+        reviewProductSuccess: (state, action: PayloadAction<ReviewProductResponse>) => {
+            state.reviewProductLoading = false;
+            state.reviewProductError = null;
+            state.reviewProductMessage = action.payload.message;
+            // Update current product if it exists
+            if (action.payload.product && state.currentProduct) {
+                state.currentProduct = action.payload.product;
+            }
+        },
+        reviewProductFailure: (state, action: PayloadAction<string>) => {
+            state.reviewProductLoading = false;
+            state.reviewProductError = action.payload;
+        },
+
         clearError: (state) => {
             state.error = null;
         },
@@ -155,6 +178,12 @@ const adminSlice = createSlice({
         clearDeleteUserError: (state) => {
             state.deleteUserError = null;
         },
+        clearReviewProductError: (state) => {
+            state.reviewProductError = null;
+        },
+        clearReviewProductMessage: (state) => {
+            state.reviewProductMessage = null;
+        },
     },
 });
 
@@ -178,6 +207,9 @@ export const {
     deleteUserStart,
     deleteUserSuccess,
     deleteUserFailure,
+    reviewProductStart,
+    reviewProductSuccess,
+    reviewProductFailure,
     clearError,
     clearCurrentProduct,
     clearMessage,
@@ -186,6 +218,8 @@ export const {
     clearSpecificUser,
     clearSpecificUserError,
     clearDeleteUserError,
+    clearReviewProductError,
+    clearReviewProductMessage,
 } = adminSlice.actions;
 
 export default adminSlice.reducer;

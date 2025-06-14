@@ -75,6 +75,17 @@ export interface DeleteUserResponse {
     message: string;
 }
 
+export interface ReviewProductRequest {
+    productId: string;
+    status: 'APPROVED' | 'REJECTED';
+    adminFeedback?: string;
+}
+
+export interface ReviewProductResponse {
+    message: string;
+    product?: ProductResponse;
+}
+
 export interface AdminState {
     products: ProductResponse[];
     currentProduct: ProductResponse | null;
@@ -97,4 +108,7 @@ export interface AdminState {
     specificUserError: string | null;
     deleteUserLoading: boolean;
     deleteUserError: string | null;
+    reviewProductLoading: boolean;
+    reviewProductError: string | null;
+    reviewProductMessage: string | null;
 }
