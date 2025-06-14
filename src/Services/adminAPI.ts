@@ -28,15 +28,15 @@ apiClient.interceptors.request.use(
 export async function getAllProductsAPI(params?: GetAllProductRequest) {
     try {
         const queryParams = new URLSearchParams();
-        
+
         if (params?.page) {
             queryParams.append('page', params.page.toString());
         }
-        
+
         if (params?.limit) {
             queryParams.append('limit', params.limit.toString());
         }
-        
+
         if (params?.productStatus) {
             queryParams.append('productStatus', params.productStatus);
         }
@@ -77,4 +77,25 @@ export async function getSpecificProductAPI(productId: string) {
 
         throw new Error('Failed to fetch product details. Please try again.');
     }
+}
+
+
+// Get All Users API
+export async function getAllUsersAPI() {
+    try {
+        const response = await apiClient.get("/user/get-all-user");
+        return response.data;
+    } catch (error) {
+        console.error('Get all Users error:', error);
+
+        if (axios.isAxiosError(error)) {
+            const errorMessage = error.response?.data?.message ||
+                error.response?.data?.error ||
+                'Failed to fetch Users. Please try again.';
+            throw new Error(errorMessage);
+        }
+
+        throw new Error('Failed to fetch Users. Please try again.');
+    }
+
 }

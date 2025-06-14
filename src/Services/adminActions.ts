@@ -6,10 +6,13 @@ import {
     fetchSpecificProductStart,
     fetchSpecificProductSuccess,
     fetchSpecificProductFailure,
+    fetchUsersStart,
+    fetchUsersSuccess,
+    fetchUsersFailure,
 } from '../State/Slices/adminSlice';
 import { AppDispatch } from '../State/store';
 import { GetAllProductRequest } from '../Types/adminTypes';
-import { getAllProductsAPI, getSpecificProductAPI } from './adminAPI';
+import { getAllProductsAPI, getAllUsersAPI, getSpecificProductAPI } from './adminAPI';
 
 
 // Action creator for fetching products
@@ -37,4 +40,19 @@ export const fetchSpecificProduct = (productId: string) => async (dispatch: AppD
         const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
         dispatch(fetchSpecificProductFailure(errorMessage));
     }
+};
+
+
+// Fetch all users action
+export const fetchAllUsers = () => {
+    return async (dispatch: AppDispatch) => {
+        try {
+            dispatch(fetchUsersStart());
+            const response = await getAllUsersAPI();
+            dispatch(fetchUsersSuccess(response));
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Failed to fetch users';
+            dispatch(fetchUsersFailure(errorMessage));
+        }
+    };
 };

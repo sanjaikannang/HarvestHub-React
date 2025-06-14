@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { AdminState, GetAllProductResponse, GetSpecificProductResponse } from '../../Types/adminTypes';
+import { AdminState, GetAllProductResponse, GetAllUsersResponse, GetSpecificProductResponse } from '../../Types/adminTypes';
 
 const initialState: AdminState = {
     products: [],
@@ -12,6 +12,11 @@ const initialState: AdminState = {
         page: 1,
         limit: 10,
     },
+    users: [],
+    userPagination: null,
+    usersLoading: false,
+    usersError: null,
+    usersMessage: null,
 };
 
 const adminSlice = createSlice({
@@ -72,6 +77,23 @@ const adminSlice = createSlice({
             state.currentProduct = null;
         },
 
+        // User actions
+        fetchUsersStart: (state) => {
+            state.usersLoading = true;
+            state.usersError = null;
+        },
+        fetchUsersSuccess: (state, action: PayloadAction<GetAllUsersResponse>) => {
+            state.usersLoading = false;
+            state.users = action.payload.user;
+            state.userPagination = action.payload.pagination;
+            state.usersError = null;
+            state.usersMessage = action.payload.message;
+        },
+        fetchUsersFailure: (state, action: PayloadAction<string>) => {
+            state.usersLoading = false;
+            state.usersError = action.payload;
+        },
+
         clearError: (state) => {
             state.error = null;
         },
@@ -80,6 +102,12 @@ const adminSlice = createSlice({
         },
         clearMessage: (state) => {
             state.message = null;
+        },
+        clearUsersError: (state) => {
+            state.usersError = null;
+        },
+        clearUsersMessage: (state) => {
+            state.usersMessage = null;
         },
     },
 });
@@ -95,9 +123,14 @@ export const {
     fetchSpecificProductStart,
     fetchSpecificProductSuccess,
     fetchSpecificProductFailure,
+    fetchUsersStart,
+    fetchUsersSuccess,
+    fetchUsersFailure,
     clearError,
     clearCurrentProduct,
     clearMessage,
+    clearUsersError,
+    clearUsersMessage,
 } = adminSlice.actions;
 
 export default adminSlice.reducer;
