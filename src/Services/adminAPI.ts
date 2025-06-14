@@ -97,5 +97,44 @@ export async function getAllUsersAPI() {
 
         throw new Error('Failed to fetch Users. Please try again.');
     }
+}
 
+
+// Get Specific User API
+export async function getSpecificUserAPI(userId: string) {
+    try {
+        const response = await apiClient.get(`/user/get-specific-user/${userId}`);
+        return response.data;
+    } catch (error) {
+        console.error('Get specific user error:', error);
+
+        if (axios.isAxiosError(error)) {
+            const errorMessage = error.response?.data?.message ||
+                error.response?.data?.error ||
+                'Failed to fetch user details. Please try again.';
+            throw new Error(errorMessage);
+        }
+
+        throw new Error('Failed to fetch user details. Please try again.');
+    }
+}
+
+
+// Delete User API
+export async function deleteUserAPI(userId: string) {
+    try {
+        const response = await apiClient.delete(`/user/delete-user/${userId}`);
+        return response.data;
+    } catch (error) {
+        console.error('Delete user error:', error);
+
+        if (axios.isAxiosError(error)) {
+            const errorMessage = error.response?.data?.message ||
+                error.response?.data?.error ||
+                'Failed to delete user. Please try again.';
+            throw new Error(errorMessage);
+        }
+
+        throw new Error('Failed to delete user. Please try again.');
+    }
 }

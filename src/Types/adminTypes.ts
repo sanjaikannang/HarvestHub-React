@@ -66,6 +66,15 @@ export interface GetAllUsersResponse {
     user: UserResponse[];
 }
 
+export interface GetSpecificUserResponse {
+    message: string;
+    user: UserResponse[];
+}
+
+export interface DeleteUserResponse {
+    message: string;
+}
+
 export interface AdminState {
     products: ProductResponse[];
     currentProduct: ProductResponse | null;
@@ -83,4 +92,9 @@ export interface AdminState {
     usersLoading: boolean;
     usersError: string | null;
     usersMessage: string | null;
+    specificUser: UserResponse | null;
+    specificUserLoading: boolean;
+    specificUserError: string | null;
+    deleteUserLoading: boolean;
+    deleteUserError: string | null;
 }

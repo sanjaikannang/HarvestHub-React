@@ -9,10 +9,16 @@ import {
     fetchUsersStart,
     fetchUsersSuccess,
     fetchUsersFailure,
+    fetchSpecificUserStart,
+    fetchSpecificUserSuccess,
+    fetchSpecificUserFailure,
+    deleteUserStart,
+    deleteUserSuccess,
+    deleteUserFailure,
 } from '../State/Slices/adminSlice';
 import { AppDispatch } from '../State/store';
 import { GetAllProductRequest } from '../Types/adminTypes';
-import { getAllProductsAPI, getAllUsersAPI, getSpecificProductAPI } from './adminAPI';
+import { deleteUserAPI, getAllProductsAPI, getAllUsersAPI, getSpecificProductAPI, getSpecificUserAPI } from './adminAPI';
 
 
 // Action creator for fetching products
@@ -53,6 +59,38 @@ export const fetchAllUsers = () => {
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Failed to fetch users';
             dispatch(fetchUsersFailure(errorMessage));
+        }
+    };
+};
+
+
+// Fetch specific user action
+export const fetchSpecificUser = (userId: string) => {
+    return async (dispatch: AppDispatch) => {
+        try {
+            dispatch(fetchSpecificUserStart());
+            const response = await getSpecificUserAPI(userId);
+            dispatch(fetchSpecificUserSuccess(response));
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Failed to fetch user details';
+            dispatch(fetchSpecificUserFailure(errorMessage));
+        }
+    };
+};
+
+
+// Delete user action
+export const deleteUser = (userId: string) => {
+    return async (dispatch: AppDispatch) => {
+        try {
+            dispatch(deleteUserStart());
+            const response = await deleteUserAPI(userId);
+            dispatch(deleteUserSuccess(response));
+            return response; // Return response for success handling
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Failed to delete user';
+            dispatch(deleteUserFailure(errorMessage));
+            throw error; // Re-throw for error handling in component
         }
     };
 };

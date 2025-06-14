@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { AdminState, GetAllProductResponse, GetAllUsersResponse, GetSpecificProductResponse } from '../../Types/adminTypes';
+import { AdminState, DeleteUserResponse, GetAllProductResponse, GetAllUsersResponse, GetSpecificProductResponse, GetSpecificUserResponse } from '../../Types/adminTypes';
 
 const initialState: AdminState = {
     products: [],
@@ -17,6 +17,11 @@ const initialState: AdminState = {
     usersLoading: false,
     usersError: null,
     usersMessage: null,
+    specificUser: null,
+    specificUserLoading: false,
+    specificUserError: null,
+    deleteUserLoading: false,
+    deleteUserError: null,
 };
 
 const adminSlice = createSlice({
@@ -94,6 +99,38 @@ const adminSlice = createSlice({
             state.usersError = action.payload;
         },
 
+        // Specific user actions
+        fetchSpecificUserStart: (state) => {
+            state.specificUserLoading = true;
+            state.specificUserError = null;
+            state.specificUser = null;
+        },
+        fetchSpecificUserSuccess: (state, action: PayloadAction<GetSpecificUserResponse>) => {
+            state.specificUserLoading = false;
+            state.specificUser = action.payload.user[0]; // API returns array, take first element
+            state.specificUserError = null;
+        },
+        fetchSpecificUserFailure: (state, action: PayloadAction<string>) => {
+            state.specificUserLoading = false;
+            state.specificUserError = action.payload;
+            state.specificUser = null;
+        },
+
+        // Delete user actions
+        deleteUserStart: (state) => {
+            state.deleteUserLoading = true;
+            state.deleteUserError = null;
+        },
+        deleteUserSuccess: (state, action: PayloadAction<DeleteUserResponse>) => {
+            state.deleteUserLoading = false;
+            state.deleteUserError = null;
+            state.usersMessage = action.payload.message;
+        },
+        deleteUserFailure: (state, action: PayloadAction<string>) => {
+            state.deleteUserLoading = false;
+            state.deleteUserError = action.payload;
+        },
+
         clearError: (state) => {
             state.error = null;
         },
@@ -108,6 +145,15 @@ const adminSlice = createSlice({
         },
         clearUsersMessage: (state) => {
             state.usersMessage = null;
+        },
+        clearSpecificUser: (state) => {
+            state.specificUser = null;
+        },
+        clearSpecificUserError: (state) => {
+            state.specificUserError = null;
+        },
+        clearDeleteUserError: (state) => {
+            state.deleteUserError = null;
         },
     },
 });
@@ -126,11 +172,20 @@ export const {
     fetchUsersStart,
     fetchUsersSuccess,
     fetchUsersFailure,
+    fetchSpecificUserStart,
+    fetchSpecificUserSuccess,
+    fetchSpecificUserFailure,
+    deleteUserStart,
+    deleteUserSuccess,
+    deleteUserFailure,
     clearError,
     clearCurrentProduct,
     clearMessage,
     clearUsersError,
     clearUsersMessage,
+    clearSpecificUser,
+    clearSpecificUserError,
+    clearDeleteUserError,
 } = adminSlice.actions;
 
 export default adminSlice.reducer;
