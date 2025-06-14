@@ -43,9 +43,41 @@ export interface GetSpecificProductResponse {
     product: ProductResponse;
 }
 
+export interface UserResponse {
+    _id: string;
+    name: string;
+    email: string;
+    role: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface UserPaginationInfo {
+    currentPage: number;
+    totalPages: number;
+    totalUsers: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+}
+
+export interface GetAllUsersResponse {
+    message: string;
+    pagination: UserPaginationInfo;
+    user: UserResponse[];
+}
+
+export interface GetSpecificUserResponse {
+    message: string;
+    user: UserResponse[];
+}
+
+export interface DeleteUserResponse {
+    message: string;
+}
+
 export interface AdminState {
     products: ProductResponse[];
-    currentProduct: ProductResponse | null; 
+    currentProduct: ProductResponse | null;
     pagination: PaginationInfo | null;
     message: string | null;
     loading: boolean;
@@ -55,4 +87,14 @@ export interface AdminState {
         limit: number;
         productStatus?: string;
     };
+    users: UserResponse[];
+    userPagination: UserPaginationInfo | null;
+    usersLoading: boolean;
+    usersError: string | null;
+    usersMessage: string | null;
+    specificUser: UserResponse | null;
+    specificUserLoading: boolean;
+    specificUserError: string | null;
+    deleteUserLoading: boolean;
+    deleteUserError: string | null;
 }
