@@ -5,6 +5,7 @@ import React from "react";
 import {
   BarChart3,
   LogOut,
+  User,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -27,6 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, setIsSidebarOpen }) =>
 
   const navigation: NavigationItem[] = [
     { name: 'All Products', href: '/admin', icon: BarChart3 },
+    { name: 'All Users', href: '/admin/all-users', icon: User },
   ];
 
   const isActive = (path: string) => {

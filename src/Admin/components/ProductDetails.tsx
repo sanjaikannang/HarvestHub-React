@@ -1,27 +1,33 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { AppDispatch, RootState } from "../../State/store";
-import { fetchSpecificProduct } from "../../Services/adminActions";
-import { Calendar, Package, DollarSign, User, Clock } from "lucide-react";
+import { fetchSpecificProduct, reviewProduct } from "../../Services/adminActions";
+import { Calendar, Package, DollarSign, User, Clock, CheckCircle, XCircle } from "lucide-react";
 import toast from "react-hot-toast";
+import { clearReviewProductError, clearReviewProductMessage } from "../../State/Slices/adminSlice";
+import Modal from "../../Common/ui/Modal";
+import { Spinner } from "../../Common/ui/Spinner";
 
 const ProductDetails: React.FC = () => {
     const { productId } = useParams<{ productId: string }>();
     const dispatch = useDispatch<AppDispatch>();
 
+    const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+    const [reviewStatus, setReviewStatus] = useState<'APPROVED' | 'REJECTED'>('APPROVED');
+    const [adminFeedback, setAdminFeedback] = useState('');
+
     const {
         currentProduct,
         loading,
         error,
+        reviewProductLoading,
+        reviewProductError,
+        reviewProductMessage,
     } = useSelector((state: RootState) => state.admin);
 
     // Handle array response - extract first product if it's an array
     const product = Array.isArray(currentProduct) ? currentProduct[0] : currentProduct;
-
-    console.log("Current Product:", currentProduct);
-    console.log("Loading:", loading);
-    console.log("Error:", error);
 
     // Handle error with toast notification
     useEffect(() => {
@@ -30,10 +36,32 @@ const ProductDetails: React.FC = () => {
         }
     }, [error]);
 
+    // Handle review product success
+    useEffect(() => {
+        if (reviewProductMessage) {
+            toast.success(reviewProductMessage);
+            dispatch(clearReviewProductMessage());
+            setIsReviewModalOpen(false);
+            setAdminFeedback('');
+            setReviewStatus('APPROVED');
+            // Refetch the product to get updated status
+            if (productId) {
+                dispatch(fetchSpecificProduct(productId));
+            }
+        }
+    }, [reviewProductMessage, dispatch, productId]);
+
+    // Handle review product error
+    useEffect(() => {
+        if (reviewProductError) {
+            toast.error(reviewProductError);
+            dispatch(clearReviewProductError());
+        }
+    }, [reviewProductError, dispatch]);
+
     // Fetch specific product when component mounts
     useEffect(() => {
         if (productId) {
-            console.log("Fetching product with ID:", productId);
             dispatch(fetchSpecificProduct(productId));
         }
     }, [dispatch, productId]);
@@ -67,6 +95,47 @@ const ProductDetails: React.FC = () => {
         }
     };
 
+    // Handle review submission
+    const handleReviewSubmit = async () => {
+        if (!productId) return;
+
+        // Validate feedback for rejection
+        if (reviewStatus === 'REJECTED' && !adminFeedback.trim()) {
+            toast.error('Admin feedback is required when rejecting a product');
+            return;
+        }
+
+        try {
+            await dispatch(reviewProduct(productId, {
+                productId,
+                status: reviewStatus,
+                adminFeedback: reviewStatus === 'REJECTED' ? adminFeedback.trim() : undefined,
+            }));
+        } catch (error) {
+            // Error is already handled in useEffect
+        }
+    };
+
+    // Handle modal close
+    const handleModalClose = () => {
+        setIsReviewModalOpen(false);
+        setAdminFeedback('');
+        setReviewStatus('APPROVED');
+    };
+
+    // Handle status change
+    const handleStatusChange = (status: 'APPROVED' | 'REJECTED') => {
+        setReviewStatus(status);
+        // Clear feedback when switching to approved
+        if (status === 'APPROVED') {
+            setAdminFeedback('');
+        }
+    };
+
+    // Check if product can be reviewed (only PENDING products)
+    const canReviewProduct = product?.productStatus?.toUpperCase() === 'PENDING';
+
+
     // Show loading state
     if (loading) {
         return (
@@ -90,25 +159,6 @@ const ProductDetails: React.FC = () => {
         );
     }
 
-    // Show error state
-    if (error && !product) {
-        return (
-            <main className="px-4 py-4 bg-gray-50 min-h-screen">
-                <div className="max-w-7xl mx-auto">
-                    <div className="text-center py-12">
-                        <p className="text-red-500">Error: {error}</p>
-                        <button
-                            onClick={() => productId && dispatch(fetchSpecificProduct(productId))}
-                            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                        >
-                            Retry
-                        </button>
-                    </div>
-                </div>
-            </main>
-        );
-    }
-
     // Show not found state only if loading is false and no product exists
     if (!loading && !product) {
         return (
@@ -116,12 +166,6 @@ const ProductDetails: React.FC = () => {
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center py-12">
                         <p className="text-gray-500">Product not found.</p>
-                        <button
-                            onClick={() => productId && dispatch(fetchSpecificProduct(productId))}
-                            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                        >
-                            Retry
-                        </button>
                     </div>
                 </div>
             </main>
@@ -137,39 +181,9 @@ const ProductDetails: React.FC = () => {
                     {/* Product Images */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
                         <div className="space-y-4">
-                            {product?.images && product.images.length > 0 ? (
-                                <div className="space-y-4">
-                                    <img
-                                        src={product.images[0]}
-                                        alt={product.name || 'Product Image'}
-                                        className="w-full h-64 object-cover rounded-lg"
-                                        onError={(e) => {
-                                            console.error('Image failed to load:', product.images[0]);
-                                            e.currentTarget.style.display = 'none';
-                                        }}
-                                    />
-                                    {product.images.length > 1 && (
-                                        <div className="grid grid-cols-3 gap-2">
-                                            {/* {product.images.slice(1, 4).map((image: string | undefined, index: number) => (
-                                                <img
-                                                    key={index}
-                                                    src={image}
-                                                    alt={`${product.name || 'Product'} ${index + 2}`}
-                                                    className="w-full h-20 object-cover rounded"
-                                                    onError={(e) => {
-                                                        console.error('Image failed to load:', image);
-                                                        e.currentTarget.style.display = 'none';
-                                                    }}
-                                                />
-                                            ))} */}
-                                        </div>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center">
-                                    <Package size={48} className="text-gray-400" />
-                                </div>
-                            )}
+                            <div className="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center">
+                                <Package size={48} className="text-gray-400" />
+                            </div>
                         </div>
 
                         {/* Product Information */}
@@ -220,6 +234,18 @@ const ProductDetails: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Review Actions */}
+                            {canReviewProduct && (
+                                <div className="mt-6 pt-4 border-t">
+                                    <button
+                                        onClick={() => setIsReviewModalOpen(true)}
+                                        className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+                                    >
+                                        Review Product
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -275,8 +301,89 @@ const ProductDetails: React.FC = () => {
                                 </div>
                             </div>
                         </div>
-                    </div>                   
+                    </div>
                 </div>
+
+                {/* Review Modal using the existing Modal component */}
+                <Modal
+                    isOpen={isReviewModalOpen}
+                    onClose={handleModalClose}
+                    title="Review Product"
+                    size="lg"
+                >
+                    {/* Action Buttons */}
+                    <div className="mb-6">
+                        <label className="block text-sm font-medium text-gray-700 mb-4">
+                            Choose Action
+                        </label>
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <button
+                                onClick={() => handleStatusChange('APPROVED')}
+                                className={`flex items-center justify-center px-4 py-1.5 rounded-md font-medium focus:outline-none transition-colors ${reviewStatus === 'APPROVED'
+                                    ? 'bg-green-600 text-white'
+                                    : 'bg-green-100 text-green-700 hover:bg-green-200'
+                                    }`}
+                            >
+                                <CheckCircle size={20} className="mr-2" />
+                                Approve Product
+                            </button>
+                            <button
+                                onClick={() => handleStatusChange('REJECTED')}
+                                className={`flex items-center justify-center px-4 py-1.5 rounded-md font-medium focus:outline-none transition-colors ${reviewStatus === 'REJECTED'
+                                    ? 'bg-red-600 text-white'
+                                    : 'bg-red-100 text-red-700 hover:bg-red-200'
+                                    }`}
+                            >
+                                <XCircle size={20} className="mr-2" />
+                                Reject Product
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Admin Feedback (only shown when rejection is selected) */}
+                    {reviewStatus === 'REJECTED' && (
+                        <div className="mb-6">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Reason for Rejection <span className="text-red-500">*</span>
+                            </label>
+                            <textarea
+                                value={adminFeedback}
+                                onChange={(e) => setAdminFeedback(e.target.value)}
+                                placeholder="Please provide a reason for rejection..."
+                                rows={4}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                            />
+                            <p className="mt-1 text-xs text-gray-500">
+                                This feedback will be sent to the farmer.
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Submit Button (only shown when an action is selected) */}
+                    {(reviewStatus === 'APPROVED' || reviewStatus === 'REJECTED') && (
+                        <div className="flex justify-end pt-4 border-t border-gray-200">
+                            <button
+                                onClick={handleReviewSubmit}
+                                disabled={reviewProductLoading || (reviewStatus === 'REJECTED' && !adminFeedback.trim())}
+                                className={`px-6 py-1.5 rounded-md text-white font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${reviewStatus === 'APPROVED'
+                                    ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
+                                    : 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
+                                    }`}
+                            >
+                                {reviewProductLoading ? (
+                                    <span className="flex items-center">
+                                        <div className="mr-2">
+                                            <Spinner />
+                                        </div>
+                                        Processing...
+                                    </span>
+                                ) : (
+                                    `Submit ${reviewStatus === 'APPROVED' ? 'Approval' : ''}`
+                                )}
+                            </button>
+                        </div>
+                    )}
+                </Modal>
             </div>
         </main>
     );

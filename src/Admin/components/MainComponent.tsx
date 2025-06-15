@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom';
 import AllProducts from './AllProducts';
 import ProductDetails from './ProductDetails';
+import AllUsers from './AllUsers';
 
 const MainComponent = () => {
     return (
@@ -10,6 +11,7 @@ const MainComponent = () => {
                     <Routes>
                         <Route path="/" element={<AllProducts />} />
                         <Route path="/product/:productId" element={<ProductDetails />} />
+                        <Route path="/all-users" element={<AllUsers />} />
                     </Routes>
                 </div>
             </div>

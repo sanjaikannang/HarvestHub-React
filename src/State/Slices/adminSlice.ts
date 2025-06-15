@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { AdminState, GetAllProductResponse, GetSpecificProductResponse } from '../../Types/adminTypes';
+import { AdminState, DeleteUserResponse, GetAllProductResponse, GetAllUsersResponse, GetSpecificProductResponse, GetSpecificUserResponse, ReviewProductResponse } from '../../Types/adminTypes';
 
 const initialState: AdminState = {
     products: [],
@@ -12,6 +12,19 @@ const initialState: AdminState = {
         page: 1,
         limit: 10,
     },
+    users: [],
+    userPagination: null,
+    usersLoading: false,
+    usersError: null,
+    usersMessage: null,
+    specificUser: null,
+    specificUserLoading: false,
+    specificUserError: null,
+    deleteUserLoading: false,
+    deleteUserError: null,
+    reviewProductLoading: false,
+    reviewProductError: null,
+    reviewProductMessage: null,
 };
 
 const adminSlice = createSlice({
@@ -72,6 +85,75 @@ const adminSlice = createSlice({
             state.currentProduct = null;
         },
 
+        // User actions
+        fetchUsersStart: (state) => {
+            state.usersLoading = true;
+            state.usersError = null;
+        },
+        fetchUsersSuccess: (state, action: PayloadAction<GetAllUsersResponse>) => {
+            state.usersLoading = false;
+            state.users = action.payload.user;
+            state.userPagination = action.payload.pagination;
+            state.usersError = null;
+            state.usersMessage = action.payload.message;
+        },
+        fetchUsersFailure: (state, action: PayloadAction<string>) => {
+            state.usersLoading = false;
+            state.usersError = action.payload;
+        },
+
+        // Specific user actions
+        fetchSpecificUserStart: (state) => {
+            state.specificUserLoading = true;
+            state.specificUserError = null;
+            state.specificUser = null;
+        },
+        fetchSpecificUserSuccess: (state, action: PayloadAction<GetSpecificUserResponse>) => {
+            state.specificUserLoading = false;
+            state.specificUser = action.payload.user[0]; // API returns array, take first element
+            state.specificUserError = null;
+        },
+        fetchSpecificUserFailure: (state, action: PayloadAction<string>) => {
+            state.specificUserLoading = false;
+            state.specificUserError = action.payload;
+            state.specificUser = null;
+        },
+
+        // Delete user actions
+        deleteUserStart: (state) => {
+            state.deleteUserLoading = true;
+            state.deleteUserError = null;
+        },
+        deleteUserSuccess: (state, action: PayloadAction<DeleteUserResponse>) => {
+            state.deleteUserLoading = false;
+            state.deleteUserError = null;
+            state.usersMessage = action.payload.message;
+        },
+        deleteUserFailure: (state, action: PayloadAction<string>) => {
+            state.deleteUserLoading = false;
+            state.deleteUserError = action.payload;
+        },
+
+        // Product review actions
+        reviewProductStart: (state) => {
+            state.reviewProductLoading = true;
+            state.reviewProductError = null;
+            state.reviewProductMessage = null;
+        },
+        reviewProductSuccess: (state, action: PayloadAction<ReviewProductResponse>) => {
+            state.reviewProductLoading = false;
+            state.reviewProductError = null;
+            state.reviewProductMessage = action.payload.message;
+            // Update current product if it exists
+            if (action.payload.product && state.currentProduct) {
+                state.currentProduct = action.payload.product;
+            }
+        },
+        reviewProductFailure: (state, action: PayloadAction<string>) => {
+            state.reviewProductLoading = false;
+            state.reviewProductError = action.payload;
+        },
+
         clearError: (state) => {
             state.error = null;
         },
@@ -80,6 +162,27 @@ const adminSlice = createSlice({
         },
         clearMessage: (state) => {
             state.message = null;
+        },
+        clearUsersError: (state) => {
+            state.usersError = null;
+        },
+        clearUsersMessage: (state) => {
+            state.usersMessage = null;
+        },
+        clearSpecificUser: (state) => {
+            state.specificUser = null;
+        },
+        clearSpecificUserError: (state) => {
+            state.specificUserError = null;
+        },
+        clearDeleteUserError: (state) => {
+            state.deleteUserError = null;
+        },
+        clearReviewProductError: (state) => {
+            state.reviewProductError = null;
+        },
+        clearReviewProductMessage: (state) => {
+            state.reviewProductMessage = null;
         },
     },
 });
@@ -95,9 +198,28 @@ export const {
     fetchSpecificProductStart,
     fetchSpecificProductSuccess,
     fetchSpecificProductFailure,
+    fetchUsersStart,
+    fetchUsersSuccess,
+    fetchUsersFailure,
+    fetchSpecificUserStart,
+    fetchSpecificUserSuccess,
+    fetchSpecificUserFailure,
+    deleteUserStart,
+    deleteUserSuccess,
+    deleteUserFailure,
+    reviewProductStart,
+    reviewProductSuccess,
+    reviewProductFailure,
     clearError,
     clearCurrentProduct,
     clearMessage,
+    clearUsersError,
+    clearUsersMessage,
+    clearSpecificUser,
+    clearSpecificUserError,
+    clearDeleteUserError,
+    clearReviewProductError,
+    clearReviewProductMessage,
 } = adminSlice.actions;
 
 export default adminSlice.reducer;
