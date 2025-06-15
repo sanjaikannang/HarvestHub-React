@@ -29,6 +29,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, setIsSidebarOpen }) =>
   const navigation: NavigationItem[] = [
     { name: 'All Products', href: '/admin', icon: BarChart3 },
     { name: 'All Users', href: '/admin/all-users', icon: User },
+    { name: 'Bidding', href: '/admin/bidding', icon: User },
   ];
 
   const isActive = (path: string) => {
