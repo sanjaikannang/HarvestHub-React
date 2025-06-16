@@ -11,7 +11,7 @@ const MainComponent = () => {
     return (
         <>
             <div className="flex-1 overflow-auto">
-                <div className="max-w-7xl mx-auto">
+                <div className="max-w-9xl mx-auto">
                     <Routes>
                         <Route path="/" element={<AllProducts />} />
                         <Route path="/product/:productId" element={<ProductDetails />} />
