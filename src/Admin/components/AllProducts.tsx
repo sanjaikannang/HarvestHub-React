@@ -1,21 +1,33 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../State/store";
-import { setLimit, setPage, setProductStatus } from "../../State/Slices/adminSlice";
-import { fetchProducts } from "../../Services/adminActions";
+import { setLimit, setPage, setProductStatus, clearReviewProductError, clearReviewProductMessage } from "../../State/Slices/adminSlice";
+import { fetchProducts, reviewProduct } from "../../Services/adminActions";
 import Select from "../../Common/ui/Select";
-import { ArrowLeftFromLine, ArrowRightFromLine, Package, Trash2, Eye } from "lucide-react";
+import Modal from "../../Common/ui/Modal";
+import { Spinner } from "../../Common/ui/Spinner";
+import { ArrowLeftFromLine, ArrowRightFromLine, Package, Trash2, CheckCircle, XCircle } from "lucide-react";
 import toast from "react-hot-toast";
 
 const AllProducts: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
     const [expandedProductId, setExpandedProductId] = useState<string | null>(null);
+    
+    // Review Modal States
+    const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+    const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+    const [reviewStatus, setReviewStatus] = useState<'APPROVED' | 'REJECTED'>('APPROVED');
+    const [adminFeedback, setAdminFeedback] = useState('');
+
     const {
         products,
         pagination,
         loading,
         error,
         filters,
+        reviewProductLoading,
+        reviewProductError,
+        reviewProductMessage,
     } = useSelector((state: RootState) => state.admin);
 
     // Handle error with toast notification
@@ -24,6 +36,28 @@ const AllProducts: React.FC = () => {
             toast.error(error);
         }
     }, [error, dispatch]);
+
+    // Handle review product success
+    useEffect(() => {
+        if (reviewProductMessage) {
+            toast.success(reviewProductMessage);
+            dispatch(clearReviewProductMessage());
+            setIsReviewModalOpen(false);
+            setAdminFeedback('');
+            setReviewStatus('APPROVED');
+            setSelectedProductId(null);
+            // Refetch products to get updated status
+            dispatch(fetchProducts(filters));
+        }
+    }, [reviewProductMessage, dispatch, filters]);
+
+    // Handle review product error
+    useEffect(() => {
+        if (reviewProductError) {
+            toast.error(reviewProductError);
+            dispatch(clearReviewProductError());
+        }
+    }, [reviewProductError, dispatch]);
 
     // Fetch products on component mount and when filters change
     useEffect(() => {
@@ -48,6 +82,56 @@ const AllProducts: React.FC = () => {
     // Handle product toggle
     const handleProductToggle = (productId: string) => {
         setExpandedProductId(expandedProductId === productId ? null : productId);
+    };
+
+    // Handle review button click
+    const handleReviewClick = (productId: string, event: React.MouseEvent) => {
+        event.stopPropagation(); // Prevent accordion toggle
+        setSelectedProductId(productId);
+        setIsReviewModalOpen(true);
+    };
+
+    // Handle review submission
+    const handleReviewSubmit = async () => {
+        if (!selectedProductId) return;
+
+        // Validate feedback for rejection
+        if (reviewStatus === 'REJECTED' && !adminFeedback.trim()) {
+            toast.error('Admin feedback is required when rejecting a product');
+            return;
+        }
+
+        try {
+            await dispatch(reviewProduct(selectedProductId, {
+                productId: selectedProductId,
+                status: reviewStatus,
+                adminFeedback: reviewStatus === 'REJECTED' ? adminFeedback.trim() : undefined,
+            }));
+        } catch (error) {
+            // Error is already handled in useEffect
+        }
+    };
+
+    // Handle modal close
+    const handleModalClose = () => {
+        setIsReviewModalOpen(false);
+        setAdminFeedback('');
+        setReviewStatus('APPROVED');
+        setSelectedProductId(null);
+    };
+
+    // Handle status change in modal
+    const handleReviewStatusChange = (status: 'APPROVED' | 'REJECTED') => {
+        setReviewStatus(status);
+        // Clear feedback when switching to approved
+        if (status === 'APPROVED') {
+            setAdminFeedback('');
+        }
+    };
+
+    // Check if product can be reviewed (only PENDING products)
+    const canReviewProduct = (productStatus: string) => {
+        return productStatus?.toUpperCase() === 'PENDING';
     };
 
     // Get status badge color
@@ -114,7 +198,7 @@ const AllProducts: React.FC = () => {
         return Array.from({ length: filters.limit }, (_, index) => (
             <li key={`skeleton-${index}`} className="border-b border-gray-200 last:border-b-0">
                 <div className="px-4 py-4">
-                    <div className="grid grid-cols-3 gap-4 items-center text-center">
+                    <div className="grid grid-cols-3 gap-4 items-start text-start">
                         {/* Product Name Skeleton */}
                         <div className="h-4 bg-gray-300 rounded animate-pulse mx-auto w-3/4"></div>
 
@@ -215,10 +299,15 @@ const AllProducts: React.FC = () => {
 
                     {/* Action Buttons */}
                     <div className="mt-4 flex justify-end space-x-3">
-                        <button className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors cursor-pointer">
-                            <Eye className="w-4 h-4 mr-2" />
-                            Review
-                        </button>
+                        {canReviewProduct(product.productStatus) && (
+                            <button 
+                                onClick={(e) => handleReviewClick(product._id, e)}
+                                className="inline-flex items-center px-4 py-2 border border-blue-300 rounded-md shadow-sm text-sm font-medium text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors cursor-pointer"
+                            >
+                                <CheckCircle className="w-4 h-4 mr-2" />
+                                Review
+                            </button>
+                        )}                      
                         <button className="inline-flex items-center px-4 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors cursor-pointer">
                             <Trash2 className="w-4 h-4 mr-2" />
                             Delete
@@ -417,6 +506,87 @@ const AllProducts: React.FC = () => {
                         )}
                     </div>
                 )}
+
+                {/* Review Modal */}
+                <Modal
+                    isOpen={isReviewModalOpen}
+                    onClose={handleModalClose}
+                    title="Review Product"
+                    size="lg"
+                >
+                    {/* Action Buttons */}
+                    <div className="mb-6">
+                        <label className="block text-sm font-medium text-gray-700 mb-4">
+                            Choose Action
+                        </label>
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <button
+                                onClick={() => handleReviewStatusChange('APPROVED')}
+                                className={`flex items-center justify-center px-4 py-1.5 rounded-md font-medium focus:outline-none transition-colors ${reviewStatus === 'APPROVED'
+                                    ? 'bg-green-600 text-white'
+                                    : 'bg-green-100 text-green-700 hover:bg-green-200'
+                                    }`}
+                            >
+                                <CheckCircle size={20} className="mr-2" />
+                                Approve Product
+                            </button>
+                            <button
+                                onClick={() => handleReviewStatusChange('REJECTED')}
+                                className={`flex items-center justify-center px-4 py-1.5 rounded-md font-medium focus:outline-none transition-colors ${reviewStatus === 'REJECTED'
+                                    ? 'bg-red-600 text-white'
+                                    : 'bg-red-100 text-red-700 hover:bg-red-200'
+                                    }`}
+                            >
+                                <XCircle size={20} className="mr-2" />
+                                Reject Product
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Admin Feedback (only shown when rejection is selected) */}
+                    {reviewStatus === 'REJECTED' && (
+                        <div className="mb-6">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Reason for Rejection <span className="text-red-500">*</span>
+                            </label>
+                            <textarea
+                                value={adminFeedback}
+                                onChange={(e) => setAdminFeedback(e.target.value)}
+                                placeholder="Please provide a reason for rejection..."
+                                rows={4}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none"
+                            />
+                            <p className="mt-1 text-xs text-gray-500">
+                                This feedback will be sent to the farmer.
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Submit Button */}
+                    {(reviewStatus === 'APPROVED' || reviewStatus === 'REJECTED') && (
+                        <div className="flex justify-end pt-4 border-t border-gray-200">
+                            <button
+                                onClick={handleReviewSubmit}
+                                disabled={reviewProductLoading || (reviewStatus === 'REJECTED' && !adminFeedback.trim())}
+                                className={`px-6 py-1.5 rounded-md text-white font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${reviewStatus === 'APPROVED'
+                                    ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
+                                    : 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
+                                    }`}
+                            >
+                                {reviewProductLoading ? (
+                                    <span className="flex items-center">
+                                        <div className="mr-2">
+                                            <Spinner />
+                                        </div>
+                                        Processing...
+                                    </span>
+                                ) : (
+                                    `Submit ${reviewStatus === 'APPROVED' ? 'Approval' : 'Rejection'}`
+                                )}
+                            </button>
+                        </div>
+                    )}
+                </Modal>
             </main>
         </>
     )
