@@ -4,7 +4,7 @@ import { AppDispatch, RootState } from "../../State/store";
 import { setLimit, setPage, setProductStatus } from "../../State/Slices/adminSlice";
 import { fetchProducts } from "../../Services/adminActions";
 import Select from "../../Common/ui/Select";
-import { ArrowLeftFromLine, ArrowRightFromLine, ChevronDown, Package, Trash2, Eye } from "lucide-react";
+import { ArrowLeftFromLine, ArrowRightFromLine, Package, Trash2, Eye } from "lucide-react";
 import toast from "react-hot-toast";
 
 const AllProducts: React.FC = () => {
@@ -112,20 +112,20 @@ const AllProducts: React.FC = () => {
     // Generate skeleton cards using Card component
     const renderSkeletonProducts = () => {
         return Array.from({ length: filters.limit }, (_, index) => (
-            <div key={`skeleton-${index}`} className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-gray-200 items-center">
-                <div className="col-span-12 md:col-span-6">
-                    <div className="h-4 bg-gray-300 rounded w-3/4 animate-pulse"></div>
+            <li key={`skeleton-${index}`} className="border-b border-gray-200 last:border-b-0">
+                <div className="px-4 py-4">
+                    <div className="grid grid-cols-3 gap-4 items-center text-center">
+                        {/* Product Name Skeleton */}
+                        <div className="h-4 bg-gray-300 rounded animate-pulse mx-auto w-3/4"></div>
+
+                        {/* Status Badge Skeleton */}
+                        <div className="h-6 bg-gray-300 rounded-full animate-pulse mx-auto w-1/2"></div>
+
+                        {/* Price Skeleton */}
+                        <div className="h-4 bg-gray-300 rounded animate-pulse mx-auto w-1/4"></div>
+                    </div>
                 </div>
-                <div className="col-span-12 md:col-span-3 flex justify-center md:justify-center">
-                    <div className="h-6 bg-gray-300 rounded-full w-20 animate-pulse"></div>
-                </div>
-                <div className="col-span-12 md:col-span-2 flex justify-center md:justify-center">
-                    <div className="h-4 bg-gray-300 rounded w-16 animate-pulse"></div>
-                </div>
-                <div className="col-span-12 md:col-span-1 flex justify-center">
-                    <div className="h-5 w-5 bg-gray-300 rounded animate-pulse"></div>
-                </div>
-            </div>
+            </li>
         ));
     };
 
@@ -133,7 +133,7 @@ const AllProducts: React.FC = () => {
     const renderProductDetails = (product: any) => {
         return (
             <>
-                <div className="col-span-12 px-6 py-4 bg-gray-50 border-t border-gray-200">
+                <div className="col-span-12 px-4 py-4 bg-gray-50 border-t border-gray-200">
                     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                         {/* Product Images */}
                         {product.images && product.images.length > 0 && (
@@ -298,9 +298,18 @@ const AllProducts: React.FC = () => {
                 </div>
 
                 {/* Products Accordion */}
-                <div className="bg-white shadow overflow-hidden sm:rounded-md mb-6">
+                <div className="bg-white shadow overflow-hidden rounded-md mb-6">
+
+                    {/* Header */}
+                    <div className="bg-gray-50 px-4 py-5 border border-gray-200 rounded-t-md">
+                        <div className="grid grid-cols-3 gap-4 text-start">
+                            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Product Name</h3>
+                            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Status</h3>
+                            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Price</h3>
+                        </div>
+                    </div>
+
                     {loading ? (
-                        // Show skeleton products while loading
                         <ul className="divide-y divide-gray-200">
                             {renderSkeletonProducts()}
                         </ul>
@@ -314,38 +323,30 @@ const AllProducts: React.FC = () => {
                         <ul className="divide-y divide-gray-200">
                             {products.map((product) => (
                                 <li key={product._id} className="border-b border-gray-200 last:border-b-0">
+
                                     {/* Accordion Header */}
                                     <div
-                                        className="px-4 py-5 hover:bg-gray-50 cursor-pointer transition-colors"
+                                        className="px-4 py-4 hover:bg-gray-50 cursor-pointer transition-colors"
                                         onClick={() => handleProductToggle(product._id)}
                                     >
-                                        <div className="flex items-center justify-between">
+                                        <div className="grid grid-cols-3 gap-4 items-center">
+
                                             {/* Product Name */}
-                                            <div className="">
-                                                <div className="text-sm font-medium text-gray-900 truncate">
-                                                    {product.name}
-                                                </div>
+                                            <div className="text-sm font-medium text-gray-900 truncate">
+                                                {product.name}
                                             </div>
 
                                             {/* Status Badge */}
-                                            <div className="ml-4">
+                                            <div>
                                                 <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(product.productStatus)}`}>
                                                     {product.productStatus}
                                                 </span>
                                             </div>
 
                                             {/* Starting Price */}
-                                            <div className="ml-4 text-sm font-medium text-gray-900">
+                                            <div className="text-sm font-medium text-gray-900">
                                                 ₹ {product.startingPrice} /-
-                                            </div>
-
-                                            {/* Chevron Icon */}
-                                            <div className="ml-4">
-                                                <ChevronDown
-                                                    className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${expandedProductId === product._id ? 'rotate-180' : ''
-                                                        }`}
-                                                />
-                                            </div>
+                                            </div>                                           
                                         </div>
                                     </div>
 
@@ -356,6 +357,7 @@ const AllProducts: React.FC = () => {
                         </ul>
                     )}
                 </div>
+
 
                 {/* Pagination - Only show when not loading and has pagination data */}
                 {pagination && !loading && (
