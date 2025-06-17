@@ -1,11 +1,9 @@
-import { Route, Routes, useParams } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import AllProducts from './AllProducts';
 import AllUsers from './AllUsers';
-import BiddingComponent from './BiddingComponent';
+import Bidding from './Bidding';
 
 const MainComponent = () => {
-
-    const { productId } = useParams();
 
     return (
         <>
@@ -14,7 +12,7 @@ const MainComponent = () => {
                     <Routes>
                         <Route path="/" element={<AllProducts />} />
                         <Route path="/all-users" element={<AllUsers />} />
-                        <Route path="/bidding/:productId" element={<BiddingComponent productId={productId} />} />
+                        <Route path="/bidding" element={<Bidding />} />
                     </Routes>
                 </div>
             </div>
