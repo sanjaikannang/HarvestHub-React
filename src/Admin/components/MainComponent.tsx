@@ -1,6 +1,5 @@
 import { Route, Routes, useParams } from 'react-router-dom';
 import AllProducts from './AllProducts';
-import ProductDetails from './ProductDetails';
 import AllUsers from './AllUsers';
 import BiddingComponent from './BiddingComponent';
 
@@ -14,7 +13,6 @@ const MainComponent = () => {
                 <div className="max-w-9xl mx-auto">
                     <Routes>
                         <Route path="/" element={<AllProducts />} />
-                        <Route path="/product/:productId" element={<ProductDetails />} />
                         <Route path="/all-users" element={<AllUsers />} />
                         <Route path="/bidding/:productId" element={<BiddingComponent productId={productId} />} />
                     </Routes>
