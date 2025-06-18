@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { AdminState, DeleteUserResponse, GetAllProductResponse, GetAllUsersResponse, GetSpecificProductResponse, GetSpecificUserResponse, ReviewProductResponse } from '../../Types/adminTypes';
+import { AdminState, DeleteProductResponse, DeleteUserResponse, GetAllProductResponse, GetAllUsersResponse, GetSpecificProductResponse, GetSpecificUserResponse, ReviewProductResponse } from '../../Types/adminTypes';
 
 const initialState: AdminState = {
     products: [],
@@ -22,6 +22,8 @@ const initialState: AdminState = {
     specificUserError: null,
     deleteUserLoading: false,
     deleteUserError: null,
+    deleteProductLoading: false,
+    deleteProductError: null,
     reviewProductLoading: false,
     reviewProductError: null,
     reviewProductMessage: null,
@@ -134,6 +136,22 @@ const adminSlice = createSlice({
             state.deleteUserError = action.payload;
         },
 
+
+        // Delete product actions
+        deleteProductStart: (state) => {
+            state.deleteProductLoading = true;
+            state.deleteProductError = null;
+        },
+        deleteProductSuccess: (state, action: PayloadAction<DeleteProductResponse>) => {
+            state.deleteProductLoading = false;
+            state.deleteProductError = null;
+            state.usersMessage = action.payload.message;
+        },
+        deleteProductFailure: (state, action: PayloadAction<string>) => {
+            state.deleteProductLoading = false;
+            state.deleteProductError = action.payload;
+        },
+
         // Product review actions
         reviewProductStart: (state) => {
             state.reviewProductLoading = true;
@@ -178,6 +196,9 @@ const adminSlice = createSlice({
         clearDeleteUserError: (state) => {
             state.deleteUserError = null;
         },
+        clearDeleteProductError: (state) => {
+            state.deleteProductError = null;
+        },
         clearReviewProductError: (state) => {
             state.reviewProductError = null;
         },
@@ -207,6 +228,9 @@ export const {
     deleteUserStart,
     deleteUserSuccess,
     deleteUserFailure,
+    deleteProductStart,
+    deleteProductSuccess,
+    deleteProductFailure,
     reviewProductStart,
     reviewProductSuccess,
     reviewProductFailure,

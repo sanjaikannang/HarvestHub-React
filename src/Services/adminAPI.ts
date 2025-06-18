@@ -158,3 +158,23 @@ export async function reviewProductAPI(productId: string, reviewData: ReviewProd
         throw new Error('Failed to review product. Please try again.');
     }
 }
+
+
+// Delete Product API
+export async function deleteProductAPI(productId: string) {
+    try {
+        const response = await apiClient.delete(`/product/delete-product/${productId}`);
+        return response.data;
+    } catch (error) {
+        console.error('Delete product error:', error);
+
+        if (axios.isAxiosError(error)) {
+            const errorMessage = error.response?.data?.message ||
+                error.response?.data?.error ||
+                'Failed to delete product. Please try again.';
+            throw new Error(errorMessage);
+        }
+
+        throw new Error('Failed to delete product. Please try again.');
+    }
+}
