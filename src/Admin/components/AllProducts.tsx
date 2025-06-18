@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../State/store";
 import { setLimit, setPage, setProductStatus, clearReviewProductError, clearReviewProductMessage } from "../../State/Slices/adminSlice";
-import { fetchProducts, reviewProduct } from "../../Services/adminActions";
+import { deleteproduct, fetchProducts, reviewProduct } from "../../Services/adminActions";
 import Select from "../../Common/ui/Select";
 import Modal from "../../Common/ui/Modal";
 import { Spinner } from "../../Common/ui/Spinner";
@@ -12,12 +12,14 @@ import toast from "react-hot-toast";
 const AllProducts: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
     const [expandedProductId, setExpandedProductId] = useState<string | null>(null);
-    
-    // Review Modal States
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
     const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
     const [reviewStatus, setReviewStatus] = useState<'APPROVED' | 'REJECTED'>('APPROVED');
     const [adminFeedback, setAdminFeedback] = useState('');
+
+    const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [productToDelete, setProductToDelete] = useState<{ id: string; name: string } | null>(null);
 
     const {
         products,
@@ -28,6 +30,7 @@ const AllProducts: React.FC = () => {
         reviewProductLoading,
         reviewProductError,
         reviewProductMessage,
+        deleteProductError,
     } = useSelector((state: RootState) => state.admin);
 
     // Handle error with toast notification
@@ -58,6 +61,14 @@ const AllProducts: React.FC = () => {
             dispatch(clearReviewProductError());
         }
     }, [reviewProductError, dispatch]);
+
+    // Handle delete product error
+    useEffect(() => {
+        if (deleteProductError) {
+            toast.error(deleteProductError);
+            // You might want to add a clear delete error action
+        }
+    }, [deleteProductError, dispatch]);
 
     // Fetch products on component mount and when filters change
     useEffect(() => {
@@ -109,6 +120,34 @@ const AllProducts: React.FC = () => {
             }));
         } catch (error) {
             // Error is already handled in useEffect
+        }
+    };
+
+    const openDeleteModal = (productId: string, productName: string) => {
+        setProductToDelete({ id: productId, name: productName });
+        setDeleteModalOpen(true);
+    };
+
+    const closeDeleteModal = () => {
+        setDeleteModalOpen(false);
+        setProductToDelete(null);
+    };
+
+    const handleDeleteProduct = async () => {
+        if (!productToDelete) return;
+
+        setDeletingProductId(productToDelete.id);
+        try {
+            await dispatch(deleteproduct(productToDelete.id));
+            // Refresh the products list after successful deletion
+            dispatch(fetchProducts(filters));
+            setExpandedProductId(null); // Close accordion if the deleted product was expanded
+            toast.success('Product deleted successfully');
+        } catch (error) {
+            toast.error('Failed to delete product');
+        } finally {
+            setDeletingProductId(null);
+            closeDeleteModal();
         }
     };
 
@@ -300,17 +339,33 @@ const AllProducts: React.FC = () => {
                     {/* Action Buttons */}
                     <div className="mt-4 flex justify-end space-x-3">
                         {canReviewProduct(product.productStatus) && (
-                            <button 
+                            <button
                                 onClick={(e) => handleReviewClick(product._id, e)}
                                 className="inline-flex items-center px-4 py-2 border border-blue-300 rounded-md shadow-sm text-sm font-medium text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors cursor-pointer"
                             >
                                 <CheckCircle className="w-4 h-4 mr-2" />
                                 Review
                             </button>
-                        )}                      
-                        <button className="inline-flex items-center px-4 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors cursor-pointer">
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Delete
+                        )}
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                openDeleteModal(product._id, product.name);
+                            }}
+                            disabled={deletingProductId === product._id}
+                            className="inline-flex items-center px-4 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {deletingProductId === product._id ? (
+                                <>
+                                    <Spinner />
+                                    <span className="ml-2">Deleting...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    Delete
+                                </>
+                            )}
                         </button>
                     </div>
                 </div>
@@ -336,6 +391,51 @@ const AllProducts: React.FC = () => {
         { value: '20', label: '20' },
         { value: '50', label: '50' }
     ];
+
+    const renderDeleteModal = () => (
+        < Modal
+            isOpen={deleteModalOpen}
+            onClose={closeDeleteModal}
+            title="Confirm Delete"
+            size="md"
+        >
+            <div className="flex items-start space-x-4">
+                <div className="flex-1">
+                    <p className="text-sm text-gray-900 mb-4">
+                        Are you sure you want to delete product <strong>{productToDelete?.name}</strong>?
+                        This action cannot be undone and will permanently remove the product.
+                    </p>
+
+                    <div className="flex justify-end space-x-3">
+                        <button
+                            onClick={closeDeleteModal}
+                            className="inline-flex items-center px-4 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none cursor-pointer"
+                        >
+                            Cancel
+                        </button>
+
+                        <button
+                            onClick={handleDeleteProduct}
+                            disabled={deletingProductId === productToDelete?.id}
+                            className="inline-flex items-center px-4 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {deletingProductId === productToDelete?.id ? (
+                                <>
+                                    <Spinner />
+                                    <span className="ml-2">Deleting...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Trash2 className="w-4 h-4 mr-2" />
+                                    Delete
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </Modal >
+    );
 
     return (
         <>
@@ -435,7 +535,7 @@ const AllProducts: React.FC = () => {
                                             {/* Starting Price */}
                                             <div className="text-sm font-medium text-gray-900">
                                                 ₹ {product.startingPrice} /-
-                                            </div>                                           
+                                            </div>
                                         </div>
                                     </div>
 
@@ -588,6 +688,9 @@ const AllProducts: React.FC = () => {
                     )}
                 </Modal>
             </main>
+
+            {/* Delete Confirmation Modal */}
+            {renderDeleteModal()}
         </>
     )
 }
