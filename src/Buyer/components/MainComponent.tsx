@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom"
 import BuyerDashboard from "./BuyerDashboard"
+import Bidding from "./Bidding"
 
 const MainComponent = () => {
     return (
@@ -8,6 +9,7 @@ const MainComponent = () => {
                 <div className="max-w-7xl mx-auto">
                     <Routes>
                         <Route path="/" element={<BuyerDashboard />} />
+                        <Route path="/bidding" element={<Bidding />} />
                     </Routes>
                 </div>
             </main>
