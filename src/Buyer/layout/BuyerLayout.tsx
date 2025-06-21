@@ -1,29 +1,34 @@
-import { useNavigate } from "react-router-dom";
-import { useAppDispatch } from "../../State/hooks";
-import { clearCredentials } from "../../State/Slices/authSlice";
+import React, { useState } from 'react';
+import MainComponent from '../components/MainComponent';
+import Sidebar from '../components/Sidebar';
+import Header from '../components/Header';
 
-const BuyerLayout = () => {
-
-    const navigate = useNavigate();
-    const dispatch = useAppDispatch();
-
-    const handleLogout = () => {
-        dispatch(clearCredentials());
-        navigate('/login');
-    };
+const BuyerLayout: React.FC = () => {
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     return (
         <>
-            <div className="flex h-screen justify-center items-center">
-                <h1>BuyerLayout</h1>
-                <br />
-                <button
-                    onClick={handleLogout}
-                    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
-                >Logout</button>
+            <div className="flex h-screen">
+                {/* Sidebar */}
+                <Sidebar
+                    isSidebarOpen={isSidebarOpen}
+                    setIsSidebarOpen={setIsSidebarOpen}                    
+                />
+
+                {/* Main Content Area */}
+                <div className="flex-1 flex flex-col">
+                    {/* Header */}
+                    <Header
+                        isSidebarOpen={isSidebarOpen}
+                        setIsSidebarOpen={setIsSidebarOpen}
+                    />
+
+                    {/* Main Content */}
+                    <MainComponent />
+                </div>
             </div>
         </>
-    )
-}
+    );
+};
 
-export default BuyerLayout
+export default BuyerLayout;
