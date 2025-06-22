@@ -2,7 +2,10 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../State/hooks";
 import { clearCredentials } from "../../State/Slices/authSlice";
 import {
-    BarChart3,
+    Bell,
+    Boxes,
+    Gavel,
+    LayoutDashboard,
     LogOut,
 } from 'lucide-react';
 
@@ -24,8 +27,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, setIsSidebarOpen }) =>
     const dispatch = useAppDispatch();
 
     const navigation: NavigationItem[] = [
-        { name: 'Dashboard', href: '/buyer', icon: BarChart3 },
-        { name: 'Bidding', href: '/buyer/bidding', icon: BarChart3 },
+        { name: 'Dashboard', href: '/buyer', icon: LayoutDashboard },
+        { name: 'Products', href: '/buyer/products', icon: Boxes },
+        { name: 'Bidding', href: '/buyer/bidding', icon: Gavel },
+        { name: 'Notification', href: '/buyer/notification', icon: Bell }
     ];
 
     const isActive = (path: string) => {
@@ -42,7 +47,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, setIsSidebarOpen }) =>
     return (
         <>
             {/* Sidebar */}
-            <aside className={`${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:static inset-y-0 left-0 z-50 w-64 bg-whiteColor shadow-lg transform transition-transform duration-300 ease-in-out flex flex-col`}>
+            <aside className={`${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-50 w-64 bg-whiteColor shadow-lg transform transition-transform duration-300 ease-in-out flex flex-col`}>
 
                 {/* Logo */}
                 <div className="h-16 flex items-center justify-center flex-shrink-0">
@@ -92,7 +97,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, setIsSidebarOpen }) =>
             {/* Overlay for mobile */}
             {isSidebarOpen && (
                 <div
-                    className="md:hidden fixed inset-0 z-40 bg-gray-100 backdrop-blur-3xl"
+                    className="lg:hidden fixed inset-0 z-40 bg-opacity-25 backdrop-blur-sm"
                     onClick={() => setIsSidebarOpen(false)}
                 />
             )}
