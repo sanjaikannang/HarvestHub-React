@@ -1,9 +1,9 @@
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom"
 import BuyerDashboard from "./BuyerDashboard"
-import Bidding from "./Bidding"
 import Products from "./Products"
 import Notification from "./Notification"
 import NavigationBar from "./NavigationBar"
+import Bidding from "./Bidding/Bidding"
 
 
 const MainComponent = () => {
