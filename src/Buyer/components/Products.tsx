@@ -8,10 +8,8 @@ import toast from "react-hot-toast";
 import Approvred from '../../../public/stamp/verified_stamp.png'
 import { useNavigate } from "react-router-dom";
 
-
 const AllProducts: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
-
     const navigate = useNavigate()
 
     const {
@@ -96,7 +94,7 @@ const AllProducts: React.FC = () => {
     };
 
     return (
-        <>
+        <>          
             <main className="px-4 py-4 min-h-screen">
                 {/* Header */}
                 <div className="mb-6">
@@ -110,7 +108,7 @@ const AllProducts: React.FC = () => {
                                     Total - {pagination.totalProducts} products
                                 </p>
                             )}
-                        </div>                      
+                        </div>
                     </div>
                 </div>
 
