@@ -99,10 +99,7 @@ const AllProducts: React.FC = () => {
                 {/* Header */}
                 <div className="mb-6">
                     <div className="flex justify-between items-center">
-                        <div>
-                            <h1 className="text-2xl font-semibold text-gray-900">
-                                All Products
-                            </h1>
+                        <div>                           
                             {pagination && (
                                 <p className="text-sm font-semibold text-gray-600 mt-1">
                                     Total - {pagination.totalProducts} products

@@ -1,21 +1,11 @@
 import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import ProductDetails from "./ProductDetails";
 import BidHistory from "./BidHistory";
 import BidPlacement from "./BidPlacement";
-
-interface Product {
-    name: string;
-    description: string;
-    category: string;
-    farmer: string;
-    location: string;
-    quantity: string;
-    quality: string;
-    harvestDate: string;
-    currentPrice: number;
-    imageUrl: string;
-    isActive: boolean;
-}
+import { AppDispatch, RootState } from "../../../State/store";
+import { fetchSpecificProduct } from "../../../Services/adminActions";
 
 interface Bid {
     id: number;
@@ -35,103 +25,64 @@ interface BiddingProps {
     productId?: string;
 }
 
-const Bidding = ({ productId }: BiddingProps) => {
+const Bidding = ({ productId: propProductId }: BiddingProps) => {
+    const { productId: urlProductId } = useParams<{ productId: string }>();
+    const dispatch = useDispatch<AppDispatch>();
+    
+    // Get the product ID from props or URL params
+    const productId = propProductId || urlProductId;
+    
+    // Redux state
+    const { 
+        currentProduct: product, 
+        loading, 
+        error 
+    } = useSelector((state: RootState) => state.admin); // Update with your actual state structure
+    
     const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
     const [bids, setBids] = useState<Bid[]>([]);
-    const [product, setProduct] = useState<Product | null>(null);
 
-    // Sample product data - replace with actual API call
+    // Fetch product details when component mounts or productId changes
     useEffect(() => {
-        // Simulate API call to fetch product details
-        const sampleProduct: Product = {
-            name: "Premium Organic Tomatoes",
-            description: "Fresh, locally grown organic tomatoes harvested at peak ripeness. These premium quality tomatoes are perfect for cooking, salads, and preserving. Grown without pesticides using sustainable farming practices.",
-            category: "Vegetables",
-            farmer: "Rajesh Kumar",
-            location: "Bangalore, Karnataka",
-            quantity: "500 kg",
-            quality: "Grade A",
-            harvestDate: "2025-06-20",
-            currentPrice: 15000,
-            imageUrl: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80",
-            isActive: true
-        };
+        if (productId) {
+            dispatch(fetchSpecificProduct(productId));
+        }
+    }, [dispatch, productId]);
 
-        setProduct(sampleProduct);
-    }, [productId]);
-
-    // Sample bid data - replace with actual API call
+    // Sample bid data - replace with actual API call when bid API is ready
     useEffect(() => {
-        const sampleBids: Bid[] = [
-            {
-                id: 1,
-                userName: "Arjun Patel",
-                userAvatar: "AP",
-                amount: 15500,
-                previousAmount: 15000,
-                timestamp: "2 min ago",
-                fullTimestamp: "June 23, 2025 at 2:30 PM",
-                bidType: "Manual Bid",
-                verificationStatus: "verified",
-                isHighest: true,
-                isNewBid: true
-            },
-            {
-                id: 2,
-                userName: "Priya Sharma",
-                userAvatar: "PS",
-                amount: 15000,
-                previousAmount: 14500,
-                timestamp: "5 min ago",
-                fullTimestamp: "June 23, 2025 at 2:27 PM",
-                bidType: "Auto Bid",
-                verificationStatus: "verified",
-                isHighest: false,
-                isNewBid: false
-            },
-            {
-                id: 3,
-                userName: "Vikram Singh",
-                userAvatar: "VS",
-                amount: 14500,
-                previousAmount: 14000,
-                timestamp: "8 min ago",
-                fullTimestamp: "June 23, 2025 at 2:24 PM",
-                bidType: "Manual Bid",
-                verificationStatus: "unverified",
-                isHighest: false,
-                isNewBid: false
-            },
-            {
-                id: 4,
-                userName: "Meera Reddy",
-                userAvatar: "MR",
-                amount: 14000,
-                previousAmount: 13500,
-                timestamp: "12 min ago",
-                fullTimestamp: "June 23, 2025 at 2:20 PM",
-                bidType: "Manual Bid",
-                verificationStatus: "verified",
-                isHighest: false,
-                isNewBid: false
-            },
-            {
-                id: 5,
-                userName: "Rohit Gupta",
-                userAvatar: "RG",
-                amount: 13500,
-                previousAmount: 13000,
-                timestamp: "15 min ago",
-                fullTimestamp: "June 23, 2025 at 2:17 PM",
-                bidType: "Auto Bid",
-                verificationStatus: "verified",
-                isHighest: false,
-                isNewBid: false
-            }
-        ];
-
-        setBids(sampleBids);
-    }, [productId]);
+        if (product) {
+            const sampleBids: Bid[] = [
+                {
+                    id: 1,
+                    userName: "Arjun Patel",
+                    userAvatar: "AP",
+                    amount: product.currentHighestBid || product.startingPrice,
+                    previousAmount: product.startingPrice,
+                    timestamp: "2 min ago",
+                    fullTimestamp: "June 23, 2025 at 2:30 PM",
+                    bidType: "Manual Bid",
+                    verificationStatus: "verified",
+                    isHighest: true,
+                    isNewBid: true
+                },
+                {
+                    id: 2,
+                    userName: "Priya Sharma",
+                    userAvatar: "PS",
+                    amount: product.startingPrice,
+                    previousAmount: product.startingPrice - 500,
+                    timestamp: "5 min ago",
+                    fullTimestamp: "June 23, 2025 at 2:27 PM",
+                    bidType: "Auto Bid",
+                    verificationStatus: "verified",
+                    isHighest: false,
+                    isNewBid: false
+                }
+            ];
+            setBids(sampleBids);
+        }
+    }, [product]);
 
     const handlePlaceBidClick = () => {
         setIsBottomSheetOpen(true);
@@ -173,7 +124,8 @@ const Bidding = ({ productId }: BiddingProps) => {
         console.log('Bid submitted:', bidData);
     };
 
-    if (!product) {
+    // Loading state
+    if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
@@ -184,9 +136,41 @@ const Bidding = ({ productId }: BiddingProps) => {
         );
     }
 
+    // Error state
+    if (error) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
+                        <h2 className="text-lg font-semibold text-red-800 mb-2">Error Loading Product</h2>
+                        <p className="text-red-600 mb-4">{error}</p>
+                        <button 
+                            onClick={() => productId && dispatch(fetchSpecificProduct(productId))}
+                            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+                        >
+                            Try Again
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // No product found
+    if (!product) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <h2 className="text-xl font-semibold text-gray-800 mb-2">Product Not Found</h2>
+                    <p className="text-gray-600">The requested product could not be found.</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen">
-            <div className="max-w-7xl mx-auto px-4 py-6">
+            <div className="max-w-9xl mx-auto px-4 py-6">
                 {/* Mobile Layout */}
                 <div className="lg:hidden space-y-4">
                     <ProductDetails product={product} />

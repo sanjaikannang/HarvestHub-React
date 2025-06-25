@@ -250,7 +250,7 @@ const BidHistory = ({ bids, onPlaceBidClick }: BidHistoryProps) => {
                                         bid.isHighest ? "text-green-600" : "text-gray-800"
                                     }`}
                                 >
-                                    ₹{bid.amount.toLocaleString()}
+                                    ₹{bid.amount}
                                 </div>
 
                                 {/* Previous Bid Amount with Up Arrow */}
@@ -262,14 +262,14 @@ const BidHistory = ({ bids, onPlaceBidClick }: BidHistoryProps) => {
                                             {getIncreaseAmount(
                                                 bid.amount,
                                                 bid.previousAmount
-                                            ).toLocaleString()}
+                                            )}
                                         </span>
                                     </div>
                                 </div>
 
                                 <div className="text-xs text-gray-500 mb-1">
                                     <span className="hidden sm:inline">Previous: </span>₹
-                                    {bid.previousAmount.toLocaleString()}
+                                    {bid.previousAmount}
                                 </div>
 
                                 {bid.isHighest && (
@@ -295,7 +295,7 @@ const BidHistory = ({ bids, onPlaceBidClick }: BidHistoryProps) => {
                 <div className="flex items-center justify-between text-xs sm:text-sm text-gray-600 flex-wrap gap-2">
                     <span>Showing {bids.length} recent bids</span>
                     <div className="flex items-center space-x-2 sm:space-x-4 text-xs">
-                        <span>Highest: ₹{bids[0]?.amount.toLocaleString()}</span>
+                        <span>Highest: ₹{bids[0]?.amount}</span>
                         <span className="hidden sm:inline">Auto-refresh: ON</span>
                         <span className="sm:hidden">Auto: ON</span>
                     </div>
