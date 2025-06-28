@@ -3,9 +3,11 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAppDispatch } from "../../State/hooks";
 import React from "react";
 import {
-  BarChart3,
+  Gavel,
+  LayoutDashboard,
   LogOut,
-  User,
+  MessageSquareMore,
+  PackageCheck,
   Users,
 } from 'lucide-react';
 
@@ -28,9 +30,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, setIsSidebarOpen }) =>
   const dispatch = useAppDispatch();
 
   const navigation: NavigationItem[] = [
-    { name: 'All Products', href: '/admin', icon: BarChart3 },
+    { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+    { name: 'All Products', href: '/admin/all-products', icon: PackageCheck },
     { name: 'All Users', href: '/admin/all-users', icon: Users },
-    { name: 'Bidding', href: '/admin/bidding', icon: User },
+    { name: 'Bidding', href: '/admin/bidding', icon: Gavel },
+    { name: 'Chatting', href: '/admin/chatting', icon: MessageSquareMore },
   ];
 
   const isActive = (path: string) => {
@@ -51,7 +55,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, setIsSidebarOpen }) =>
 
         {/* Logo */}
         <div className="h-16 flex items-center justify-center flex-shrink-0">
-          <h1 className="text-xl font-semibold text-gray-900">HarvestHub</h1>          
+          <h1 className="text-xl font-semibold text-gray-900">HarvestHub</h1>
         </div>
 
         {/* Navigation */}
