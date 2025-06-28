@@ -1,18 +1,15 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../State/store";
-import { setLimit, setPage } from "../../State/Slices/adminSlice";
+import { setPage } from "../../State/Slices/adminSlice";
 import { fetchProducts } from "../../Services/adminActions";
-import Select from "../../Common/ui/Select";
 import { ArrowLeftFromLine, ArrowRight, ArrowRightFromLine, Bell, MoveHorizontal, Package } from "lucide-react";
 import toast from "react-hot-toast";
 import Approvred from '../../../public/stamp/verified_stamp.png'
 import { useNavigate } from "react-router-dom";
 
-
 const AllProducts: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
-
     const navigate = useNavigate()
 
     const {
@@ -38,11 +35,6 @@ const AllProducts: React.FC = () => {
     // Handle page change
     const handlePageChange = (newPage: number) => {
         dispatch(setPage(newPage));
-    };
-
-    // Handle limit change
-    const handleLimitChange = (value: string | number) => {
-        dispatch(setLimit(Number(value)));
     };
 
     // Handle view product navigation
@@ -101,45 +93,18 @@ const AllProducts: React.FC = () => {
         ));
     };
 
-    // Per page options
-    const perPageOptions = [
-        { value: '5', label: '5' },
-        { value: '10', label: '10' },
-        { value: '20', label: '20' },
-        { value: '50', label: '50' }
-    ];
-
     return (
-        <>
+        <>          
             <main className="px-4 py-4 min-h-screen">
                 {/* Header */}
                 <div className="mb-6">
                     <div className="flex justify-between items-center">
-                        <div>
-                            <h1 className="text-2xl font-semibold text-gray-900">
-                                All Products
-                            </h1>
+                        <div>                           
                             {pagination && (
                                 <p className="text-sm font-semibold text-gray-600 mt-1">
                                     Total - {pagination.totalProducts} products
                                 </p>
                             )}
-                        </div>
-
-                        {/* Filters */}
-                        <div className="flex gap-2 items-end">
-                            <div className="flex items-center">
-                                <Select
-                                    id="limit-select"
-                                    name="limit-select"
-                                    value={filters.limit.toString()}
-                                    onChange={handleLimitChange}
-                                    options={perPageOptions}
-                                    disabled={loading}
-                                    size="sm"
-                                    className="min-w-[80px]"
-                                />
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -198,7 +163,11 @@ const AllProducts: React.FC = () => {
                                         <div className="border-t border-gray-300">
                                             <div className="flex justify-center items-center gap-2 mb-2 mt-2">
                                                 <span className="text-sm font-semibold text-gray-700">
-                                                    March 15, 2025
+                                                    {new Date(product.bidStartDate).toLocaleDateString('en-US', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric'
+                                                    })}
                                                 </span>
                                             </div>
 
@@ -217,7 +186,11 @@ const AllProducts: React.FC = () => {
                                                 <div className="text-center">
                                                     <div className="bg-white border-l border-t border-b border-gray-300 rounded-l-4xl py-1">
                                                         <span className="text-sm font-bold text-green-600">
-                                                            10:30 PM
+                                                            {new Date(product.bidStartTime).toLocaleTimeString('en-US', {
+                                                                hour: '2-digit',
+                                                                minute: '2-digit',
+                                                                hour12: true
+                                                            })}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -230,7 +203,11 @@ const AllProducts: React.FC = () => {
                                                 <div className="text-center">
                                                     <div className="bg-white border-r border-t border-b border-gray-300 rounded-r-4xl py-1">
                                                         <span className="text-sm font-bold text-red-600">
-                                                            12:30 PM
+                                                            {new Date(product.bidEndTime).toLocaleTimeString('en-US', {
+                                                                hour: '2-digit',
+                                                                minute: '2-digit',
+                                                                hour12: true
+                                                            })}
                                                         </span>
                                                     </div>
                                                 </div>

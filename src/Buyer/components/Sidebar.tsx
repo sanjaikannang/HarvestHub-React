@@ -4,7 +4,6 @@ import { clearCredentials } from "../../State/Slices/authSlice";
 import {
     Bell,
     Boxes,
-    Gavel,
     LayoutDashboard,
     LogOut,
 } from 'lucide-react';
@@ -29,7 +28,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, setIsSidebarOpen }) =>
     const navigation: NavigationItem[] = [
         { name: 'Dashboard', href: '/buyer', icon: LayoutDashboard },
         { name: 'Products', href: '/buyer/products', icon: Boxes },
-        { name: 'Bidding', href: '/buyer/bidding', icon: Gavel },
         { name: 'Notification', href: '/buyer/notification', icon: Bell }
     ];
 
