@@ -3,9 +3,6 @@ import {
     fetchProductsStart,
     fetchProductsSuccess,
     fetchProductsFailure,
-    fetchSpecificProductStart,
-    fetchSpecificProductSuccess,
-    fetchSpecificProductFailure,
     fetchUsersStart,
     fetchUsersSuccess,
     fetchUsersFailure,
@@ -24,7 +21,7 @@ import {
 } from '../State/Slices/adminSlice';
 import { AppDispatch } from '../State/store';
 import { GetAllProductRequest, ReviewProductRequest } from '../Types/adminTypes';
-import { deleteProductAPI, deleteUserAPI, getAllProductsAPI, getAllUsersAPI, getSpecificProductAPI, getSpecificUserAPI, reviewProductAPI } from './adminAPI';
+import { deleteProductAPI, deleteUserAPI, getAllProductsAPI, getAllUsersAPI, getSpecificUserAPI, reviewProductAPI } from './adminAPI';
 
 
 // Action creator for fetching products
@@ -39,19 +36,6 @@ export const fetchProducts = (filters: GetAllProductRequest) => {
             dispatch(fetchProductsFailure(errorMessage));
         }
     };
-};
-
-
-// Fetch specific product action
-export const fetchSpecificProduct = (productId: string) => async (dispatch: AppDispatch) => {
-    try {
-        dispatch(fetchSpecificProductStart());
-        const response = await getSpecificProductAPI(productId);
-        dispatch(fetchSpecificProductSuccess(response));
-    } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-        dispatch(fetchSpecificProductFailure(errorMessage));
-    }
 };
 
 

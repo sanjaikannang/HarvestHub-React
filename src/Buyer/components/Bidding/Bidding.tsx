@@ -5,7 +5,7 @@ import ProductDetails from "./ProductDetails";
 import BidHistory from "./BidHistory";
 import BidPlacement from "./BidPlacement";
 import { AppDispatch, RootState } from "../../../State/store";
-import { fetchSpecificProduct } from "../../../Services/adminActions";
+import { fetchSpecificProduct, getAllBids } from "../../../Services/biddingActions";
 
 interface Bid {
     id: number;
@@ -28,17 +28,17 @@ interface BiddingProps {
 const Bidding = ({ productId: propProductId }: BiddingProps) => {
     const { productId: urlProductId } = useParams<{ productId: string }>();
     const dispatch = useDispatch<AppDispatch>();
-    
+
     // Get the product ID from props or URL params
     const productId = propProductId || urlProductId;
-    
+
     // Redux state
-    const { 
-        currentProduct: product, 
-        loading, 
-        error 
-    } = useSelector((state: RootState) => state.admin); // Update with your actual state structure
-    
+    const {
+        currentProduct: product,
+        loading,
+        error,
+    } = useSelector((state: RootState) => state.bidding);
+
     const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
     const [bids, setBids] = useState<Bid[]>([]);
 
@@ -46,43 +46,9 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
     useEffect(() => {
         if (productId) {
             dispatch(fetchSpecificProduct(productId));
+            dispatch(getAllBids(productId));
         }
     }, [dispatch, productId]);
-
-    // Sample bid data - replace with actual API call when bid API is ready
-    useEffect(() => {
-        if (product) {
-            const sampleBids: Bid[] = [
-                {
-                    id: 1,
-                    userName: "Arjun Patel",
-                    userAvatar: "AP",
-                    amount: product.currentHighestBid || product.startingPrice,
-                    previousAmount: product.startingPrice,
-                    timestamp: "2 min ago",
-                    fullTimestamp: "June 23, 2025 at 2:30 PM",
-                    bidType: "Manual Bid",
-                    verificationStatus: "verified",
-                    isHighest: true,
-                    isNewBid: true
-                },
-                {
-                    id: 2,
-                    userName: "Priya Sharma",
-                    userAvatar: "PS",
-                    amount: product.startingPrice,
-                    previousAmount: product.startingPrice - 500,
-                    timestamp: "5 min ago",
-                    fullTimestamp: "June 23, 2025 at 2:27 PM",
-                    bidType: "Auto Bid",
-                    verificationStatus: "verified",
-                    isHighest: false,
-                    isNewBid: false
-                }
-            ];
-            setBids(sampleBids);
-        }
-    }, [product]);
 
     const handlePlaceBidClick = () => {
         setIsBottomSheetOpen(true);
@@ -120,9 +86,11 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
         // Close the bottom sheet
         setIsBottomSheetOpen(false);
 
-        // Here you would typically make an API call to submit the bid
+        // TODO: Integrate with placeBid action
+        // dispatch(placeBid(productId!, { bidAmount: Number(bidData.amount) }));
         console.log('Bid submitted:', bidData);
     };
+
 
     // Loading state
     if (loading) {
@@ -144,7 +112,7 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
                     <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
                         <h2 className="text-lg font-semibold text-red-800 mb-2">Error Loading Product</h2>
                         <p className="text-red-600 mb-4">{error}</p>
-                        <button 
+                        <button
                             onClick={() => productId && dispatch(fetchSpecificProduct(productId))}
                             className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
                         >
