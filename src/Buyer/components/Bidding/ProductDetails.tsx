@@ -1,15 +1,12 @@
 import { useState } from "react";
 import {
     Users,
-    DollarSign,
-    Eye,
-    Calendar,
     Package,
     ChevronUp,
     ChevronDown,
-    Clock,
-    TrendingUp,
     Weight,
+    IndianRupee,
+    MoveHorizontal,
 } from "lucide-react";
 
 interface ProductResponse {
@@ -43,14 +40,6 @@ const ProductDetails = ({ product }: ProductDetailsProps) => {
         setIsProductDetailsOpen(!isProductDetailsOpen);
     };
 
-    const formatPrice = (price: number) => {
-        return new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            minimumFractionDigits: 0,
-        }).format(price);
-    };
-
     const nextImage = () => {
         if (product.images.length > 1) {
             setCurrentImageIndex((prev) => (prev + 1) % product.images.length);
@@ -62,8 +51,6 @@ const ProductDetails = ({ product }: ProductDetailsProps) => {
             setCurrentImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
         }
     };
-
-    console.log("product result....", product)
 
     // Default image if no images are provided
     const defaultImage = "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80";
@@ -81,9 +68,6 @@ const ProductDetails = ({ product }: ProductDetailsProps) => {
                         <h2 className="text-xl font-semibold text-gray-900">
                             {product.name}
                         </h2>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium`}>
-                            {product.productStatus}
-                        </span>
                     </div>
                     <button
                         className="flex items-center justify-center w-8 h-8 cursor-pointer"
@@ -152,109 +136,201 @@ const ProductDetails = ({ product }: ProductDetailsProps) => {
                     )}
                 </div>
 
-                <div className="p-6">
+                <div className="p-4">
                     <p className="text-gray-600 mb-6">{product.description}</p>
 
                     {/* Price Information */}
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="flex items-center space-x-2">
-                                <DollarSign className="h-5 w-5 text-blue-600" />
-                                <div>
-                                    <span className="text-sm text-gray-600">Starting Price</span>
-                                    <p className="text-lg font-semibold text-blue-600">
-                                        {formatPrice(product.startingPrice)}
+                    <div className="bg-gray-50 rounded-lg border border-gray-300 p-2 mb-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+                            {/* Starting Price */}
+                            <div className="border-r border-gray-300">
+                                <div className="flex items-center justify-around mb-2">
+                                    <div className="flex items-center space-x-2">
+                                        <span className="text-sm font-medium text-gray-600">Starting Price</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-center space-x-1">
+                                    <IndianRupee className="w-4 h-4 text-blue-600" />
+                                    <p className="text-2xl font-bold text-blue-600">
+                                        {product?.startingPrice?.toLocaleString('en-IN') || '0'}
+                                    </p>
+                                    <span className="text-sm text-gray-500">/-</span>
+                                </div>
+                            </div>
+
+                            {/* Current Highest Bid */}
+                            <div className="border-r border-gray-300">
+                                <div className="flex items-center justify-around mb-2">
+                                    <div className="flex items-center space-x-2">
+                                        <span className="text-sm font-medium text-gray-600">Highest Bid</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-center space-x-1">
+                                    <IndianRupee className="w-4 h-4 text-green-600" />
+                                    <p className="text-2xl font-bold text-green-600">
+                                        {product?.currentHighestBid?.toLocaleString('en-IN') || '0'}
+                                    </p>
+                                    <span className="text-sm text-gray-500">/-</span>
+                                </div>
+                            </div>
+
+                            <div className="border-r border-gray-300">
+                                <div className="flex items-center justify-around mb-2">
+                                    <div className="flex items-center space-x-2">
+                                        <span className="text-sm font-medium text-gray-600">Quantity</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-center space-x-1">
+                                    <Weight className="w-4 h-4 text-green-600" />
+                                    <p className="text-2xl font-bold text-green-600">
+                                        {product.quantity.value} {product.quantity.unit}
                                     </p>
                                 </div>
                             </div>
-                            <div className="flex items-center space-x-2">
-                                <TrendingUp className="h-5 w-5 text-green-600" />
-                                <div>
-                                    <span className="text-sm text-gray-600">Current Highest Bid</span>
-                                    <p className="text-lg font-semibold text-green-600">
-                                        {formatPrice(product.currentHighestBid)}
-                                    </p>
+
+                            {/* Status with Verified Stamp */}
+                            <div>
+                                <div className="flex items-center justify-center">
+                                    <div className="relative">
+                                        <img
+                                            src="/stamp/verified_stamp.png"
+                                            alt="Verified Stamp"
+                                            className="w-15 h-15 object-contain"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Product Details Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                        <div className="space-y-3">
-                            <div className="flex items-center space-x-2">
-                                <Users className="h-4 w-4 text-gray-400" />
-                                <span className="text-sm text-gray-600">
-                                    Farmer ID: <strong>{product.farmerId}</strong>
-                                </span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Weight className="h-4 w-4 text-gray-400" />
-                                {/* <span className="text-sm text-gray-600">
-                                    Quantity: <strong>{product.quantity.value}</strong>
-                                </span> */}
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Package className="h-4 w-4 text-gray-400" />
-                                <span className="text-sm text-gray-600">
-                                    Product ID: <strong>{product._id}</strong>
-                                </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 border border-gray-300 rounded-lg p-2">
+                        <div className="flex items-center space-x-2">
+                            <Users className="h-4 w-4 text-gray-400" />
+                            <span className="text-sm text-gray-600">
+                                Farmer ID: <strong>{product.farmerId}</strong>
+                            </span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <Package className="h-4 w-4 text-gray-400" />
+                            <span className="text-sm text-gray-600">
+                                Product ID: <strong>{product._id}</strong>
+                            </span>
+                        </div>
+                    </div>
+
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {/* Start Date and End Date  */}
+                        <div className="bg-gray-50 border border-gray-300 rounded-lg p-2">
+                            <h3 className="text-center text-sm font-medium text-gray-800 mb-2">Bidding Date's</h3>
+                            <div className="border-t border-gray-300">
+                                <div className="mt-2">
+                                    <div className="grid grid-cols-2">
+                                        <div className="text-center">
+                                            <div className="text-[10px] text-gray-500 font-medium mb-0.2">Start Date</div>
+                                        </div>
+
+                                        <div className="text-center">
+                                            <div className="text-[10px] text-gray-500 font-medium mb-0.2">End Date</div>
+                                        </div>
+                                    </div>
+
+                                    {/* Time Slots with Move Horizontal Icon */}
+                                    <div className="grid grid-cols-2 relative">
+                                        <div className="text-center">
+                                            <div className="bg-white border-l border-t border-b border-gray-300 rounded-l-md py-1">
+                                                <span className="text-sm font-bold text-green-600">
+                                                    {new Date(product.bidStartDate).toLocaleDateString('en-US', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric'
+                                                    })}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* Move Horizontal Icon */}
+                                        <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
+                                            <MoveHorizontal className="w-6 h-6 text-gray-400" />
+                                        </div>
+
+                                        <div className="text-center">
+                                            <div className="bg-white border-r border-t border-b border-gray-300 rounded-r-md py-1">
+                                                <span className="text-sm font-bold text-red-600">
+                                                    {new Date(product.bidEndDate).toLocaleDateString('en-US', {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric'
+                                                    })}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div className="space-y-3">
-                            <div className="flex items-center space-x-2">
-                                <Calendar className="h-4 w-4 text-gray-400" />
-                                {new Date(product.bidStartDate).toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                })}
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Clock className="h-4 w-4 text-gray-400" />
-                                {new Date(product.bidEndDate).toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                })}
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Eye className="h-4 w-4 text-gray-400" />
-                                {/* <span className="text-sm text-gray-600">
-                                    Status: <strong className={` px-2 py-1 rounded text-xs`}>
-                                        {product.productStatus}
-                                    </strong>
-                                </span> */}
+
+
+                        {/* Bidding Timeline */}
+                        <div className="bg-gray-50 border border-gray-300 rounded-lg p-2">
+                            <h3 className="text-center text-sm font-medium text-gray-800 mb-2">Bidding Timeline</h3>
+                            <div className="border-t border-gray-300">
+                                <div className="flex justify-center items-center gap-2 mb-2 mt-2">
+                                    <span className="text-sm font-semibold text-gray-700">
+                                        {new Date(product.bidStartDate).toLocaleDateString('en-US', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric'
+                                        })}
+                                    </span>
+                                </div>
+
+                                <div className="grid grid-cols-2">
+                                    <div className="text-center">
+                                        <div className="text-[10px] text-gray-500 font-medium mb-0.2">Start Time</div>
+                                    </div>
+
+                                    <div className="text-center">
+                                        <div className="text-[10px] text-gray-500 font-medium mb-0.2">End Time</div>
+                                    </div>
+                                </div>
+
+                                {/* Time Slots with Move Horizontal Icon */}
+                                <div className="grid grid-cols-2 relative">
+                                    <div className="text-center">
+                                        <div className="bg-white border-l border-t border-b border-gray-300 rounded-l-md py-1">
+                                            <span className="text-sm font-bold text-green-600">
+                                                {new Date(product.bidStartTime).toLocaleTimeString('en-US', {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                    hour12: true
+                                                })}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Move Horizontal Icon */}
+                                    <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
+                                        <MoveHorizontal className="w-6 h-6 text-gray-400" />
+                                    </div>
+
+                                    <div className="text-center">
+                                        <div className="bg-white border-r border-t border-b border-gray-300 rounded-r-md py-1">
+                                            <span className="text-sm font-bold text-red-600">
+                                                {new Date(product.bidEndTime).toLocaleTimeString('en-US', {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                    hour12: true
+                                                })}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Bidding Timeline */}
-                    <div className="bg-gray-50 rounded-lg p-4">
-                        <h3 className="text-sm font-medium text-gray-800 mb-2">Bidding Timeline</h3>
-                        <div className="space-y-2 text-xs text-gray-600">
-                            <div className="flex justify-between">
-                                <span>Bidding Started:</span>
-                                <span className="text-sm font-bold text-green-600">
-                                    {new Date(product.bidStartTime).toLocaleTimeString('en-US', {
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                        hour12: true
-                                    })}
-                                </span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span>Bidding Ends:</span>
-                                <span className="text-sm font-bold text-red-600">
-                                    {new Date(product.bidEndTime).toLocaleTimeString('en-US', {
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                        hour12: true
-                                    })}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
