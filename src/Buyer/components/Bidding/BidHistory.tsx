@@ -10,6 +10,7 @@ import {
     CheckCircle,
     AlertCircle,
 } from "lucide-react";
+import { BiddingStatus } from "../../../utils/enum";
 
 interface Bid {
     bidId: string;
@@ -25,12 +26,6 @@ interface Bid {
     isWinningBid: boolean;
     bidStatus: string;
     bidType: "MANUAL" | "AUTO";
-}
-
-enum BiddingStatus {
-    NOT_STARTED = 'NOT_STARTED',
-    ACTIVE = 'ACTIVE',
-    ENDED = 'ENDED'
 }
 
 interface BidHistoryProps {
@@ -135,24 +130,7 @@ const BidHistory = ({
             <div className="p-8 text-center bg-gray-50">
                 <div className="mb-4">
                     <CheckCircle className="h-16 w-16 text-gray-500 mx-auto mb-4" />
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">Bidding Has Ended</h3>
-                    <p className="text-gray-600 mb-4">
-                        The auction for this item has concluded.
-                    </p>
-                    {/* {bids.length > 0 && (
-                        <div className="bg-white rounded-lg p-4 border border-gray-200">
-                            <p className="text-sm text-gray-600 mb-2">Winning Bid</p>
-                            <div className="flex items-center justify-center space-x-2">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${getAvatarColor(0)}`}>
-                                    {bids[0].bidderInitials}
-                                </div>
-                                <div>
-                                    <p className="font-semibold text-gray-800">{bids[0].bidderName}</p>
-                                    <p className="text-lg font-bold text-green-600">₹{bids[0].currentBidAmount.toLocaleString()}</p>
-                                </div>
-                            </div>
-                        </div>
-                    )} */}
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2">Bidding Has Ended</h3>
                 </div>
             </div>
         </>
@@ -163,7 +141,7 @@ const BidHistory = ({
             <div className="p-8 text-center bg-white">
                 <div className="mb-4">
                     <Timer className="h-16 w-16 text-orange-500 mx-auto mb-4" />
-                    <h3 className="text-xl font-bold text-gray-800 mb-2">Bidding Starts Soon</h3>
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2">Bidding Starts Soon</h3>
                     <p className="text-gray-600 mb-4">
                         Get ready! The auction will begin in:
                     </p>
@@ -203,7 +181,6 @@ const BidHistory = ({
 
                             {/* Right Side - Live Status and Buttons */}
                             <div className="flex flex-col items-end space-y-2">
-
                                 {/* Status Indicator */}
                                 <div className={`flex items-center space-x-2 px-2 py-1.5 rounded-full border ${statusConfig.color}`}>
                                     {statusConfig.icon}
@@ -222,7 +199,6 @@ const BidHistory = ({
                                         <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
                                     </button>
                                 )}
-
                             </div>
                         </div>
 
@@ -389,7 +365,7 @@ const BidHistory = ({
                                                 </div>
                                             </div>
 
-                                            {/* Right Section - Bid Amount & Previous Bid */}
+                                            {/* Right Section - Bid Info */}
                                             <div className="text-right flex-shrink-0">
                                                 <div
                                                     className={`text-lg sm:text-2xl font-bold mb-1 ${bid.isWinningBid ? "text-green-600" : "text-gray-800"

@@ -4,7 +4,8 @@ import { useDispatch, useSelector } from "react-redux";
 import ProductDetails from "./ProductDetails";
 import BidHistory from "./BidHistory";
 import { AppDispatch, RootState } from "../../../State/store";
-import { fetchSpecificProduct, getAllBids, placeBid } from "../../../Services/biddingActions";
+import { fetchSpecificProduct, getAllBids } from "../../../Services/biddingActions";
+import { BiddingStatus } from "../../../utils/enum";
 
 interface Bid {
     bidId: string;
@@ -26,12 +27,6 @@ interface BiddingProps {
     productId?: string;
 }
 
-enum BiddingStatus {
-    NOT_STARTED = 'NOT_STARTED',
-    ACTIVE = 'ACTIVE',
-    ENDED = 'ENDED'
-}
-
 const Bidding = ({ productId: propProductId }: BiddingProps) => {
     const { productId: urlProductId } = useParams<{ productId: string }>();
     const dispatch = useDispatch<AppDispatch>();
@@ -43,13 +38,12 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
     const {
         currentProduct: product,
         loading,
-        error,
         bids: reduxBids,
         fetchingBids,
         // placingBid
     } = useSelector((state: RootState) => state.bidding);
 
-    const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
+    // const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
     const [biddingStatus, setBiddingStatus] = useState<BiddingStatus>(BiddingStatus.NOT_STARTED);
     const [timeRemaining, setTimeRemaining] = useState<string>("00:00:00");
 
@@ -159,34 +153,34 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
 
     const handlePlaceBidClick = () => {
         if (biddingStatus === BiddingStatus.ACTIVE) {
-            setIsBottomSheetOpen(true);
+            // setIsBottomSheetOpen(true);
         }
     };
 
-    const handleCloseBidSheet = () => {
-        setIsBottomSheetOpen(false);
-    };
+    // const handleCloseBidSheet = () => {
+    //     setIsBottomSheetOpen(false);
+    // };
 
-    const handleSubmitBid = async (bidData: { amount: string; isAutomatic: boolean; increment?: string }) => {
-        if (!productId) return;
+    // const handleSubmitBid = async (bidData: { amount: string; isAutomatic: boolean; increment?: string }) => {
+    //     if (!productId) return;
 
-        try {
-            const bidRequest = {
-                bidAmount: Number(bidData.amount),
-                bidType: bidData.isAutomatic ? "Auto Bid" : "Manual Bid"
-            };
+    //     try {
+    //         const bidRequest = {
+    //             bidAmount: Number(bidData.amount),
+    //             bidType: bidData.isAutomatic ? "Auto Bid" : "Manual Bid"
+    //         };
 
-            await dispatch(placeBid(productId, bidRequest));
+    //         await dispatch(placeBid(productId, bidRequest));
 
-            // Refresh bids after successful bid placement
-            dispatch(getAllBids(productId));
+    //         // Refresh bids after successful bid placement
+    //         dispatch(getAllBids(productId));
 
-            // Close the bottom sheet
-            setIsBottomSheetOpen(false);
-        } catch (error) {
-            console.error('Error placing bid:', error);
-        }
-    };
+    //         // Close the bottom sheet
+    //         setIsBottomSheetOpen(false);
+    //     } catch (error) {
+    //         console.error('Error placing bid:', error);
+    //     }
+    // };
 
     const handleRefreshBids = () => {
         if (productId) {
@@ -205,28 +199,6 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
                     <div className="text-center">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
                         <p className="text-gray-600">Loading product details...</p>
-                    </div>
-                </div>
-            </>
-        );
-    }
-
-    // Error state
-    if (error) {
-        return (
-            <>
-                <div className="min-h-screen flex items-center justify-center">
-                    <div className="text-center">
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
-                            <h2 className="text-lg font-semibold text-red-800 mb-2">Error Loading Product</h2>
-                            <p className="text-red-600 mb-4">{error}</p>
-                            <button
-                                onClick={() => productId && dispatch(fetchSpecificProduct(productId))}
-                                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
-                            >
-                                Try Again
-                            </button>
-                        </div>
                     </div>
                 </div>
             </>
