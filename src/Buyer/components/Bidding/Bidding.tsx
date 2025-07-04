@@ -4,8 +4,9 @@ import { useDispatch, useSelector } from "react-redux";
 import ProductDetails from "./ProductDetails";
 import BidHistory from "./BidHistory";
 import { AppDispatch, RootState } from "../../../State/store";
-import { fetchSpecificProduct, getAllBids } from "../../../Services/biddingActions";
+import { fetchSpecificProduct, getAllBids, placeBid } from "../../../Services/biddingActions";
 import { BiddingStatus } from "../../../utils/enum";
+import BidPlacement from "./BidPlacement";
 
 interface Bid {
     bidId: string;
@@ -34,13 +35,15 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
     // Get the product ID from props or URL params
     const productId = propProductId || urlProductId;
 
+    const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
+
     // Redux state
     const {
         currentProduct: product,
         loading,
         bids: reduxBids,
         fetchingBids,
-        // placingBid
+        placingBid
     } = useSelector((state: RootState) => state.bidding);
 
     // const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
@@ -145,7 +148,7 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
         if (biddingStatus === BiddingStatus.ACTIVE && productId) {
             const interval = setInterval(() => {
                 dispatch(getAllBids(productId));
-            }, 1000000); // Refresh every 10 seconds
+            }, 10000); // Refresh every 10 seconds
 
             return () => clearInterval(interval);
         }
@@ -153,34 +156,36 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
 
     const handlePlaceBidClick = () => {
         if (biddingStatus === BiddingStatus.ACTIVE) {
-            // setIsBottomSheetOpen(true);
+            setIsBottomSheetOpen(true);
         }
     };
 
-    // const handleCloseBidSheet = () => {
-    //     setIsBottomSheetOpen(false);
-    // };
+    const handleCloseBidSheet = () => {
+        setIsBottomSheetOpen(false);
+    };
 
-    // const handleSubmitBid = async (bidData: { amount: string; isAutomatic: boolean; increment?: string }) => {
-    //     if (!productId) return;
+    const handleSubmitBid = async (bidData: { amount: string; isAutomatic: boolean; increment?: string }) => {
+        if (!productId) return;
 
-    //     try {
-    //         const bidRequest = {
-    //             bidAmount: Number(bidData.amount),
-    //             bidType: bidData.isAutomatic ? "Auto Bid" : "Manual Bid"
-    //         };
+        try {
+            const bidRequest = {
+                bidAmount: Number(bidData.amount),
+                bidType: bidData.isAutomatic ? "Auto Bid" : "Manual Bid"
+            };
 
-    //         await dispatch(placeBid(productId, bidRequest));
+            // You'll need to implement placeBid action in your Redux store
+            await dispatch(placeBid(productId, bidRequest));
 
-    //         // Refresh bids after successful bid placement
-    //         dispatch(getAllBids(productId));
+            // Refresh bids after successful bid placement
+            dispatch(getAllBids(productId));
 
-    //         // Close the bottom sheet
-    //         setIsBottomSheetOpen(false);
-    //     } catch (error) {
-    //         console.error('Error placing bid:', error);
-    //     }
-    // };
+            // Close the bottom sheet
+            setIsBottomSheetOpen(false);
+        } catch (error) {
+            console.error('Error placing bid:', error);
+        }
+    };
+
 
     const handleRefreshBids = () => {
         if (productId) {
@@ -237,17 +242,17 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
                             highestBid={formattedBids.length > 0 ? formattedBids[0].currentBidAmount : 0}
                             startingPrice={product?.startingPrice}
                         />
-                        {/* {biddingStatus === BiddingStatus.ACTIVE && (
+                        {biddingStatus === BiddingStatus.ACTIVE && (
                             <BidPlacement
                                 bids={formattedBids}
                                 isBottomSheetOpen={isBottomSheetOpen}
                                 onCloseBidSheet={handleCloseBidSheet}
                                 onSubmitBid={handleSubmitBid}
-                            // biddingStatus={biddingStatus}
-                            // timeRemaining={timeRemaining}
-                            // loading={placingBid}
+                                biddingStatus={biddingStatus}
+                                timeRemaining={timeRemaining}
+                                loading={placingBid}
                             />
-                        )} */}
+                        )}
                     </div>
 
                     {/* Desktop Layout */}
@@ -272,15 +277,15 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
 
                         {/* Right Column - Bid Placement */}
                         <div className="lg:col-span-1">
-                            {/* <BidPlacement
+                            <BidPlacement
                                 bids={formattedBids}
                                 isBottomSheetOpen={isBottomSheetOpen}
                                 onCloseBidSheet={handleCloseBidSheet}
                                 onSubmitBid={handleSubmitBid}
-                            // biddingStatus={biddingStatus}
-                            // timeRemaining={timeRemaining}
-                            // loading={placingBid}
-                            /> */}
+                                biddingStatus={biddingStatus}
+                                timeRemaining={timeRemaining}
+                                loading={placingBid}
+                            />
                         </div>
                     </div>
                 </div>
