@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../State/store";
 import { setLimit, setPage, setProductStatus, clearReviewProductError, clearReviewProductMessage } from "../../State/Slices/adminSlice";
@@ -6,12 +6,12 @@ import { deleteproduct, fetchProducts, reviewProduct } from "../../Services/admi
 import Select from "../../Common/ui/Select";
 import Modal from "../../Common/ui/Modal";
 import { Spinner } from "../../Common/ui/Spinner";
-import { ArrowLeftFromLine, ArrowRightFromLine, Package, Trash2, CheckCircle, XCircle } from "lucide-react";
+import Table, { TableColumn, TableRow } from "../../Common/ui/Table";
+import { ArrowLeftFromLine, ArrowRightFromLine, Package, Trash2, CheckCircle, XCircle, Clock, ThumbsUp, ShoppingCart, Ban, HelpCircle } from "lucide-react";
 import toast from "react-hot-toast";
 
 const AllProducts: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
-    const [expandedProductId, setExpandedProductId] = useState<string | null>(null);
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
     const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
     const [reviewStatus, setReviewStatus] = useState<'APPROVED' | 'REJECTED'>('APPROVED');
@@ -90,11 +90,6 @@ const AllProducts: React.FC = () => {
         dispatch(setProductStatus(value === '' ? undefined : value));
     };
 
-    // Handle product toggle
-    const handleProductToggle = (productId: string) => {
-        setExpandedProductId(expandedProductId === productId ? null : productId);
-    };
-
     // Handle review button click
     const handleReviewClick = (productId: string, event: React.MouseEvent) => {
         event.stopPropagation(); // Prevent accordion toggle
@@ -141,7 +136,6 @@ const AllProducts: React.FC = () => {
             await dispatch(deleteproduct(productToDelete.id));
             // Refresh the products list after successful deletion
             dispatch(fetchProducts(filters));
-            setExpandedProductId(null); // Close accordion if the deleted product was expanded
             toast.success('Product deleted successfully');
         } catch (error) {
             toast.error('Failed to delete product');
@@ -175,7 +169,7 @@ const AllProducts: React.FC = () => {
 
     // Get status badge color
     const getStatusBadgeColor = (status: string) => {
-        switch (status.toUpperCase()) {
+        switch (status?.toUpperCase()) {
             case 'ACTIVE':
                 return 'bg-green-100 text-green-800';
             case 'PENDING':
@@ -192,6 +186,26 @@ const AllProducts: React.FC = () => {
                 return 'bg-gray-100 text-gray-800';
         }
     };
+
+    const getStatusIcon = (status: string): ReactNode => {
+        switch (status?.toUpperCase()) {
+            case 'ACTIVE':
+                return <CheckCircle className="w-3 h-3 mr-2" />;
+            case 'PENDING':
+                return <Clock className="w-3 h-3 mr-2" />;
+            case 'APPROVED':
+                return <ThumbsUp className="w-3 h-3 mr-2" />;
+            case 'REJECTED':
+                return <XCircle className="w-3 h-3 mr-2" />;
+            case 'SOLD':
+                return <ShoppingCart className="w-3 h-2 mr-2" />;
+            case 'CANCELLED':
+                return <Ban className="w-3 h-3 mr-2" />;
+            default:
+                return <HelpCircle className="w-3 h-3 mr-2" />;
+        }
+    };
+
 
     // Format date function
     const formatDate = (dateString: string) => {
@@ -232,145 +246,197 @@ const AllProducts: React.FC = () => {
         return pages;
     };
 
-    // Generate skeleton cards using Card component
-    const renderSkeletonProducts = () => {
-        return Array.from({ length: filters.limit }, (_, index) => (
-            <li key={`skeleton-${index}`} className="border-b border-gray-200 last:border-b-0">
-                <div className="px-4 py-4">
-                    <div className="grid grid-cols-3 gap-4 items-start text-start">
-                        {/* Product Name Skeleton */}
-                        <div className="h-4 bg-gray-300 rounded animate-pulse mx-auto w-3/4"></div>
+    // Table configuration
+    const columns: TableColumn[] = [
+        {
+            key: 'id',
+            label: 'Product Id',
+            width: '25%',
+            align: 'left',
+            sortable: true
+        },
+        {
+            key: 'name',
+            label: 'Product Name',
+            width: '25%',
+            align: 'left',
+            sortable: true
+        },
+        {
+            key: 'productStatus',
+            label: 'Product Status',
+            width: '15%',
+            align: 'left',
+            sortable: true
+        },        
+        {
+            key: 'startingPrice',
+            label: 'Price',
+            width: '15%',
+            align: 'left',
+            sortable: true
+        },
+        {
+            key: 'actions',
+            label: 'Actions',
+            width: '20%',
+            align: 'center'
+        }
+    ];
 
-                        {/* Status Badge Skeleton */}
-                        <div className="h-6 bg-gray-300 rounded-full animate-pulse mx-auto w-1/2"></div>
-
-                        {/* Price Skeleton */}
-                        <div className="h-4 bg-gray-300 rounded animate-pulse mx-auto w-1/4"></div>
+    // Custom cell renderer
+    const renderCell = (column: TableColumn, row: TableRow, value: any) => {
+        switch (column.key) {
+            case 'name':
+                return (
+                    <div className="font-medium text-gray-900 truncate">
+                        {value}
                     </div>
-                </div>
-            </li>
-        ));
-    };
+                );
 
-    // Render product details in accordion
-    const renderProductDetails = (product: any) => {
-        return (
-            <>
-                <div className="col-span-12 px-4 py-4 bg-gray-50 border-t border-gray-200">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                        {/* Product Images */}
-                        {product.images && product.images.length > 0 && (
-                            <div className="space-y-3">
-                                <h4 className="text-sm font-semibold text-gray-900">Product Images</h4>
-                                <div className="grid grid-cols-3 gap-2">
-                                    {product.images.map((image: string, index: number) => (
-                                        <img
-                                            key={index}
-                                            src={image}
-                                            alt={`Product ${index + 1}`}
-                                            className="h-20 w-20 object-cover rounded-md border border-gray-200 hover:opacity-80 transition-opacity"
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+            case 'productStatus':
+                return (
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium ${getStatusBadgeColor(value)}`}>
+                        {getStatusIcon(value)}
+                        {value}
+                    </span>
+                );
 
-                        {/* Product Basic Details */}
-                        <div className="border border-gray-300 rounded-md p-4 space-y-3">
-                            <h3 className="text-base font-bold text-gray-900 border-b border-gray-200 pb-2">Product Details</h3>
-                            <div className="space-y-2 text-sm">
-                                <div>
-                                    <span className="font-medium text-gray-700">Product ID:</span>
-                                    <span className="ml-2 text-gray-600 font-mono text-xs">{product._id}</span>
-                                </div>
-                                <div>
-                                    <span className="font-medium text-gray-700">Farmer ID:</span>
-                                    <span className="ml-2 text-gray-600 font-mono text-xs">{product.farmerId}</span>
-                                </div>
-                                <div>
-                                    <span className="font-medium text-gray-700">Starting Price:</span>
-                                    <span className="ml-2 text-green-600 font-semibold">${product.startingPrice}</span>
-                                </div>
-                                {product.quantity && (
-                                    <div>
-                                        <span className="font-medium text-gray-700">Quantity:</span>
-                                        <span className="ml-2 text-gray-600">{product.quantity.value} {product.quantity.unit}</span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Bidding Information */}
-                        <div className="border border-gray-300 rounded-md p-4 space-y-3">
-                            <h3 className="text-base font-bold text-gray-900 border-b border-gray-200 pb-2">Bidding Information</h3>
-                            <div className="space-y-2 text-sm">
-                                <div>
-                                    <span className="font-medium text-gray-700">Bid Start Date:</span>
-                                    <span className="ml-2 text-gray-600">{formatDate(product.bidStartDate)}</span>
-                                </div>
-                                <div>
-                                    <span className="font-medium text-gray-700">Bid End Date:</span>
-                                    <span className="ml-2 text-gray-600">{formatDate(product.bidEndDate)}</span>
-                                </div>
-                                <div>
-                                    <span className="font-medium text-gray-700">Bid Start Time:</span>
-                                    <span className="ml-2 text-gray-600">{formatDate(product.bidStartTime)}</span>
-                                </div>
-                                <div>
-                                    <span className="font-medium text-gray-700">Bid End Time:</span>
-                                    <span className="ml-2 text-gray-600">{formatDate(product.bidEndTime)}</span>
-                                </div>
-                            </div>
-                        </div>
+            case 'startingPrice':
+                return (
+                    <div className="font-medium text-gray-900">
+                        ₹ {value} /-
                     </div>
+                );
 
-                    {/* Product Description */}
-                    {product.description && (
-                        <div className="mt-6">
-                            <h4 className="text-sm font-semibold text-gray-900 mb-2">Description</h4>
-                            <p className="text-sm text-gray-600">
-                                {product.description}
-                            </p>
-                        </div>
-                    )}
-
-                    <div className="border-t border-gray-300 mt-6"></div>
-
-                    {/* Action Buttons */}
-                    <div className="mt-4 flex justify-end space-x-3">
-                        {canReviewProduct(product.productStatus) && (
+            case 'actions':
+                return (
+                    <div className="flex justify-center space-x-1">
+                        {canReviewProduct(row.productStatus) && (
                             <button
-                                onClick={(e) => handleReviewClick(product._id, e)}
-                                className="inline-flex items-center px-4 py-2 border border-blue-300 rounded-md shadow-sm text-sm font-medium text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors cursor-pointer"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleReviewClick(row._id, e);
+                                }}
+                                className="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 cursor-pointer"
                             >
-                                <CheckCircle className="w-4 h-4 mr-2" />
-                                Review
+                                <CheckCircle className="w-4 h-4" />
                             </button>
                         )}
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
-                                openDeleteModal(product._id, product.name);
+                                openDeleteModal(row._id, row.name);
                             }}
-                            disabled={deletingProductId === product._id}
-                            className="inline-flex items-center px-4 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={deletingProductId === row._id}
+                            className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 cursor-pointer"
                         >
-                            {deletingProductId === product._id ? (
+                            {deletingProductId === row._id ? (
                                 <>
                                     <Spinner />
-                                    <span className="ml-2">Deleting...</span>
+                                    <span className="ml-1">Deleting...</span>
                                 </>
                             ) : (
                                 <>
-                                    <Trash2 className="w-4 h-4 mr-2" />
-                                    Delete
+                                    <Trash2 className="w-4 h-4" />
                                 </>
                             )}
                         </button>
                     </div>
+                );
+
+            default:
+                return value;
+        }
+    };
+
+    // Render expanded content for each row
+    const renderExpandedContent = (row: TableRow) => {
+        return (
+            <div className="px-4 py-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {/* Product Images */}
+                    {row.images && row.images.length > 0 && (
+                        <div className="space-y-3">
+                            <h4 className="text-sm font-semibold text-gray-900">Product Images</h4>
+                            <div className="grid grid-cols-3 gap-2">
+                                {row.images.map((image: string, index: number) => (
+                                    <img
+                                        key={index}
+                                        src={image}
+                                        alt={`Product ${index + 1}`}
+                                        className="h-20 w-20 object-cover rounded-md border border-gray-200 hover:opacity-80 transition-opacity"
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Product Basic Details */}
+                    <div className="border border-gray-300 rounded-md p-4 space-y-3">
+                        <h3 className="text-base font-bold text-gray-900 border-b border-gray-200 pb-2">Product Details</h3>
+                        <div className="space-y-2 text-sm">
+                            <div>
+                                <span className="font-medium text-gray-700">Product ID:</span>
+                                <span className="ml-2 text-gray-600 font-mono text-xs">{row._id}</span>
+                            </div>
+                            <div>
+                                <span className="font-medium text-gray-700">Farmer ID:</span>
+                                <span className="ml-2 text-gray-600 font-mono text-xs">{row.farmerId}</span>
+                            </div>
+                            <div>
+                                <span className="font-medium text-gray-700">Starting Price:</span>
+                                <span className="ml-2 text-green-600 font-semibold">₹{row.startingPrice}</span>
+                            </div>
+                            {row.quantity && (
+                                <div>
+                                    <span className="font-medium text-gray-700">Quantity:</span>
+                                    <span className="ml-2 text-gray-600">{row.quantity.value} {row.quantity.unit}</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Bidding Information */}
+                    <div className="border border-gray-300 rounded-md p-4 space-y-3">
+                        <h3 className="text-base font-bold text-gray-900 border-b border-gray-200 pb-2">Bidding Information</h3>
+                        <div className="space-y-2 text-sm">
+                            <div>
+                                <span className="font-medium text-gray-700">Bid Start Date:</span>
+                                <span className="ml-2 text-gray-600">{formatDate(row.bidStartDate)}</span>
+                            </div>
+                            <div>
+                                <span className="font-medium text-gray-700">Bid End Date:</span>
+                                <span className="ml-2 text-gray-600">{formatDate(row.bidEndDate)}</span>
+                            </div>
+                            <div>
+                                <span className="font-medium text-gray-700">Bid Start Time:</span>
+                                <span className="ml-2 text-gray-600">{formatDate(row.bidStartTime)}</span>
+                            </div>
+                            <div>
+                                <span className="font-medium text-gray-700">Bid End Time:</span>
+                                <span className="ml-2 text-gray-600">{formatDate(row.bidEndTime)}</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </>
+
+                {/* Product Description */}
+                {row.description && (
+                    <div className="mt-6">
+                        <h4 className="text-sm font-semibold text-gray-900 mb-2">Description</h4>
+                        <p className="text-sm text-gray-600">{row.description}</p>
+                    </div>
+                )}
+            </div>
         );
+    };
+
+    // Custom empty state
+    const emptyState = {
+        icon: <Package className="mx-auto h-12 w-12 text-gray-400" />,
+        title: 'No products found',
+        description: 'No products have been added yet.'
     };
 
     // Status options
@@ -393,7 +459,7 @@ const AllProducts: React.FC = () => {
     ];
 
     const renderDeleteModal = () => (
-        < Modal
+        <Modal
             isOpen={deleteModalOpen}
             onClose={closeDeleteModal}
             title="Confirm Delete"
@@ -434,7 +500,7 @@ const AllProducts: React.FC = () => {
                     </div>
                 </div>
             </div>
-        </Modal >
+        </Modal>
     );
 
     return (
@@ -486,67 +552,17 @@ const AllProducts: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Products Accordion */}
-                <div className="bg-white shadow overflow-hidden rounded-md mb-6">
-
-                    {/* Header */}
-                    <div className="bg-gray-50 px-4 py-5 border border-gray-200 rounded-t-md">
-                        <div className="grid grid-cols-3 gap-4 text-start">
-                            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Product Name</h3>
-                            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Status</h3>
-                            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Price</h3>
-                        </div>
-                    </div>
-
-                    {loading ? (
-                        <ul className="divide-y divide-gray-200">
-                            {renderSkeletonProducts()}
-                        </ul>
-                    ) : products.length === 0 ? (
-                        <div className="text-center py-12">
-                            <Package className="mx-auto h-12 w-12 text-gray-400" />
-                            <h3 className="mt-2 text-sm font-medium text-gray-900">No products found</h3>
-                            <p className="mt-1 text-sm text-gray-500">No products have been added yet.</p>
-                        </div>
-                    ) : (
-                        <ul className="divide-y divide-gray-200">
-                            {products.map((product) => (
-                                <li key={product._id} className="border-b border-gray-200 last:border-b-0">
-
-                                    {/* Accordion Header */}
-                                    <div
-                                        className="px-4 py-4 hover:bg-gray-50 cursor-pointer transition-colors"
-                                        onClick={() => handleProductToggle(product._id)}
-                                    >
-                                        <div className="grid grid-cols-3 gap-4 items-center">
-
-                                            {/* Product Name */}
-                                            <div className="text-sm font-medium text-gray-900 truncate">
-                                                {product.name}
-                                            </div>
-
-                                            {/* Status Badge */}
-                                            <div>
-                                                <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(product.productStatus)}`}>
-                                                    {product.productStatus}
-                                                </span>
-                                            </div>
-
-                                            {/* Starting Price */}
-                                            <div className="text-sm font-medium text-gray-900">
-                                                ₹ {product.startingPrice} /-
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Accordion Content */}
-                                    {expandedProductId === product._id && renderProductDetails(product)}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
-
+                {/* Products Table */}
+                <Table
+                    columns={columns}
+                    data={products.map((product) => ({ ...product, id: product._id }))}
+                    loading={loading}
+                    expandable={true}
+                    renderCell={renderCell}
+                    renderExpandedContent={renderExpandedContent}
+                    emptyState={emptyState}
+                    className="mb-6"
+                />
 
                 {/* Pagination - Only show when not loading and has pagination data */}
                 {pagination && !loading && (
@@ -692,7 +708,7 @@ const AllProducts: React.FC = () => {
             {/* Delete Confirmation Modal */}
             {renderDeleteModal()}
         </>
-    )
-}
+    );
+};
 
-export default AllProducts
+export default AllProducts;
