@@ -108,7 +108,7 @@ const Table: React.FC<TableProps> = ({
                 <div
                   key={column.key}
                   className={`text-xs font-medium text-gray-500 tracking-wider ${column.align === 'center' ? 'text-center' :
-                      column.align === 'right' ? 'text-right' : 'text-left'
+                    column.align === 'right' ? 'text-right' : 'text-left'
                     }`}
                 >
                   {column.label}
@@ -151,7 +151,7 @@ const Table: React.FC<TableProps> = ({
                             <div
                               key={column.key}
                               className={`text-sm text-gray-900 ${column.align === 'center' ? 'text-center' :
-                                  column.align === 'right' ? 'text-right' : 'text-left'
+                                column.align === 'right' ? 'text-right' : 'text-left'
                                 }`}
                             >
                               {cellContent}
@@ -186,8 +186,8 @@ const Table: React.FC<TableProps> = ({
                     onClick={() => onPageChange?.(pagination.currentPage - 1)}
                     disabled={!pagination.hasPrevPage}
                     className={`flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${pagination.hasPrevPage
-                        ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 cursor-pointer'
-                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 cursor-pointer'
+                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                       }`}
                   >
                     <ArrowLeftFromLine className="w-4 h-4 mr-1" />
@@ -203,8 +203,8 @@ const Table: React.FC<TableProps> = ({
                     onClick={() => onPageChange?.(pagination.currentPage + 1)}
                     disabled={!pagination.hasNextPage}
                     className={`flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${pagination.hasNextPage
-                        ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 cursor-pointer'
-                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 cursor-pointer'
+                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                       }`}
                   >
                     <ArrowRightFromLine className="w-4 h-4 ml-1" />

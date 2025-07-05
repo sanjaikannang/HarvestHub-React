@@ -208,6 +208,30 @@ const AllProducts: React.FC = () => {
             width: '150px',
             align: 'left',
         },
+        {
+            key: 'bidStartTime',
+            label: 'Bid Time',
+            width: '150px',
+            align: 'left',
+        },
+        {
+            key: 'bidEndTime',
+            label: 'Bid Time',
+            width: '150px',
+            align: 'left',
+        },
+        {
+            key: 'bidStartDate',
+            label: 'Bid Time',
+            width: '150px',
+            align: 'left',
+        },
+        {
+            key: 'bidEndDate',
+            label: 'Bid Time',
+            width: '150px',
+            align: 'left',
+        },
     ];
 
     // Custom cell renderer
@@ -285,6 +309,34 @@ const AllProducts: React.FC = () => {
                     </div>
                 )
 
+            case 'bidStartTime':
+                return (
+                    <div className="text-gray-600">
+                        {value}
+                    </div>
+                )
+
+            case 'bidEndTime':
+                return (
+                    <div className="text-gray-600">
+                        {value}
+                    </div>
+                )
+
+            case 'bidStartDate':
+                return (
+                    <div className="text-gray-600">
+                        {value}
+                    </div>
+                )
+
+            case 'bidEndDate':
+                return (
+                    <div className="text-gray-600">
+                        {value}
+                    </div>
+                )
+
             default:
                 return value;
         }
@@ -317,19 +369,19 @@ const AllProducts: React.FC = () => {
                 </div>
 
                 {/* Products Table */}
-                    <Table
-                        columns={columns}
-                        data={products.map((product) => ({ ...product, id: product._id }))}
-                        loading={loading}
-                        renderCell={renderCell}
-                        emptyState={emptyState}
-                        showPagination={true}
-                        pagination={pagination ?? undefined}
-                        onPageChange={handlePageChange}
-                        itemsPerPage={filters.limit}
-                        paginationLabel="products"
-                        className=""
-                    />
+                <Table
+                    columns={columns}
+                    data={products.map((product) => ({ ...product, id: product._id }))}
+                    loading={loading}
+                    renderCell={renderCell}
+                    emptyState={emptyState}
+                    showPagination={true}
+                    pagination={pagination ?? undefined}
+                    onPageChange={handlePageChange}
+                    itemsPerPage={filters.limit}
+                    paginationLabel="products"
+                    className=""
+                />
             </main>
 
             {/* Review Product Modal */}
