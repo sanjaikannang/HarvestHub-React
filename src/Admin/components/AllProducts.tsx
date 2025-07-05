@@ -5,7 +5,7 @@ import { setPage, clearReviewProductError, clearReviewProductMessage } from "../
 import { fetchProducts, reviewProduct } from "../../Services/adminActions";
 import { Spinner } from "../../Common/ui/Spinner";
 import Table, { TableColumn, TableRow } from "../../Common/ui/Table";
-import { ArrowLeftFromLine, ArrowRightFromLine, Package, Trash2, CheckCircle, XCircle, Clock, ThumbsUp, ShoppingCart, Ban, HelpCircle } from "lucide-react";
+import { Package, Trash2, CheckCircle, XCircle, Clock, ThumbsUp, ShoppingCart, Ban, HelpCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import DeleteProduct from "./DeleteProduct";
 import ReviewProduct from "./ReviewProduct";
@@ -164,69 +164,50 @@ const AllProducts: React.FC = () => {
         }
     };
 
-    // Generate page numbers for pagination
-    const getPageNumbers = () => {
-        if (!pagination) return [];
-
-        const pages = [];
-        const totalPages = pagination.totalPages;
-        const currentPage = pagination.currentPage;
-
-        // Show max 5 page numbers at a time
-        let startPage = Math.max(1, currentPage - 2);
-        let endPage = Math.min(totalPages, currentPage + 2);
-
-        if (endPage - startPage < 4) {
-            if (startPage === 1) {
-                endPage = Math.min(totalPages, startPage + 4);
-            } else if (endPage === totalPages) {
-                startPage = Math.max(1, endPage - 4);
-            }
-        }
-
-        for (let i = startPage; i <= endPage; i++) {
-            pages.push(i);
-        }
-
-        return pages;
-    };
-
     // Table configuration
     const columns: TableColumn[] = [
         {
             key: 'id',
             label: 'Product Id',
-            width: '25%',
+            width: '250px',
             align: 'left',
-            sortable: true
         },
         {
             key: 'name',
             label: 'Product Name',
-            width: '25%',
+            width: '250px',
             align: 'left',
-            sortable: true
         },
         {
             key: 'productStatus',
             label: 'Product Status',
-            width: '15%',
+            width: '200px',
             align: 'left',
-            sortable: true
         },
         {
             key: 'startingPrice',
             label: 'Price',
-            width: '15%',
+            width: '150px',
             align: 'left',
-            sortable: true
         },
         {
             key: 'actions',
             label: 'Actions',
-            width: '20%',
-            align: 'center'
-        }
+            width: '150px',
+            align: 'left'
+        },
+        {
+            key: 'farmerId',
+            label: 'Farmer Id',
+            width: '250px',
+            align: 'left',
+        },
+        {
+            key: 'currentHighestBid',
+            label: 'Highest Bid',
+            width: '150px',
+            align: 'left',
+        },
     ];
 
     // Custom cell renderer
@@ -234,7 +215,7 @@ const AllProducts: React.FC = () => {
         switch (column.key) {
             case 'name':
                 return (
-                    <div className="font-medium text-gray-900 truncate">
+                    <div className="font-medium text-gray-600">
                         {value}
                     </div>
                 );
@@ -256,7 +237,7 @@ const AllProducts: React.FC = () => {
 
             case 'actions':
                 return (
-                    <div className="flex justify-center space-x-1">
+                    <div className="flex space-x-1">
                         {canReviewProduct(row.productStatus) && (
                             <button
                                 onClick={(e) => {
@@ -290,6 +271,20 @@ const AllProducts: React.FC = () => {
                     </div>
                 );
 
+            case 'farmerId':
+                return (
+                    <div className="text-gray-600">
+                        {value}
+                    </div>
+                );
+
+            case 'currentHighestBid':
+                return (
+                    <div className="text-gray-600">
+                        {value}
+                    </div>
+                )
+
             default:
                 return value;
         }
@@ -304,7 +299,7 @@ const AllProducts: React.FC = () => {
 
     return (
         <>
-            <main className="px-4 py-4 bg-gray-50 min-h-screen">
+            <main className="px-4 py-4 bg-gray-50">
                 {/* Header */}
                 <div className="mb-6">
                     <div className="flex justify-between items-center">
@@ -317,79 +312,24 @@ const AllProducts: React.FC = () => {
                                     Total - {pagination.totalProducts} products
                                 </p>
                             )}
-                        </div>                       
+                        </div>
                     </div>
                 </div>
 
                 {/* Products Table */}
-                <Table
-                    columns={columns}
-                    data={products.map((product) => ({ ...product, id: product._id }))}
-                    loading={loading}
-                    expandable={true}
-                    renderCell={renderCell}
-                    emptyState={emptyState}
-                    className="mb-6"
-                />
-
-                {/* Pagination - Only show when not loading and has pagination data */}
-                {pagination && !loading && (
-                    <div className="flex flex-col md:flex-row md:justify-between md:items-center space-y-4 md:space-y-0">
-                        {/* Pagination Info */}
-                        <div className="text-sm text-gray-600 text-center md:text-left">
-                            Showing {((pagination.currentPage - 1) * filters.limit) + 1} to{' '}
-                            {Math.min(pagination.currentPage * filters.limit, pagination.totalProducts)} of{' '}
-                            {pagination.totalProducts} products
-                        </div>
-
-                        {/* Pagination Controls */}
-                        {pagination.totalPages > 1 && (
-                            <div className="flex justify-center items-center space-x-2">
-                                {/* Previous Button */}
-                                <button
-                                    onClick={() => handlePageChange(pagination.currentPage - 1)}
-                                    disabled={!pagination.hasPrevPage}
-                                    className={`px-4 py-1.5 rounded-md text-sm font-medium cursor-pointer ${pagination.hasPrevPage
-                                        ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                        }`}
-                                >
-                                    <ArrowLeftFromLine
-                                        className="text-gray-500"
-                                        size={20} />
-                                </button>
-
-                                {/* Page Numbers */}
-                                {getPageNumbers().map((pageNumber) => (
-                                    <button
-                                        key={pageNumber}
-                                        onClick={() => handlePageChange(pageNumber)}
-                                        className={`px-4 py-1.5 rounded-md text-sm font-medium cursor-pointer ${pageNumber === pagination.currentPage
-                                            ? 'bg-green-500 text-white'
-                                            : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                                            }`}
-                                    >
-                                        {pageNumber}
-                                    </button>
-                                ))}
-
-                                {/* Next Button */}
-                                <button
-                                    onClick={() => handlePageChange(pagination.currentPage + 1)}
-                                    disabled={!pagination.hasNextPage}
-                                    className={`px-4 py-1.5 rounded-md text-sm font-medium cursor-pointer ${pagination.hasNextPage
-                                        ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                        }`}
-                                >
-                                    <ArrowRightFromLine
-                                        className="text-gray-500"
-                                        size={20} />
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                )}
+                    <Table
+                        columns={columns}
+                        data={products.map((product) => ({ ...product, id: product._id }))}
+                        loading={loading}
+                        renderCell={renderCell}
+                        emptyState={emptyState}
+                        showPagination={true}
+                        pagination={pagination ?? undefined}
+                        onPageChange={handlePageChange}
+                        itemsPerPage={filters.limit}
+                        paginationLabel="products"
+                        className=""
+                    />
             </main>
 
             {/* Review Product Modal */}
