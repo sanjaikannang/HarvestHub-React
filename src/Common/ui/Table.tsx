@@ -4,7 +4,7 @@ import { ChevronDown, Package } from 'lucide-react';
 export interface TableColumn {
   key: string;
   label: string;
-  width?: string; // e.g., "25%", "200px", "auto"
+  width?: string;
   align?: 'left' | 'center' | 'right';
   sortable?: boolean;
 }
@@ -51,29 +51,7 @@ const Table: React.FC<TableProps> = ({
   sortColumn,
   sortDirection
 }) => {
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
-
-  // Toggle row expansion
-  const toggleRowExpansion = (rowId: string) => {
-    const newExpandedRows = new Set(expandedRows);
-    if (newExpandedRows.has(rowId)) {
-      newExpandedRows.delete(rowId);
-    } else {
-      newExpandedRows.add(rowId);
-    }
-    setExpandedRows(newExpandedRows);
-  };
-
-  // Handle row click
-  const handleRowClick = (row: TableRow, event: React.MouseEvent) => {
-    if (expandable) {
-      event.stopPropagation();
-      toggleRowExpansion(row.id);
-    }
-    if (onRowClick) {
-      onRowClick(row);
-    }
-  };
+  const [expandedRows] = useState<Set<string>>(new Set());
 
   // Handle sort
   const handleSort = (column: TableColumn) => {
@@ -184,7 +162,6 @@ const Table: React.FC<TableProps> = ({
               {/* Main Row */}
               <div
                 className={`px-4 py-4 ${expandable || onRowClick ? 'hover:bg-gray-50 cursor-pointer' : ''} transition-colors ${getRowClassName(row)}`}
-                onClick={(e) => handleRowClick(row, e)}
               >
                 <div className="grid gap-4 items-center" style={{ gridTemplateColumns: columns.map(col => col.width || '1fr').join(' ') }}>                  
                   {columns.map((column) => {
