@@ -16,7 +16,7 @@ const AdminLayout: React.FC = () => {
         />
 
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col overflow-auto">
           {/* Header */}
           <Header
             isSidebarOpen={isSidebarOpen}

@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
     Users,
     DollarSign,
-    Gavel,
     Eye,
     Calendar,
     Package,
@@ -14,16 +13,10 @@ import {
     TrendingUp,
     Award,
     Zap,
-    ArrowUp,
-    X,
 } from "lucide-react";
 
 const Bidding: React.FC = () => {
     const [isProductDetailsOpen, setIsProductDetailsOpen] = useState(true);
-    const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
-    const [bidAmount, setBidAmount] = useState("");
-    const [isAutomaticBidding, setIsAutomaticBidding] = useState(false)
-    const [automaticBidIncrement, setAutomaticBidIncrement] = useState("100")
 
     const product = {
         name: "Premium Organic Tomatoes",
@@ -131,36 +124,6 @@ const Bidding: React.FC = () => {
     const toggleProductDetails = () => {
         setIsProductDetailsOpen(!isProductDetailsOpen);
     };
-
-    const getIncreaseAmount = (current: number, previous: number) => {
-        return current - previous;
-    };
-
-    const handlePlaceBidClick = () => {
-        setIsBottomSheetOpen(true);
-    };
-
-    const handleCloseBidSheet = () => {
-        setIsBottomSheetOpen(false);
-        setBidAmount("");
-    };
-
-    const handleSubmitBid = () => {
-        // Handle bid submission logic here
-        console.log("Bid submitted:", bidAmount);
-        handleCloseBidSheet();
-    };
-
-    const handleAutomaticBidSubmit = () => {
-        if (isAutomaticBidding) {
-            const newBidAmount = (bids[0]?.amount || 0) + Number(automaticBidIncrement)
-            setBidAmount(newBidAmount.toString())
-            // Call the original submit function
-            handleSubmitBid()
-        } else {
-            handleSubmitBid()
-        }
-    }
 
     return (
         <>
@@ -326,14 +289,6 @@ const Bidding: React.FC = () => {
                                                 </p>
                                             </div>
                                         </div>
-
-                                        {/* Place Bid Button */}
-                                        <button
-                                            onClick={handlePlaceBidClick}
-                                            className="px-4 py-1.5 bg-blue-500 text-white text-sm font-medium rounded-md hover:bg-blue-600 cursor-pointer"
-                                        >
-                                            Place Bid
-                                        </button>
                                     </div>
                                 </div>
 
@@ -461,48 +416,6 @@ const Bidding: React.FC = () => {
                                                     </div>
                                                 </div>
                                             </div>
-
-                                            {/* Right Section - Bid Amount & Previous Bid */}
-                                            <div className="text-right flex-shrink-0">
-                                                <div
-                                                    className={`text-lg sm:text-2xl font-bold mb-1 ${bid.isHighest ? "text-green-600" : "text-gray-800"
-                                                        }`}
-                                                >
-                                                    ₹{bid.amount.toLocaleString()}
-                                                </div>
-
-                                                {/* Previous Bid Amount with Up Arrow */}
-                                                <div className="flex items-center justify-end space-x-1 mb-2">
-                                                    <div className="flex items-center space-x-1 px-2 py-1 bg-green-50 rounded-md">
-                                                        <ArrowUp className="h-3 w-3 text-green-600" />
-                                                        <span className="text-xs text-green-700 font-medium">
-                                                            ₹
-                                                            {getIncreaseAmount(
-                                                                bid.amount,
-                                                                bid.previousAmount
-                                                            ).toLocaleString()}
-                                                        </span>
-                                                    </div>
-                                                </div>
-
-                                                <div className="text-xs text-gray-500 mb-1">
-                                                    <span className="hidden sm:inline">Previous: </span>₹
-                                                    {bid.previousAmount.toLocaleString()}
-                                                </div>
-
-                                                {bid.isHighest && (
-                                                    <div className="text-xs text-green-600 font-medium mb-1">
-                                                        Leading Bid
-                                                    </div>
-                                                )}
-
-                                                <div className="text-xs text-gray-400">
-                                                    <span className="hidden sm:inline">
-                                                        {bid.fullTimestamp}
-                                                    </span>
-                                                    <span className="sm:hidden">{bid.fullTimestamp}</span>
-                                                </div>
-                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -521,177 +434,7 @@ const Bidding: React.FC = () => {
                             </div>
                         </div>
                     </div>
-
-                    {/* Right Side - Price & Bidding Section - Fixed on large screens */}
-                    <div className="lg:sticky lg:top-6 lg:h-fit space-y-4">
-                        {/* Current Price & Timer */}
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hidden lg:block">
-                            <div className="text-center space-y-4">
-                                <div>
-                                    <p className="text-sm text-gray-600 mb-1">Time Remaining</p>
-                                    <p className="text-xl font-mono font-bold text-gray-900">
-                                        02:45:32
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Place Bid */}
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hidden lg:block">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-                                <Gavel className="h-5 w-5 text-green-500" />
-                                <span>Place Your Bid</span>
-                            </h3>
-
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Bid Amount (₹)
-                                    </label>
-                                    <input
-                                        type="number"
-                                        placeholder="Min: ₹1,851"
-                                        className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-lg"
-                                    />
-                                </div>
-
-                                <button className="w-full bg-green-500 text-white py-3 px-4 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center space-x-2 text-lg font-medium">
-                                    <Gavel className="h-5 w-5" />
-                                    <span>Place Bid</span>
-                                </button>
-
-                                <p className="text-xs text-gray-500 text-center">
-                                    Your bid must be higher than the current price
-                                </p>
-                            </div>
-                        </div>
-                    </div>
                 </div>
-
-                {/* Bottom Sheet for Mobile Bid Placement */}
-                {isBottomSheetOpen && (
-                    <>
-                        {/* Backdrop */}
-                        <div
-                            className="fixed inset-0 bg-opacity-50 z-40 lg:hidden"
-                            onClick={handleCloseBidSheet}
-                        />
-
-                        {/* Bottom Sheet */}
-                        <div className="border border-gray-300 fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl z-50 lg:hidden transform transition-transform duration-300 ease-out">
-                            {/* Header */}
-                            <div className="px-4 py-3">
-                                <div className="flex justify-center items-center relative">
-                                    <h3 className="text-lg text-gray-900 flex items-center space-x-2">
-                                        Place Your Bid
-                                    </h3>
-                                    <button
-                                        onClick={handleCloseBidSheet}
-                                        className="absolute right-0 p-1 rounded-full hover:bg-gray-100 transition-colors"
-                                    >
-                                        <X className="h-5 w-5 text-gray-500" />
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div className="px-2">
-                                <div className="border-t border-gray-300"></div>
-                            </div>
-
-                            {/* Content */}
-                            <div className="p-4 pb-6">
-                                {/* Bidding Mode Toggle */}
-                                <div className="mb-4">
-                                    <div className="flex items-center space-x-4">
-                                        <label className="flex items-center space-x-2 cursor-pointer">
-                                            <input
-                                                type="radio"
-                                                name="biddingMode"
-                                                checked={!isAutomaticBidding}
-                                                onChange={() => setIsAutomaticBidding(false)}
-                                                className="text-green-500 focus:ring-green-500"
-                                            />
-                                            <span className="text-sm text-gray-700">
-                                                Manual Bidding
-                                            </span>
-                                        </label>
-                                        <label className="flex items-center space-x-2 cursor-pointer">
-                                            <input
-                                                type="radio"
-                                                name="biddingMode"
-                                                checked={isAutomaticBidding}
-                                                onChange={() => setIsAutomaticBidding(true)}
-                                                className="text-green-500 focus:ring-green-500"
-                                            />
-                                            <span className="text-sm text-gray-700">
-                                                Automatic Bidding
-                                            </span>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                {/* Automatic Bidding Settings */}
-                                {isAutomaticBidding && (
-                                    <div className="mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
-                                        <p className="text-sm text-gray-700 mb-2">
-                                            Set the amount to add to the current highest bid:
-                                        </p>
-                                        <input
-                                            type="number"
-                                            value={automaticBidIncrement}
-                                            onChange={(e) => setAutomaticBidIncrement(e.target.value)}
-                                            placeholder="100"
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
-                                            min="1"
-                                        />
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            Your bid will be: ₹
-                                            {(
-                                                (bids[0]?.amount || 0) +
-                                                Number(automaticBidIncrement || 0)
-                                            ).toLocaleString()}
-                                        </p>
-                                    </div>
-                                )}
-
-                                {/* Bid Input and Button in the Same Line */}
-                                <div className="flex items-center space-x-4">
-                                    {/* Input - Only show for manual bidding */}
-                                    {!isAutomaticBidding && (
-                                        <div className="flex-1">
-                                            <input
-                                                type="number"
-                                                value={bidAmount}
-                                                onChange={(e) => setBidAmount(e.target.value)}
-                                                placeholder={`Min: ₹${(
-                                                    bids[0]?.amount + 1
-                                                ).toLocaleString()}`}
-                                                className="w-full px-4 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 text-lg"
-                                                min={bids[0]?.amount + 1}
-                                            />
-                                        </div>
-                                    )}
-
-                                    {/* Button */}
-                                    <button
-                                        onClick={handleAutomaticBidSubmit}
-                                        disabled={
-                                            isAutomaticBidding
-                                                ? !automaticBidIncrement ||
-                                                Number(automaticBidIncrement) <= 0
-                                                : !bidAmount || Number(bidAmount) <= bids[0]?.amount
-                                        }
-                                        className={`bg-green-500 text-white py-1.5 px-4 rounded-lg hover:bg-green-600 flex items-center justify-center space-x-2 text-lg font-medium whitespace-nowrap ${isAutomaticBidding ? "flex-1" : ""
-                                            }`}
-                                    >
-                                        <Gavel className="h-5 w-5" />
-                                        <span>Place Bid</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </>
-                )}
             </main>
         </>
 
