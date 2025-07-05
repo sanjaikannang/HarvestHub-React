@@ -181,20 +181,14 @@ const AllProducts: React.FC = () => {
         {
             key: 'productStatus',
             label: 'Product Status',
-            width: '200px',
+            width: '150px',
             align: 'left',
         },
         {
             key: 'startingPrice',
-            label: 'Price',
+            label: 'Starting Price',
             width: '150px',
             align: 'left',
-        },
-        {
-            key: 'actions',
-            label: 'Actions',
-            width: '150px',
-            align: 'left'
         },
         {
             key: 'farmerId',
@@ -205,32 +199,14 @@ const AllProducts: React.FC = () => {
         {
             key: 'currentHighestBid',
             label: 'Highest Bid',
-            width: '150px',
+            width: '120px',
             align: 'left',
         },
         {
-            key: 'bidStartTime',
-            label: 'Bid Time',
+            key: 'actions',
+            label: 'Actions',
             width: '150px',
-            align: 'left',
-        },
-        {
-            key: 'bidEndTime',
-            label: 'Bid Time',
-            width: '150px',
-            align: 'left',
-        },
-        {
-            key: 'bidStartDate',
-            label: 'Bid Time',
-            width: '150px',
-            align: 'left',
-        },
-        {
-            key: 'bidEndDate',
-            label: 'Bid Time',
-            width: '150px',
-            align: 'left',
+            align: 'left'
         },
     ];
 
@@ -239,7 +215,7 @@ const AllProducts: React.FC = () => {
         switch (column.key) {
             case 'name':
                 return (
-                    <div className="font-medium text-gray-600">
+                    <div className="text-gray-600">
                         {value}
                     </div>
                 );
@@ -254,8 +230,8 @@ const AllProducts: React.FC = () => {
 
             case 'startingPrice':
                 return (
-                    <div className="font-medium text-gray-900">
-                        ₹ {value} /-
+                    <div className="text-gray-900">
+                        {value}
                     </div>
                 );
 
@@ -297,7 +273,7 @@ const AllProducts: React.FC = () => {
 
             case 'farmerId':
                 return (
-                    <div className="text-gray-600">
+                    <div className="text-gray-600 flex items-center gap-1 cursor-pointer hover:underline group">
                         {value}
                     </div>
                 );
@@ -309,33 +285,12 @@ const AllProducts: React.FC = () => {
                     </div>
                 )
 
-            case 'bidStartTime':
+            case 'id':
                 return (
-                    <div className="text-gray-600">
+                    <div className="text-gray-600 flex items-center gap-1 cursor-pointer hover:underline group">
                         {value}
                     </div>
-                )
-
-            case 'bidEndTime':
-                return (
-                    <div className="text-gray-600">
-                        {value}
-                    </div>
-                )
-
-            case 'bidStartDate':
-                return (
-                    <div className="text-gray-600">
-                        {value}
-                    </div>
-                )
-
-            case 'bidEndDate':
-                return (
-                    <div className="text-gray-600">
-                        {value}
-                    </div>
-                )
+                );
 
             default:
                 return value;
@@ -351,7 +306,7 @@ const AllProducts: React.FC = () => {
 
     return (
         <>
-            <main className="px-4 py-4 bg-gray-50">
+            <main className="px-4 py-4 bg-gray-50 overflow-hidden">
                 {/* Header */}
                 <div className="mb-6">
                     <div className="flex justify-between items-center">

@@ -57,6 +57,13 @@ const Table: React.FC<TableProps> = ({
   paginationLabel = 'items'
 }) => {
 
+  // Calculate total table width based on column widths
+  const totalTableWidth = columns.reduce((total, column) => {
+    const width = column.width || column.minWidth || '150px';
+    const numericWidth = parseInt(width.replace('px', ''));
+    return total + numericWidth;
+  }, 0);
+
   // Default cell renderer
   const defaultRenderCell = (_column: TableColumn, _row: TableRow, value: any) => {
     if (value === null || value === undefined) {
@@ -79,7 +86,14 @@ const Table: React.FC<TableProps> = ({
     return Array.from({ length: 10 }, (_, index) => (
       <tr key={`skeleton-${index}`} className="border-b border-gray-200">
         {columns.map((column) => (
-          <td key={column.key} className="px-4 py-4">
+          <td 
+            key={column.key} 
+            className="px-4 py-4"
+            style={{ 
+              width: column.width || column.minWidth || '150px',
+              minWidth: column.minWidth || column.width || '150px'
+            }}
+          >
             <div className="h-4 bg-gray-300 rounded animate-pulse"></div>
           </td>
         ))}
@@ -98,73 +112,82 @@ const Table: React.FC<TableProps> = ({
 
   return (
     <>
-      <div className={`bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1),_0_4px_6px_-1px_rgba(0,0,0,0.1)] rounded-md ${className}`}>
-        {/* Table Header */}
-        <div className="">
-          <div className={`bg-gray-50 px-4 py-5 border-b border-gray-200 ${headerClassName}`}>
-            <div
-              className="grid gap-4 text-left">
-              {columns.map((column) => (
-                <div
-                  key={column.key}
-                  className={`text-xs font-medium text-gray-500 tracking-wider ${column.align === 'center' ? 'text-center' :
-                    column.align === 'right' ? 'text-right' : 'text-left'
+      <div className={`bg-white rounded-md border border-gray-300 ${className}`}>
+        {/* Table Container with Horizontal Scroll */}
+        <div className="overflow-auto no-scrollbar">
+          <table 
+            className="w-full"
+            style={{ 
+              minWidth: `${totalTableWidth}px`,
+              tableLayout: 'fixed'
+            }}
+          >
+            {/* Table Header */}
+            <thead className={`bg-gray-50 border-b border-gray-200 ${headerClassName}`}>
+              <tr>
+                {columns.map((column) => (
+                  <th
+                    key={column.key}
+                    className={`px-4 py-5 text-sm font-medium text-gray-500 tracking-wider ${
+                      column.align === 'center' ? 'text-center' :
+                      column.align === 'right' ? 'text-right' : 'text-left'
                     }`}
-                >
-                  {column.label}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Table Body */}
-          <div className="">
-            {loading ? (
-              <table className="w-full">
-                <tbody className="divide-y divide-gray-200">
-                  {renderSkeletonRows()}
-                </tbody>
-              </table>
-            ) : data.length === 0 ? (
-              <div className="text-center py-12">
-                {finalEmptyState.icon}
-                <h3 className="mt-2 text-sm font-medium text-gray-900">{finalEmptyState.title}</h3>
-                <p className="mt-1 text-sm text-gray-500">{finalEmptyState.description}</p>
-              </div>
-            ) : (
-              <div className="divide-y divide-gray-200">
-                {data.map((row) => (
-                  <div key={row.id} className="border-b border-gray-200 last:border-b-0">
-                    {/* Main Row */}
-                    <div
-                      className={`px-4 py-4 transition-colors hover:bg-gray-50`}
-                    >
-                      <div
-                        className="grid gap-4 items-center">
-                        {columns.map((column) => {
-                          const value = row[column.key];
-                          const cellContent = renderCell
-                            ? renderCell(column, row, value)
-                            : defaultRenderCell(column, row, value);
-
-                          return (
-                            <div
-                              key={column.key}
-                              className={`text-sm text-gray-900 ${column.align === 'center' ? 'text-center' :
-                                column.align === 'right' ? 'text-right' : 'text-left'
-                                }`}
-                            >
-                              {cellContent}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
+                    style={{ 
+                      width: column.width || column.minWidth || '150px',
+                      minWidth: column.minWidth || column.width || '150px'
+                    }}
+                  >
+                    {column.label}
+                  </th>
                 ))}
-              </div>
-            )}
-          </div>
+              </tr>
+            </thead>
+
+            {/* Table Body */}
+            <tbody className="divide-y divide-gray-200">
+              {loading ? (
+                renderSkeletonRows()
+              ) : data.length === 0 ? (
+                <tr>
+                  <td colSpan={columns.length} className="text-center py-12">
+                    {finalEmptyState.icon}
+                    <h3 className="mt-2 text-sm font-medium text-gray-900">{finalEmptyState.title}</h3>
+                    <p className="mt-1 text-sm text-gray-500">{finalEmptyState.description}</p>
+                  </td>
+                </tr>
+              ) : (
+                data.map((row) => (
+                  <tr 
+                    key={row.id} 
+                    className="transition-colors hover:bg-gray-50"
+                  >
+                    {columns.map((column) => {
+                      const value = row[column.key];
+                      const cellContent = renderCell
+                        ? renderCell(column, row, value)
+                        : defaultRenderCell(column, row, value);
+
+                      return (
+                        <td
+                          key={column.key}
+                          className={`px-4 py-5 text-sm text-gray-900 ${
+                            column.align === 'center' ? 'text-center' :
+                            column.align === 'right' ? 'text-right' : 'text-left'
+                          }`}
+                          style={{ 
+                            width: column.width || column.minWidth || '150px',
+                            minWidth: column.minWidth || column.width || '150px'
+                          }}
+                        >
+                          {cellContent}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
 
         {/* Table Footer with Pagination */}
@@ -185,10 +208,11 @@ const Table: React.FC<TableProps> = ({
                   <button
                     onClick={() => onPageChange?.(pagination.currentPage - 1)}
                     disabled={!pagination.hasPrevPage}
-                    className={`flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${pagination.hasPrevPage
-                      ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 cursor-pointer'
-                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      }`}
+                    className={`flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                      pagination.hasPrevPage
+                        ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 cursor-pointer'
+                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    }`}
                   >
                     <ArrowLeftFromLine className="w-4 h-4 mr-1" />
                   </button>
@@ -202,10 +226,11 @@ const Table: React.FC<TableProps> = ({
                   <button
                     onClick={() => onPageChange?.(pagination.currentPage + 1)}
                     disabled={!pagination.hasNextPage}
-                    className={`flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${pagination.hasNextPage
-                      ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 cursor-pointer'
-                      : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      }`}
+                    className={`flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                      pagination.hasNextPage
+                        ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 cursor-pointer'
+                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    }`}
                   >
                     <ArrowRightFromLine className="w-4 h-4 ml-1" />
                   </button>
