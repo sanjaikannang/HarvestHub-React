@@ -1,31 +1,38 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
     Users,
-    ChevronDown,
-    Loader2,
     Trash2,
+    Loader2,
+    Shield,
+    Sprout,
+    ShoppingCart,
+    HelpCircle,
 } from 'lucide-react';
 import { AppDispatch, RootState } from '../../State/store';
-import { fetchAllUsers, fetchSpecificUser, deleteUser } from '../../Services/adminActions';
+import { fetchAllUsers } from '../../Services/adminActions';
 import { clearUsersError, clearUsersMessage } from '../../State/Slices/adminSlice';
 import toast from 'react-hot-toast';
-import Modal from '../../Common/ui/Modal';
+import Table, { TableColumn, TableRow } from '../../Common/ui/Table';
+import { setPage } from "../../State/Slices/adminSlice";
+import DeleteUser from './DeleteUser';
+import { UserRole } from '../../utils/enum';
+import { getUserAvatarColor } from '../../utils/userAvatarColor';
+import { getRoleBadgeColor } from '../../utils/roleBadgeColor';
 
-const AllUsers = () => {
+const AllUsers: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
-    const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
     const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [userToDelete, setUserToDelete] = useState<{ id: string; name: string } | null>(null);
+
+    const [filters] = useState({ limit: 10 });
 
     const {
         users,
         userPagination,
         usersLoading,
         usersError,
-        specificUser,
-        specificUserLoading,
     } = useSelector((state: RootState) => state.admin);
 
     // Handle error with toast notification
@@ -54,26 +61,18 @@ const AllUsers = () => {
             minute: '2-digit'
         });
     };
-
-    const getRoleBadgeColor = (role: string) => {
-        switch (role.toLowerCase()) {
-            case 'admin':
-                return 'bg-red-100 text-red-800';
-            case 'farmer':
-                return 'bg-green-100 text-green-800';
-            case 'buyer':
-                return 'bg-blue-100 text-blue-800';
+    
+    // Function to get role icon based on user role
+    const getRoleIcon = (role: string) => {
+        switch (role.toLocaleLowerCase()) {
+            case UserRole.ADMIN:
+                return <Shield className="w-3 h-3 mr-2" />;
+            case UserRole.FARMER:
+                return <Sprout className="w-3 h-3 mr-2" />;
+            case UserRole.BUYER:
+                return <ShoppingCart className="w-3 h-3 mr-2" />;
             default:
-                return 'bg-gray-100 text-gray-800';
-        }
-    };
-
-    const handleUserToggle = (userId: string) => {
-        if (expandedUserId === userId) {
-            setExpandedUserId(null);
-        } else {
-            setExpandedUserId(userId);
-            dispatch(fetchSpecificUser(userId));
+                return <HelpCircle className="w-3 h-3 mr-2" />;
         }
     };
 
@@ -82,254 +81,187 @@ const AllUsers = () => {
         setDeleteModalOpen(true);
     };
 
-    const closeDeleteModal = () => {
-        setDeleteModalOpen(false);
-        setUserToDelete(null);
+    // Handle page change
+    const handlePageChange = (newPage: number) => {
+        dispatch(setPage(newPage));
     };
 
-    const handleDeleteUser = async () => {
-        if (!userToDelete) return;
+    // Table configuration
+    const columns: TableColumn[] = [
+        {
+            key: 'name',
+            label: 'Full Name',
+            width: '200px',
+            align: 'left',
+        },
+        {
+            key: 'id',
+            label: 'User ID',
+            width: '250px',
+            align: 'left',
+        },
+        {
+            key: 'email',
+            label: 'Email Address',
+            width: '250px',
+            align: 'left',
+        },
+        {
+            key: 'role',
+            label: 'Role',
+            width: '120px',
+            align: 'left',
+        },
+        {
+            key: 'createdAt',
+            label: 'Created At',
+            width: '180px',
+            align: 'left',
+        },
+        {
+            key: 'updatedAt',
+            label: 'Updated At',
+            width: '180px',
+            align: 'left',
+        },
+        {
+            key: 'actions',
+            label: 'Actions',
+            width: '100px',
+            align: 'left'
+        },
+    ];
 
-        setDeletingUserId(userToDelete.id);
-        try {
-            await dispatch(deleteUser(userToDelete.id));
-            // Refresh the users list after successful deletion
-            dispatch(fetchAllUsers());
-            setExpandedUserId(null); // Close accordion if the deleted user was expanded
-            toast.success('User deleted successfully');
-        } catch (error) {
-            toast.error('Failed to delete user');
-        } finally {
-            setDeletingUserId(null);
-            closeDeleteModal();
-        }
-    };
+    // Custom cell renderer
+    const renderCell = (column: TableColumn, row: TableRow, value: any) => {
+        switch (column.key) {
+            case 'id':
+                return (
+                    <div className="text-gray-600 flex items-center cursor-pointer hover:underline">
+                        <span className="break-all">{value}</span>
+                    </div>
+                );
 
-    // Generate skeleton cards with pulse animation
-    const renderSkeletonUsers = () => {
-        return Array.from({ length: 5 }, (_, index) => (
-            <li key={`skeleton-${index}`} className="px-6 py-4 animate-pulse">
-                <div className="flex items-center justify-between">
+            case 'name':
+                return (
                     <div className="flex items-center">
                         <div className="flex-shrink-0">
-                            <div className="h-10 w-10 rounded-full bg-gray-300"></div>
-                        </div>
-                        <div className="ml-4">
-                            <div className="flex items-center">
-                                <div className="h-4 bg-gray-300 rounded w-32 mb-2"></div>
-                                <div className="ml-2 h-5 bg-gray-300 rounded-full w-16"></div>
+                            <div className={`h-8 w-8 rounded-full ${getUserAvatarColor(value)} flex items-center justify-center`}>
+                                <span className="text-xs font-medium text-white">
+                                    {value.charAt(0).toUpperCase()}
+                                </span>
                             </div>
-                            <div className="h-3 bg-gray-300 rounded w-48"></div>
+                        </div>
+                        <div className="ml-3">
+                            <div className="text-sm font-medium text-gray-900">
+                                {value}
+                            </div>
                         </div>
                     </div>
-                    <div className="flex items-center text-sm text-gray-500">
-                        <div className="flex flex-col items-end">
-                            <div className="h-3 bg-gray-300 rounded w-12 mb-1"></div>
-                            <div className="h-4 bg-gray-300 rounded w-20"></div>
-                        </div>
-                    </div>
-                </div>
-            </li>
-        ));
-    };
+                );
 
-    const renderUserDetails = () => {
-        if (specificUserLoading) {
-            return (
-                <div className="px-6 py-4 bg-gray-50 animate-pulse">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="h-4 bg-gray-300 rounded w-3/4"></div>
-                        <div className="h-4 bg-gray-300 rounded w-2/3"></div>
-                        <div className="h-4 bg-gray-300 rounded w-1/2"></div>
-                        <div className="h-4 bg-gray-300 rounded w-3/5"></div>
+            case 'email':
+                return (
+                    <div className="text-gray-600 text-sm">
+                        {value}
                     </div>
-                </div>
-            );
-        }
+                );
 
-        if (!specificUser) {
-            return (
-                <div className="px-6 py-4 bg-gray-50">
-                    <p className="text-red-500 text-sm">Failed to load user details</p>
-                </div>
-            );
-        }
+            case 'role':
+                return (
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium ${getRoleBadgeColor(value)}`}>
+                        {getRoleIcon(value)}
+                        {value}
+                    </span>
+                );
 
-        return (
-            <div className="px-6 py-4 bg-gray-50 border-t border-gray-300">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label className="text-sm font-medium text-gray-600">User ID</label>
-                        <p className="text-sm text-gray-900 break-all">{specificUser._id}</p>
+            case 'createdAt':
+            case 'updatedAt':
+                return (
+                    <div className="text-gray-600 text-sm">
+                        {formatDate(value)}
                     </div>
-                    <div>
-                        <label className="text-sm font-medium text-gray-600">Full Name</label>
-                        <p className="text-sm text-gray-900">{specificUser.name}</p>
-                    </div>
-                    <div>
-                        <label className="text-sm font-medium text-gray-600">Email Address</label>
-                        <p className="text-sm text-gray-900">{specificUser.email}</p>
-                    </div>
-                    <div>
-                        <label className="text-sm font-medium text-gray-600">Role</label>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(specificUser.role)}`}>
-                            {specificUser.role}
-                        </span>
-                    </div>
-                    <div>
-                        <label className="text-sm font-medium text-gray-600">Account Created</label>
-                        <p className="text-sm text-gray-900">{formatDate(specificUser.createdAt)}</p>
-                    </div>
-                    <div>
-                        <label className="text-sm font-medium text-gray-600">Last Updated</label>
-                        <p className="text-sm text-gray-900">{formatDate(specificUser.updatedAt)}</p>
-                    </div>
-                </div>
+                );
 
-                <div className="flex justify-end pt-4 border-t border-gray-300">
-                    <button
-                        onClick={() => openDeleteModal(specificUser._id, specificUser.name)}
-                        disabled={deletingUserId === specificUser._id}
-                        className="inline-flex items-center px-4 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {deletingUserId === specificUser._id ? (
-                            <>
-                                <Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4" />
-                                Deleting...
-                            </>
-                        ) : (
-                            <>
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Delete User
-                            </>
-                        )}
-                    </button>
-                </div>
-            </div>
-        );
-    };
-
-    const renderDeleteModal = () => (
-        <Modal
-            isOpen={deleteModalOpen}
-            onClose={closeDeleteModal}
-            title="Confirm Delete"
-            size="md"
-        >
-            <div className="flex items-start space-x-4">                
-                <div className="flex-1">
-                    <p className="text-sm text-gray-900 mb-4">
-                        Are you sure you want to delete user <strong>{userToDelete?.name}</strong>?
-                        This action cannot be undone and will permanently remove all user data.
-                    </p>
-
-                    <div className="flex justify-end space-x-3">                       
+            case 'actions':
+                return (
+                    <div className="flex space-x-1">
                         <button
-                            onClick={handleDeleteUser}
-                            disabled={deletingUserId === userToDelete?.id}
-                            className="inline-flex items-center px-4 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                openDeleteModal(row._id, row.name);
+                            }}
+                            disabled={deletingUserId === row._id}
+                            className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {deletingUserId === userToDelete?.id ? (
+                            {deletingUserId === row._id ? (
                                 <>
-                                    <Loader2 className="animate-spin -ml-1 mr-2 h-4 w-4" />
-                                    Deleting...
+                                    <Loader2 className="animate-spin w-4 h-4" />
                                 </>
                             ) : (
                                 <>
-                                    <Trash2 className="w-4 h-4 mr-2" />
-                                    Delete
+                                    <Trash2 className="w-4 h-4" />
                                 </>
                             )}
                         </button>
                     </div>
-                </div>
-            </div>
-        </Modal>
-    );
+                );
+
+            default:
+                return value;
+        }
+    };
+
+    // Custom empty state
+    const emptyState = {
+        icon: <Users className="mx-auto h-12 w-12 text-gray-400" />,
+        title: 'No users found',
+        description: 'No users have been registered yet.'
+    };
 
     return (
         <>
-            <main className="px-4 py-4 bg-gray-50 min-h-screen">
+            <main className="px-4 py-4 bg-gray-50 overflow-hidden">
                 {/* Header */}
                 <div className="mb-6">
                     <div className="flex justify-between items-center">
-                        <h1 className="text-2xl font-semibold text-gray-900">
-                            All Users
-                        </h1>
-                        {userPagination && (
-                            <p className="text-sm font-semibold text-gray-600">
-                                Total - {userPagination.totalUsers} users
-                            </p>
-                        )}
+                        <div>
+                            <h1 className="text-2xl font-semibold text-gray-900">
+                                All Users
+                            </h1>
+                            {userPagination && (
+                                <p className="text-sm font-semibold text-gray-600 mt-1">
+                                    Total - {userPagination.totalProducts} users
+                                </p>
+                            )}
+                        </div>
                     </div>
                 </div>
 
                 {/* Users Table */}
-                <div className="bg-white shadow overflow-hidden sm:rounded-md mb-6">
-                    {usersLoading ? (
-                        // Show skeleton users while loading
-                        <ul className="divide-y divide-gray-200">
-                            {renderSkeletonUsers()}
-                        </ul>
-                    ) : users.length === 0 ? (
-                        <div className="text-center py-12">
-                            <Users className="mx-auto h-12 w-12 text-gray-400" />
-                            <h3 className="mt-2 text-sm font-medium text-gray-900">No users found</h3>
-                            <p className="mt-1 text-sm text-gray-500">No users have been registered yet.</p>
-                        </div>
-                    ) : (
-                        <ul className="divide-y divide-gray-200">
-                            {users.map((user) => (
-                                <li key={user._id} className="border-b border-gray-200">
-                                    <div
-                                        className="px-3 py-4 hover:bg-gray-50 cursor-pointer"
-                                        onClick={() => handleUserToggle(user._id)}
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center">
-                                                <div className="flex-shrink-0">
-                                                    <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                                        <span className="text-sm font-medium text-gray-700">
-                                                            {user.name.charAt(0).toUpperCase()}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div className="ml-4">
-                                                    <div className="flex items-center">
-                                                        <div className="text-sm font-medium text-gray-900">
-                                                            {user.name}
-                                                        </div>
-                                                        <span className={`ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(user.role)}`}>
-                                                            {user.role}
-                                                        </span>
-                                                    </div>
-                                                    <div className="text-sm text-gray-500">
-                                                        {user.email}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center text-sm text-gray-500">
-                                                <div className="transform transition-transform duration-200">
-                                                    <ChevronDown
-                                                        className={`w-5 h-5 transition-transform duration-200 ${expandedUserId === user._id ? 'rotate-180' : ''
-                                                            }`}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Accordion Content */}
-                                    {expandedUserId === user._id && renderUserDetails()}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
+                <Table
+                    columns={columns}
+                    data={users.map((user) => ({ ...user, id: user._id }))}
+                    loading={usersLoading}
+                    renderCell={renderCell}
+                    emptyState={emptyState}
+                    showPagination={true}
+                    pagination={userPagination ?? undefined}
+                    onPageChange={handlePageChange}
+                    itemsPerPage={filters.limit}
+                    paginationLabel="users"
+                    className=""
+                />
             </main>
 
             {/* Delete Confirmation Modal */}
-            {renderDeleteModal()}
+            <DeleteUser
+                isOpen={deleteModalOpen}
+                onClose={() => setDeleteModalOpen(false)}
+                userToDelete={userToDelete}
+                deletingUserId={deletingUserId}
+                setDeletingUserId={setDeletingUserId}
+            />
         </>
     );
 };

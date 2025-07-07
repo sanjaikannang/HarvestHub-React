@@ -86,10 +86,10 @@ const Table: React.FC<TableProps> = ({
     return Array.from({ length: 10 }, (_, index) => (
       <tr key={`skeleton-${index}`} className="border-b border-gray-200">
         {columns.map((column) => (
-          <td 
-            key={column.key} 
+          <td
+            key={column.key}
             className="px-4 py-4"
-            style={{ 
+            style={{
               width: column.width || column.minWidth || '150px',
               minWidth: column.minWidth || column.width || '150px'
             }}
@@ -115,9 +115,9 @@ const Table: React.FC<TableProps> = ({
       <div className={`bg-white rounded-md border border-gray-300 ${className}`}>
         {/* Table Container with Horizontal Scroll */}
         <div className="overflow-auto no-scrollbar">
-          <table 
+          <table
             className="w-full"
-            style={{ 
+            style={{
               minWidth: `${totalTableWidth}px`,
               tableLayout: 'fixed'
             }}
@@ -128,11 +128,10 @@ const Table: React.FC<TableProps> = ({
                 {columns.map((column) => (
                   <th
                     key={column.key}
-                    className={`px-4 py-5 text-sm font-medium text-gray-500 tracking-wider ${
-                      column.align === 'center' ? 'text-center' :
-                      column.align === 'right' ? 'text-right' : 'text-left'
-                    }`}
-                    style={{ 
+                    className={`px-4 py-5 text-sm font-medium text-gray-500 tracking-wider ${column.align === 'center' ? 'text-center' :
+                        column.align === 'right' ? 'text-right' : 'text-left'
+                      }`}
+                    style={{
                       width: column.width || column.minWidth || '150px',
                       minWidth: column.minWidth || column.width || '150px'
                     }}
@@ -157,8 +156,8 @@ const Table: React.FC<TableProps> = ({
                 </tr>
               ) : (
                 data.map((row) => (
-                  <tr 
-                    key={row.id} 
+                  <tr
+                    key={row.id}
                     className="transition-colors hover:bg-gray-50"
                   >
                     {columns.map((column) => {
@@ -170,11 +169,10 @@ const Table: React.FC<TableProps> = ({
                       return (
                         <td
                           key={column.key}
-                          className={`px-4 py-5 text-sm text-gray-900 ${
-                            column.align === 'center' ? 'text-center' :
-                            column.align === 'right' ? 'text-right' : 'text-left'
-                          }`}
-                          style={{ 
+                          className={`px-4 py-5.5 text-sm text-gray-900 ${column.align === 'center' ? 'text-center' :
+                              column.align === 'right' ? 'text-right' : 'text-left'
+                            }`}
+                          style={{
                             width: column.width || column.minWidth || '150px',
                             minWidth: column.minWidth || column.width || '150px'
                           }}
@@ -192,11 +190,11 @@ const Table: React.FC<TableProps> = ({
 
         {/* Table Footer with Pagination */}
         {showPagination && pagination && !loading && (
-          <div className="bg-gray-50 border-t border-gray-200 px-4 py-3 rounded-b-md">
+          <div className="bg-gray-50 border-t border-gray-200 px-4 py-5 rounded-b-md">
             <div className="flex justify-between items-center">
               {/* Pagination Info */}
               <div className="text-sm text-gray-600">
-                Showing {((pagination.currentPage - 1) * itemsPerPage) + 1} to{' '}
+                {((pagination.currentPage - 1) * itemsPerPage) + 1} to{' '}
                 {Math.min(pagination.currentPage * itemsPerPage, pagination.totalProducts)} of{' '}
                 {pagination.totalProducts} {paginationLabel}
               </div>
@@ -208,11 +206,10 @@ const Table: React.FC<TableProps> = ({
                   <button
                     onClick={() => onPageChange?.(pagination.currentPage - 1)}
                     disabled={!pagination.hasPrevPage}
-                    className={`flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                      pagination.hasPrevPage
-                        ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 cursor-pointer'
+                    className={`flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${pagination.hasPrevPage
+                        ? 'bg-green-500 text-white hover:bg-green-600 cursor-pointer'
                         : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    }`}
+                      }`}
                   >
                     <ArrowLeftFromLine className="w-4 h-4 mr-1" />
                   </button>
@@ -226,11 +223,10 @@ const Table: React.FC<TableProps> = ({
                   <button
                     onClick={() => onPageChange?.(pagination.currentPage + 1)}
                     disabled={!pagination.hasNextPage}
-                    className={`flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                      pagination.hasNextPage
-                        ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 cursor-pointer'
+                    className={`flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${pagination.hasNextPage
+                        ? 'bg-green-500 text-white hover:bg-green-600 cursor-pointer'
                         : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    }`}
+                      }`}
                   >
                     <ArrowRightFromLine className="w-4 h-4 ml-1" />
                   </button>
