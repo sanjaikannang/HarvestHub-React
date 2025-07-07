@@ -55,7 +55,7 @@ export interface UserResponse {
 export interface UserPaginationInfo {
     currentPage: number;
     totalPages: number;
-    totalUsers: number;
+    totalProducts: number;
     hasNextPage: boolean;
     hasPrevPage: boolean;
 }
