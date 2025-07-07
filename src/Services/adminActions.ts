@@ -40,11 +40,11 @@ export const fetchProducts = (filters: GetAllProductRequest) => {
 
 
 // Fetch all users action
-export const fetchAllUsers = () => {
+export const fetchAllUsers = (page: number = 1, limit: number = 10) => {
     return async (dispatch: AppDispatch) => {
         try {
             dispatch(fetchUsersStart());
-            const response = await getAllUsersAPI();
+            const response = await getAllUsersAPI(page, limit); // Pass pagination params
             dispatch(fetchUsersSuccess(response));
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Failed to fetch users';

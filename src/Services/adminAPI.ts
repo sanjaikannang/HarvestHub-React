@@ -81,9 +81,9 @@ export async function getSpecificProductAPI(productId: string) {
 
 
 // Get All Users API
-export async function getAllUsersAPI() {
+export async function getAllUsersAPI(page: number = 1, limit: number = 10) {
     try {
-        const response = await apiClient.get("/user/get-all-user");
+        const response = await apiClient.get(`/user/get-all-user?page=${page}&limit=${limit}`);
         return response.data;
     } catch (error) {
         console.error('Get all Users error:', error);
