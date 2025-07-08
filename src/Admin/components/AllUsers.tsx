@@ -61,7 +61,7 @@ const AllUsers: React.FC = () => {
             minute: '2-digit'
         });
     };
-    
+
     // Function to get role icon based on user role
     const getRoleIcon = (role: string) => {
         switch (role.toLocaleLowerCase()) {
@@ -184,26 +184,37 @@ const AllUsers: React.FC = () => {
                 );
 
             case 'actions':
+                const [hoveredButton, setHoveredButton] = useState<'delete' | null>(null);
+
                 return (
                     <div className="flex space-x-1">
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                openDeleteModal(row._id, row.name);
-                            }}
-                            disabled={deletingUserId === row._id}
-                            className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {deletingUserId === row._id ? (
-                                <>
-                                    <Loader2 className="animate-spin w-4 h-4" />
-                                </>
-                            ) : (
-                                <>
-                                    <Trash2 className="w-4 h-4" />
-                                </>
+                        <div className="relative">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    openDeleteModal(row._id, row.name);
+                                }}
+                                disabled={deletingUserId === row._id}
+                                onMouseEnter={() => setHoveredButton('delete')}
+                                onMouseLeave={() => setHoveredButton(null)}
+                                className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {deletingUserId === row._id ? (
+                                    <>
+                                        <Loader2 className="animate-spin w-4 h-4" />
+                                    </>
+                                ) : (
+                                    <>
+                                        <Trash2 className="w-4 h-4" />
+                                    </>
+                                )}
+                            </button>
+                            {hoveredButton === 'delete' && (
+                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-700 rounded-xs shadow-lg whitespace-nowrap z-10">
+                                    {deletingUserId === row._id ? "Deleting..." : "Delete"}
+                                </div>
                             )}
-                        </button>
+                        </div>
                     </div>
                 );
 

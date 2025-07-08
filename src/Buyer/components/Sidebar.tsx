@@ -3,6 +3,7 @@ import { useAppDispatch } from "../../State/hooks";
 import { clearCredentials } from "../../State/Slices/authSlice";
 import {
     Bell,
+    BotMessageSquare,
     Boxes,
     LayoutDashboard,
     LogOut,
@@ -28,7 +29,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, setIsSidebarOpen }) =>
     const navigation: NavigationItem[] = [
         { name: 'Dashboard', href: '/buyer', icon: LayoutDashboard },
         { name: 'Products', href: '/buyer/products', icon: Boxes },
-        { name: 'Notification', href: '/buyer/notification', icon: Bell }
+        { name: 'Notification', href: '/buyer/notification', icon: Bell },
+        { name: 'Chatting', href: '/buyer/chatting', icon: BotMessageSquare }
     ];
 
     const isActive = (path: string) => {
@@ -45,7 +47,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, setIsSidebarOpen }) =>
     return (
         <>
             {/* Sidebar */}
-            <aside className={`${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-50 w-64 bg-whiteColor shadow-lg transform transition-transform duration-300 ease-in-out flex flex-col`}>
+            <aside className={`${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:static inset-y-0 left-0 z-50 w-48 bg-whiteColor shadow-lg transform transition-transform duration-300 ease-in-out flex flex-col`}>
 
                 {/* Logo */}
                 <div className="h-16 flex items-center justify-center flex-shrink-0">
