@@ -9,6 +9,7 @@ import { Package, Trash2, CheckCircle, XCircle, Clock, ThumbsUp, ShoppingCart, B
 import toast from "react-hot-toast";
 import DeleteProduct from "./DeleteProduct";
 import ReviewProduct from "./ReviewProduct";
+import { ProductStatus } from "../../utils/enum";
 
 const AllProducts: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -126,43 +127,45 @@ const AllProducts: React.FC = () => {
     };
 
     // Get status badge color
-    const getStatusBadgeColor = (status: string) => {
+    const getStatusBadgeColor = (status: string): string => {
         switch (status?.toUpperCase()) {
-            case 'ACTIVE':
+            case ProductStatus.ACTIVE:
                 return 'bg-green-100 text-green-800';
-            case 'PENDING':
+            case ProductStatus.PENDING:
                 return 'bg-yellow-100 text-yellow-800';
-            case 'APPROVED':
+            case ProductStatus.APPROVED:
                 return 'bg-blue-100 text-blue-800';
-            case 'REJECTED':
+            case ProductStatus.REJECTED:
                 return 'bg-red-100 text-red-800';
-            case 'SOLD':
+            case ProductStatus.SOLD:
                 return 'bg-purple-100 text-purple-800';
-            case 'CANCELLED':
+            case ProductStatus.CANCELLED:
                 return 'bg-gray-100 text-gray-800';
             default:
                 return 'bg-gray-100 text-gray-800';
         }
     };
 
+
     const getStatusIcon = (status: string): ReactNode => {
         switch (status?.toUpperCase()) {
-            case 'ACTIVE':
+            case ProductStatus.ACTIVE:
                 return <CheckCircle className="w-3 h-3 mr-2" />;
-            case 'PENDING':
+            case ProductStatus.PENDING:
                 return <Clock className="w-3 h-3 mr-2" />;
-            case 'APPROVED':
+            case ProductStatus.APPROVED:
                 return <ThumbsUp className="w-3 h-3 mr-2" />;
-            case 'REJECTED':
+            case ProductStatus.REJECTED:
                 return <XCircle className="w-3 h-3 mr-2" />;
-            case 'SOLD':
+            case ProductStatus.SOLD:
                 return <ShoppingCart className="w-3 h-2 mr-2" />;
-            case 'CANCELLED':
+            case ProductStatus.CANCELLED:
                 return <Ban className="w-3 h-3 mr-2" />;
             default:
                 return <HelpCircle className="w-3 h-3 mr-2" />;
         }
     };
+
 
     // Table configuration
     const columns: TableColumn[] = [
