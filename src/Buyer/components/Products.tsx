@@ -189,7 +189,8 @@ const AllProducts: React.FC = () => {
                                                             {new Date(product.bidStartTime).toLocaleTimeString('en-US', {
                                                                 hour: '2-digit',
                                                                 minute: '2-digit',
-                                                                hour12: true
+                                                                hour12: false,
+                                                                timeZone: 'UTC'
                                                             })}
                                                         </span>
                                                     </div>
@@ -206,7 +207,8 @@ const AllProducts: React.FC = () => {
                                                             {new Date(product.bidEndTime).toLocaleTimeString('en-US', {
                                                                 hour: '2-digit',
                                                                 minute: '2-digit',
-                                                                hour12: true
+                                                                hour12: false,
+                                                                timeZone: 'UTC'
                                                             })}
                                                         </span>
                                                     </div>
