@@ -9,3 +9,12 @@ export enum UserRole {
   FARMER = 'farmer',
   BUYER = 'buyer',
 }
+
+export enum ProductStatus {
+  ACTIVE = 'ACTIVE',
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  SOLD = 'SOLD',
+  CANCELLED = 'CANCELLED',
+}

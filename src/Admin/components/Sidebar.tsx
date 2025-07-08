@@ -86,7 +86,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, setIsSidebarOpen }) =>
           <div className="flex-shrink-0 p-2 h-16 border-t border-gray-200">
             <button
               onClick={handleLogout}
-              className="group flex items-center w-full px-3 py-3 text-sm font-medium text-gray-600 hover:bg-lightredColor hover:text-darkredColor transition-colors rounded-md"
+              className="group flex items-center w-full px-3 py-3 text-sm font-medium text-gray-600 hover:bg-lightredColor hover:text-darkredColor transition-colors rounded-md cursor-pointer"
             >
               <LogOut className="mr-3 h-5 w-5" />
               Logout
