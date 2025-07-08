@@ -3,6 +3,7 @@ import { useAppDispatch } from "../../State/hooks";
 import { clearCredentials } from "../../State/Slices/authSlice";
 import {
     Bell,
+    BotMessageSquare,
     Boxes,
     LayoutDashboard,
     LogOut,
@@ -28,7 +29,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, setIsSidebarOpen }) =>
     const navigation: NavigationItem[] = [
         { name: 'Dashboard', href: '/buyer', icon: LayoutDashboard },
         { name: 'Products', href: '/buyer/products', icon: Boxes },
-        { name: 'Notification', href: '/buyer/notification', icon: Bell }
+        { name: 'Notification', href: '/buyer/notification', icon: Bell },
+        { name: 'Chatting', href: '/buyer/chatting', icon: BotMessageSquare }
     ];
 
     const isActive = (path: string) => {

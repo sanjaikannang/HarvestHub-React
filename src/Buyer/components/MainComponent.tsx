@@ -4,6 +4,7 @@ import Products from "./Products"
 import Notification from "./Notification"
 import NavigationBar from "./NavigationBar"
 import Bidding from "./Bidding/Bidding"
+import Chatting from "./Chatting"
 
 
 const MainComponent = () => {
@@ -58,6 +59,7 @@ const MainComponent = () => {
                         <Route path="/products" element={<Products />} />
                         <Route path="/bidding/:productId" element={<Bidding />} />
                         <Route path="/notification" element={<Notification />} />
+                        <Route path="/chatting" element={<Chatting />} />
                     </Routes>
                 </div>
             </main>
