@@ -236,38 +236,58 @@ const AllProducts: React.FC = () => {
                 );
 
             case 'actions':
+                const [hoveredButton, setHoveredButton] = useState<'review' | 'delete' | null>(null);
+
                 return (
                     <div className="flex space-x-1">
                         {canReviewProduct(row.productStatus) && (
+                            <div className="relative">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleReviewClick(row._id, e);
+                                    }}
+                                    onMouseEnter={() => setHoveredButton('review')}
+                                    onMouseLeave={() => setHoveredButton(null)}
+                                    className="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 cursor-pointer"
+                                >
+                                    <CheckCircle className="w-4 h-4" />
+                                </button>
+                                {hoveredButton === 'review' && (
+                                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs rounded-xs text-white bg-gray-700 shadow-lg whitespace-nowrap z-10">
+                                        Review
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                        <div className="relative">
                             <button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleReviewClick(row._id, e);
+                                    openDeleteModal(row._id, row.name);
                                 }}
-                                className="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 cursor-pointer"
+                                disabled={deletingProductId === row._id}
+                                onMouseEnter={() => setHoveredButton('delete')}
+                                onMouseLeave={() => setHoveredButton(null)}
+                                className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 cursor-pointer"
                             >
-                                <CheckCircle className="w-4 h-4" />
+                                {deletingProductId === row._id ? (
+                                    <>
+                                        <Spinner />
+                                        <span className="ml-1">Deleting...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Trash2 className="w-4 h-4" />
+                                    </>
+                                )}
                             </button>
-                        )}
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                openDeleteModal(row._id, row.name);
-                            }}
-                            disabled={deletingProductId === row._id}
-                            className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 cursor-pointer"
-                        >
-                            {deletingProductId === row._id ? (
-                                <>
-                                    <Spinner />
-                                    <span className="ml-1">Deleting...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <Trash2 className="w-4 h-4" />
-                                </>
+                            {hoveredButton === 'delete' && (
+                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-gray-700 rounded-xs shadow-lg whitespace-nowrap z-10">
+                                    {deletingProductId === row._id ? "Deleting..." : "Delete"}
+                                </div>
                             )}
-                        </button>
+                        </div>
                     </div>
                 );
 
