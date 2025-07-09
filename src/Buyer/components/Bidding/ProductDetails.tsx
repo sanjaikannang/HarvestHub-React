@@ -8,6 +8,7 @@ import {
     ArrowRightFromLine,
     ArrowLeftFromLine,
 } from "lucide-react";
+import { formatDate, formatTime } from "../../../utils/dateTime/dateFormatter";
 
 interface ProductResponse {
     _id: string;
@@ -21,10 +22,10 @@ interface ProductResponse {
     images: string[];
     startingPrice: number;
     currentHighestBid: number;
-    bidStartDate: Date;
-    bidEndDate: Date;
-    bidStartTime: Date;
-    bidEndTime: Date;
+    bidStartDate: string;
+    bidEndDate: string;
+    bidStartTime: string;
+    bidEndTime: string;
     productStatus: string;
 }
 
@@ -230,12 +231,8 @@ const ProductDetails = ({ product }: ProductDetailsProps) => {
                                         <div className="grid grid-cols-2 relative">
                                             <div className="text-center">
                                                 <div className="bg-white border-l border-t border-b border-gray-300 rounded-l-md py-1">
-                                                    <span className="text-sm font-bold text-green-600">
-                                                        {new Date(product.bidStartDate).toLocaleDateString('en-US', {
-                                                            year: 'numeric',
-                                                            month: 'long',
-                                                            day: 'numeric'
-                                                        })}
+                                                    <span className="text-sm font-bold text-green-600">                                                       
+                                                        {formatDate(product.bidStartDate)}
                                                     </span>
                                                 </div>
                                             </div>
@@ -246,12 +243,8 @@ const ProductDetails = ({ product }: ProductDetailsProps) => {
 
                                             <div className="text-center">
                                                 <div className="bg-white border-r border-t border-b border-gray-300 rounded-r-md py-1">
-                                                    <span className="text-sm font-bold text-red-600">
-                                                        {new Date(product.bidEndDate).toLocaleDateString('en-US', {
-                                                            year: 'numeric',
-                                                            month: 'long',
-                                                            day: 'numeric'
-                                                        })}
+                                                    <span className="text-sm font-bold text-red-600">                                                       
+                                                        {formatDate(product.bidEndDate)}
                                                     </span>
                                                 </div>
                                             </div>
@@ -264,12 +257,8 @@ const ProductDetails = ({ product }: ProductDetailsProps) => {
                                 <h3 className="text-center text-sm font-medium text-gray-800 mb-2">Bidding Time</h3>
                                 <div className="border-t border-gray-300">
                                     <div className="flex justify-center items-center gap-2 mb-2 mt-2">
-                                        <span className="text-sm font-semibold text-gray-700">
-                                            {new Date(product.bidStartDate).toLocaleDateString('en-US', {
-                                                year: 'numeric',
-                                                month: 'long',
-                                                day: 'numeric'
-                                            })}
+                                        <span className="text-sm font-semibold text-gray-700">                                        
+                                            {formatDate(product.bidStartDate)}
                                         </span>
                                     </div>
 
@@ -286,12 +275,8 @@ const ProductDetails = ({ product }: ProductDetailsProps) => {
                                     <div className="grid grid-cols-2 relative">
                                         <div className="text-center">
                                             <div className="bg-white border-l border-t border-b border-gray-300 rounded-l-md py-1">
-                                                <span className="text-sm font-bold text-green-600">
-                                                    {new Date(product.bidStartTime).toLocaleTimeString('en-US', {
-                                                        hour: '2-digit',
-                                                        minute: '2-digit',
-                                                        hour12: true
-                                                    })}
+                                                <span className="text-sm font-bold text-green-600">                                                    
+                                                    {formatTime(product.bidStartTime)}
                                                 </span>
                                             </div>
                                         </div>
@@ -302,12 +287,8 @@ const ProductDetails = ({ product }: ProductDetailsProps) => {
 
                                         <div className="text-center">
                                             <div className="bg-white border-r border-t border-b border-gray-300 rounded-r-md py-1">
-                                                <span className="text-sm font-bold text-red-600">
-                                                    {new Date(product.bidEndTime).toLocaleTimeString('en-US', {
-                                                        hour: '2-digit',
-                                                        minute: '2-digit',
-                                                        hour12: true
-                                                    })}
+                                                <span className="text-sm font-bold text-red-600">                                                   
+                                                    {formatTime(product.bidEndTime)}
                                                 </span>
                                             </div>
                                         </div>

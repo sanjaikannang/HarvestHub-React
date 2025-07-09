@@ -7,6 +7,7 @@ import { AppDispatch, RootState } from "../../../State/store";
 import { fetchSpecificProduct, getAllBids, placeBid } from "../../../Services/biddingActions";
 import { BiddingStatus } from "../../../utils/enum";
 import BidPlacement from "./BidPlacement";
+import { formatDate, formatTime } from "../../../utils/dateTime/dateFormatter";
 
 interface Bid {
     bidId: string;
@@ -72,9 +73,30 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
         });
     };
 
-    const calculateTimeRemaining = (endTime: string): string => {
+    // Helper function to parse formatted date and time back to Date object
+    const parseFormattedDateTime = (dateStr: string, timeStr: string): Date => {
+        // Parse date: "09-07-2025" -> day, month, year
+        const [day, month, year] = dateStr.split('-').map(Number);
+
+        // Parse time: "08:30 PM" -> hours, minutes, AM/PM
+        const [time, period] = timeStr.split(' ');
+        const [hours, minutes] = time.split(':').map(Number);
+
+        // Convert to 24-hour format
+        let hour24 = hours;
+        if (period === 'PM' && hours !== 12) {
+            hour24 += 12;
+        } else if (period === 'AM' && hours === 12) {
+            hour24 = 0;
+        }
+
+        // Create date object (month is 0-indexed in JS Date)
+        return new Date(year, month - 1, day, hour24, minutes, 0);
+    };
+
+    const calculateTimeRemaining = (endDate: string, endTime: string): string => {
         const now = new Date();
-        const end = new Date(endTime);
+        const end = parseFormattedDateTime(endDate, endTime);
         const diffInMs = end.getTime() - now.getTime();
 
         if (diffInMs <= 0) return "00:00:00";
@@ -86,9 +108,9 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
         return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     };
 
-    const calculateCountdown = (startTime: string): string => {
+    const calculateCountdown = (startDate: string, startTime: string): string => {
         const now = new Date();
-        const start = new Date(startTime);
+        const start = parseFormattedDateTime(startDate, startTime);
         const diffInMs = start.getTime() - now.getTime();
 
         if (diffInMs <= 0) return "00:00:00";
@@ -104,8 +126,8 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
         if (!product) return BiddingStatus.NOT_STARTED;
 
         const now = new Date();
-        const startTime = new Date(product.bidStartTime);
-        const endTime = new Date(product.bidEndTime);
+        const startTime = parseFormattedDateTime(product.bidStartDate, product.bidStartTime);
+        const endTime = parseFormattedDateTime(product.bidEndDate, product.bidEndTime);
 
         if (now < startTime) return BiddingStatus.NOT_STARTED;
         if (now > endTime) return BiddingStatus.ENDED;
@@ -121,9 +143,9 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
             setBiddingStatus(status);
 
             if (status === BiddingStatus.NOT_STARTED) {
-                setTimeRemaining(calculateCountdown(new Date(product.bidStartTime).toISOString()));
+                setTimeRemaining(calculateCountdown(formatTime(product.bidStartTime), formatDate(product.bidStartTime)));
             } else if (status === BiddingStatus.ACTIVE) {
-                setTimeRemaining(calculateTimeRemaining(new Date(product.bidEndTime).toISOString()));
+                setTimeRemaining(calculateTimeRemaining(formatTime(product.bidEndTime), formatDate(product.bidEndTime)));
             } else {
                 setTimeRemaining("00:00:00");
             }

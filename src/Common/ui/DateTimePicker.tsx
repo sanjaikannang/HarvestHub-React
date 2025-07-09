@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -30,8 +31,10 @@ interface DateRange {
 interface TimeRange {
     startHour: string;
     startMinute: string;
+    startPeriod: string;
     endHour: string;
     endMinute: string;
+    endPeriod: string;
 }
 
 const DateTimePicker: React.FC<DateTimePickerProps> = ({
@@ -64,11 +67,34 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
     const [timeRange, setTimeRange] = useState<TimeRange>({
         startHour: '',
         startMinute: '',
+        startPeriod: 'AM',
         endHour: '',
-        endMinute: ''
+        endMinute: '',
+        endPeriod: 'AM'
     });
     const [timeDurationError, setTimeDurationError] = useState<string>('');
     const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Helper function to convert 24-hour to 12-hour format
+    const convertTo12Hour = (hour24: string): { hour: string; period: string } => {
+        const hour = parseInt(hour24);
+        if (hour === 0) return { hour: '12', period: 'AM' };
+        if (hour < 12) return { hour: hour.toString(), period: 'AM' };
+        if (hour === 12) return { hour: '12', period: 'PM' };
+        return { hour: (hour - 12).toString(), period: 'PM' };
+    };
+
+    // Helper function to convert 12-hour to 24-hour format
+    const convertTo24Hour = (hour12: string, period: string): string => {
+        const hour = parseInt(hour12);
+        if (period === 'AM') {
+            if (hour === 12) return '00';
+            return hour.toString().padStart(2, '0');
+        } else {
+            if (hour === 12) return '12';
+            return (hour + 12).toString().padStart(2, '0');
+        }
+    };
 
     // Updated: Parse value and respond to changes (including empty values)
     useEffect(() => {
@@ -83,8 +109,10 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
             setTimeRange({
                 startHour: '',
                 startMinute: '',
+                startPeriod: 'AM',
                 endHour: '',
-                endMinute: ''
+                endMinute: '',
+                endPeriod: 'AM'
             });
             setTimeDurationError('');
             return;
@@ -104,7 +132,9 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
         } else if (type === 'datetime') {
             const date = new Date(value + (value.includes('T') ? '' : 'T00:00:00'));
             setSelectedDate(date);
-            setSelectedHour(date.getHours().toString().padStart(2, '0'));
+            const hour24 = date.getHours().toString().padStart(2, '0');
+            const { hour } = convertTo12Hour(hour24);
+            setSelectedHour(hour);
             setSelectedMinute(date.getMinutes().toString().padStart(2, '0'));
         } else if (type === 'datetimerange') {
             const parts = value.split(' - ');
@@ -114,25 +144,27 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
 
                 if (dateTimePart.length === 2) {
                     const [datePart, startTime] = dateTimePart;
-                    const [startHour, startMinute] = startTime.split(':');
-                    const [endHour, endMinute] = endTime.split(':');
+                    const [startHour24, startMinute] = startTime.split(':');
+                    const [endHour24, endMinute] = endTime.split(':');
+
+                    const startTime12 = convertTo12Hour(startHour24);
+                    const endTime12 = convertTo12Hour(endHour24);
 
                     setSelectedDate(new Date(datePart + 'T00:00:00'));
                     setTimeRange({
-                        startHour,
+                        startHour: startTime12.hour,
                         startMinute,
-                        endHour,
-                        endMinute
+                        startPeriod: startTime12.period,
+                        endHour: endTime12.hour,
+                        endMinute,
+                        endPeriod: endTime12.period
                     });
                 }
             }
         } else {
             setSelectedDate(new Date(value + 'T00:00:00'));
         }
-    }, [value, type]); // This effect now properly handles empty values
-
-    // Remove the auto-default date range effect for better control
-    // The parent component should handle setting default values if needed
+    }, [value, type]);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -185,12 +217,14 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
             return 0;
         }
 
-        const startTime = parseInt(timeRange.startHour) * 60 + parseInt(timeRange.startMinute);
-        const endTime = parseInt(timeRange.endHour) * 60 + parseInt(timeRange.endMinute);
+        const startHour24 = convertTo24Hour(timeRange.startHour, timeRange.startPeriod);
+        const endHour24 = convertTo24Hour(timeRange.endHour, timeRange.endPeriod);
+
+        const startTime = parseInt(startHour24) * 60 + parseInt(timeRange.startMinute);
+        const endTime = parseInt(endHour24) * 60 + parseInt(timeRange.endMinute);
 
         return endTime - startTime;
     };
-
 
     const isDateInAllowedRange = (date: Date): boolean => {
         if (type === 'datetimerange' && startDate && endDate) {
@@ -314,8 +348,11 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
             return false;
         }
 
-        const startTime = parseInt(timeRange.startHour) * 60 + parseInt(timeRange.startMinute);
-        const endTime = parseInt(timeRange.endHour) * 60 + parseInt(timeRange.endMinute);
+        const startHour24 = convertTo24Hour(timeRange.startHour, timeRange.startPeriod);
+        const endHour24 = convertTo24Hour(timeRange.endHour, timeRange.endPeriod);
+
+        const startTime = parseInt(startHour24) * 60 + parseInt(timeRange.startMinute);
+        const endTime = parseInt(endHour24) * 60 + parseInt(timeRange.endMinute);
 
         return endTime > startTime;
     };
@@ -323,8 +360,11 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
     const handleTimeRangeConfirm = () => {
         if (!selectedDate || !isValidTimeRange()) return;
 
-        const startTime = `${timeRange.startHour}:${timeRange.startMinute}`;
-        const endTime = `${timeRange.endHour}:${timeRange.endMinute}`;
+        const startHour24 = convertTo24Hour(timeRange.startHour, timeRange.startPeriod);
+        const endHour24 = convertTo24Hour(timeRange.endHour, timeRange.endPeriod);
+
+        const startTime = `${startHour24}:${timeRange.startMinute}`;
+        const endTime = `${endHour24}:${timeRange.endMinute}`;
         const formattedValue = `${formatDate(selectedDate)} ${startTime} - ${endTime}`;
 
         onChange?.(formattedValue);
@@ -340,8 +380,8 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                 : '00:00';
             return `${formatDisplayDate(selectedDate)} ${timeStr}`;
         } else if (type === 'datetimerange' && selectedDate && timeRange.startHour && timeRange.endHour) {
-            const startTime = `${timeRange.startHour}:${timeRange.startMinute}`;
-            const endTime = `${timeRange.endHour}:${timeRange.endMinute}`;
+            const startTime = `${timeRange.startHour}:${timeRange.startMinute} ${timeRange.startPeriod}`;
+            const endTime = `${timeRange.endHour}:${timeRange.endMinute} ${timeRange.endPeriod}`;
             return `${formatDisplayDate(selectedDate)} ${startTime} - ${endTime}`;
         } else if (type === 'date' && selectedDate) {
             return formatDisplayDate(selectedDate);
@@ -381,19 +421,23 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
 
     const generateHourOptions = (): string[] => {
         const options: string[] = [];
-        for (let hour = 0; hour < 24; hour++) {
-            options.push(hour.toString().padStart(2, '0'));
+        for (let hour = 1; hour <= 12; hour++) {
+            options.push(hour.toString());
         }
         return options;
     };
 
     const generateMinuteOptions = (): string[] => {
         const options: string[] = [];
-        for (let minute = 1; minute <= 59; minute++) {
+        for (let minute = 0; minute <= 59; minute++) {
             options.push(minute.toString().padStart(2, '0'));
         }
         return options;
     };
+
+    // const generatePeriodOptions = (): string[] => {
+    //     return ['AM', 'PM'];
+    // };
 
     return (
         <>
@@ -411,7 +455,7 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                             w-full px-4 py-2.5 text-sm bg-white border border-gray-300 rounded-lg
                             focus:border-green-500 focus:ring-green-500 shadow-sm cursor-pointer
                             transition-all duration-200 ease-in-out
-                            ${error || timeDurationError ? 'border-red  -500 focus:border-red-500 focus:ring-red-500' : 'hover:border-gray-400'}
+                            ${error || timeDurationError ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'hover:border-gray-400'}
                             ${disabled ? 'bg-gray-50 border-gray-200 cursor-not-allowed' : ''}
                             flex items-center justify-between
                         `}
@@ -536,48 +580,61 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
                                         <div className="grid grid-cols-2 gap-4">
                                             {/* Start Time */}
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">Start Time</label>
-                                                <div className="flex space-x-2">
-                                                    <div className="flex-1">
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <label className="block text-sm font-medium text-gray-700">Start Time</label>
+                                                    {/* AM/PM Toggle */}
+                                                    <div className="flex bg-gray-200 rounded-l-sm rounded-r-sm border border-gray-300">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setTimeRange(prev => ({ ...prev, startPeriod: 'AM' }))}
+                                                            className={`px-3 py-0.5 text-xs rounded-l-sm transition-colors cursor-pointer ${timeRange.startPeriod === 'AM'
+                                                                ? 'bg-green-500 text-white'
+                                                                : 'text-gray-600 hover:text-gray-800'
+                                                                }`}
+                                                        >
+                                                            AM
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setTimeRange(prev => ({ ...prev, startPeriod: 'PM' }))}
+                                                            className={`px-3 py-0.5 text-xs rounded-r-sm transition-colors cursor-pointer ${timeRange.startPeriod === 'PM'
+                                                                ? 'bg-green-500 text-white'
+                                                                : 'text-gray-600 hover:text-gray-800'
+                                                                }`}
+                                                        >
+                                                            PM
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {/* Start Hour */}
+                                                    <div className='flex-1'>
                                                         <select
                                                             value={timeRange.startHour}
                                                             onChange={(e) => setTimeRange(prev => ({ ...prev, startHour: e.target.value }))}
-                                                            className="w-full text-sm border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 focus:outline-none max-h-60 overflow-y-auto"
-                                                            size={14}
-                                                            style={{
-                                                                backgroundColor: 'white',
-                                                                accentColor: '#10b981',
-                                                                scrollbarWidth: 'none', // Firefox
-                                                                msOverflowStyle: 'none', // IE/Edge
-                                                            }}
+                                                            className="w-full text-sm border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 focus:outline-none"
+                                                            size={1}
+                                                            style={{ maxHeight: '240px', overflowY: 'auto' }}
                                                         >
-                                                            {/* <option value="">HH</option> */}
+                                                            <option value="">Hour</option>
                                                             {generateHourOptions().map(hour => (
-                                                                <option
-                                                                    className="py-1 text-sm rounded-md font-medium text-center text-gray-600 bg-white hover:bg-green-500"
-                                                                    key={hour}
-                                                                    value={hour}>{hour}</option>
+                                                                <option key={hour} value={hour}>{hour}</option>
                                                             ))}
                                                         </select>
                                                     </div>
-                                                    <div className="flex-1">
+                                                    {/* Start Minute */}
+                                                    <div className='flex-1'>
                                                         <select
                                                             value={timeRange.startMinute}
                                                             onChange={(e) => setTimeRange(prev => ({ ...prev, startMinute: e.target.value }))}
-                                                            className="w-full text-sm border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 focus:outline-none max-h-60 overflow-y-auto"
-                                                            size={14}
-                                                            style={{
-                                                                backgroundColor: 'white',
-                                                                accentColor: '#10b981',
-                                                                scrollbarWidth: 'none', // Firefox
-                                                                msOverflowStyle: 'none', // IE/Edge
-                                                            }}
+                                                            className="w-full text-sm border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 focus:outline-none"
+                                                            size={1}
+                                                            style={{ maxHeight: '240px', overflowY: 'auto' }}
                                                         >
-                                                            {/* <option value="">MM</option> */}
+                                                            <option value="">Min</option>
                                                             {generateMinuteOptions().map(minute => (
-                                                                <option
-                                                                    className="py-1 text-sm rounded-md font-medium text-center text-gray-600 bg-white hover:bg-green-500"
-                                                                    key={minute} value={minute}>{minute}</option>
+                                                                <option key={minute} value={minute}>{minute}</option>
                                                             ))}
                                                         </select>
                                                     </div>
@@ -586,47 +643,61 @@ const DateTimePicker: React.FC<DateTimePickerProps> = ({
 
                                             {/* End Time */}
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">End Time</label>
-                                                <div className="flex space-x-2">
-                                                    <div className="flex-1">
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <label className="block text-sm font-medium text-gray-700">End Time</label>
+                                                    {/* AM/PM Toggle */}
+                                                    <div className="flex bg-gray-200 rounded-l-sm rounded-r-sm border border-gray-300">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setTimeRange(prev => ({ ...prev, endPeriod: 'AM' }))}
+                                                            className={`px-3 py-0.5 text-xs rounded-l-sm transition-colors cursor-pointer ${timeRange.endPeriod === 'AM'
+                                                                ? 'bg-green-500 text-white'
+                                                                : 'text-gray-600 hover:text-gray-800'
+                                                                }`}
+                                                        >
+                                                            AM
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setTimeRange(prev => ({ ...prev, endPeriod: 'PM' }))}
+                                                            className={`px-3 py-0.5 text-xs rounded-r-sm transition-colors cursor-pointer ${timeRange.endPeriod === 'PM'
+                                                                ? 'bg-green-500 text-white'
+                                                                : 'text-gray-600 hover:text-gray-800'
+                                                                }`}
+                                                        >
+                                                            PM
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {/* End Hour */}
+                                                    <div className='flex-1'>
                                                         <select
                                                             value={timeRange.endHour}
                                                             onChange={(e) => setTimeRange(prev => ({ ...prev, endHour: e.target.value }))}
-                                                            className="w-full text-sm border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 focus:outline-none max-h-60 overflow-y-auto"
-                                                            size={14}
-                                                            style={{
-                                                                backgroundColor: 'white',
-                                                                accentColor: '#10b981',
-                                                                scrollbarWidth: 'none', // Firefox
-                                                                msOverflowStyle: 'none', // IE/Edge
-                                                            }}
+                                                            className="w-full text-sm border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 focus:outline-none"
+                                                            size={1}
+                                                            style={{ maxHeight: '240px', overflowY: 'auto' }}
                                                         >
-                                                            {/* <option value="">HH</option> */}
+                                                            <option value="">Hour</option>
                                                             {generateHourOptions().map(hour => (
-                                                                <option
-                                                                    className="py-1 text-sm rounded-md font-medium text-center text-gray-600 bg-white hover:bg-green-500"
-                                                                    key={hour} value={hour}>{hour}</option>
+                                                                <option key={hour} value={hour}>{hour}</option>
                                                             ))}
                                                         </select>
                                                     </div>
-                                                    <div className="flex-1">
+                                                    {/* End Minute */}
+                                                    <div className='flex-1'>
                                                         <select
                                                             value={timeRange.endMinute}
                                                             onChange={(e) => setTimeRange(prev => ({ ...prev, endMinute: e.target.value }))}
-                                                            className="w-full text-sm border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 focus:outline-none max-h-60 overflow-y-auto"
-                                                            size={14}
-                                                            style={{
-                                                                backgroundColor: 'white',
-                                                                accentColor: '#10b981',
-                                                                scrollbarWidth: 'none', // Firefox
-                                                                msOverflowStyle: 'none', // IE/Edge
-                                                            }}
+                                                            className="w-full text-sm border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500 focus:outline-none"
+                                                            size={1}
+                                                            style={{ maxHeight: '240px', overflowY: 'auto' }}
                                                         >
-                                                            {/* <option value="">MM</option> */}
+                                                            <option value="">Min</option>
                                                             {generateMinuteOptions().map(minute => (
-                                                                <option
-                                                                    className="py-1 text-sm rounded-md font-medium text-center text-gray-600 bg-white hover:bg-green-500"
-                                                                    key={minute} value={minute}>{minute}</option>
+                                                                <option key={minute} value={minute}>{minute}</option>
                                                             ))}
                                                         </select>
                                                     </div>

@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import DeleteProduct from "./DeleteProduct";
 import ReviewProduct from "./ReviewProduct";
 import { ProductStatus } from "../../utils/enum";
+import { formatDate, formatTime } from "../../utils/dateTime/dateFormatter";
 
 const AllProducts: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -166,7 +167,6 @@ const AllProducts: React.FC = () => {
         }
     };
 
-
     // Table configuration
     const columns: TableColumn[] = [
         {
@@ -200,11 +200,41 @@ const AllProducts: React.FC = () => {
             align: 'left',
         },
         {
-            key: 'currentHighestBid',
-            label: 'Highest Bid',
+            key: 'quantity',
+            label: 'Quantity',
             width: '120px',
             align: 'left',
         },
+        {
+            key: 'bidStartDate',
+            label: 'Start Date',
+            width: '120px',
+            align: 'left',
+        },
+        {
+            key: 'bidEndDate',
+            label: 'End Date',
+            width: '120px',
+            align: 'left',
+        },
+        {
+            key: 'bidStartTime',
+            label: 'Bid Date',
+            width: '120px',
+            align: 'left',
+        },
+        {
+            key: 'bidStartTime',
+            label: 'Start Time',
+            width: '120px',
+            align: 'left',
+        },
+        {
+            key: 'bidEndTime',
+            label: 'End Time',
+            width: '120px',
+            align: 'left',
+        },        
         {
             key: 'actions',
             label: 'Actions',
@@ -216,6 +246,21 @@ const AllProducts: React.FC = () => {
     // Custom cell renderer
     const renderCell = (column: TableColumn, row: TableRow, value: any) => {
         switch (column.key) {
+
+            case 'id':
+                return (
+                    <div className="text-gray-600 flex items-center gap-1 cursor-pointer hover:underline group">
+                        {value}
+                    </div>
+                );
+
+            case 'farmerId':
+                return (
+                    <div className="text-gray-600 flex items-center gap-1 cursor-pointer hover:underline group">
+                        {value}
+                    </div>
+                );
+
             case 'name':
                 return (
                     <div className="text-gray-600">
@@ -235,6 +280,41 @@ const AllProducts: React.FC = () => {
                 return (
                     <div className="text-gray-900">
                         {value}
+                    </div>
+                );
+
+            case 'quantity':
+                return (
+                    <div className="text-gray-900">
+                        {value?.value} {value?.unit}
+                    </div>
+                );
+
+            case 'bidStartDate':
+                return (
+                    <div className="text-gray-900">
+                        {formatDate(value)}
+                    </div>
+                );
+
+            case 'bidEndDate':
+                return (
+                    <div className="text-gray-900">
+                        {formatDate(value)}
+                    </div>
+                );
+
+            case 'bidStartTime':
+                return (
+                    <div className="text-gray-900">
+                        {formatTime(value)}
+                    </div>
+                );
+
+            case 'bidEndTime':
+                return (
+                    <div className="text-gray-900">
+                        {formatTime(value)}
                     </div>
                 );
 
@@ -291,27 +371,6 @@ const AllProducts: React.FC = () => {
                                 </div>
                             )}
                         </div>
-                    </div>
-                );
-
-            case 'farmerId':
-                return (
-                    <div className="text-gray-600 flex items-center gap-1 cursor-pointer hover:underline group">
-                        {value}
-                    </div>
-                );
-
-            case 'currentHighestBid':
-                return (
-                    <div className="text-gray-600">
-                        {value}
-                    </div>
-                )
-
-            case 'id':
-                return (
-                    <div className="text-gray-600 flex items-center gap-1 cursor-pointer hover:underline group">
-                        {value}
                     </div>
                 );
 
