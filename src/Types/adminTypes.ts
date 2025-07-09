@@ -10,10 +10,10 @@ export interface ProductResponse {
     images: string[];
     startingPrice: number;
     currentHighestBid: number;
-    bidStartDate: Date;
-    bidEndDate: Date;
-    bidStartTime: Date;
-    bidEndTime: Date;
+    bidStartDate: string;
+    bidEndDate: string;
+    bidStartTime: string;
+    bidEndTime: string;
     productStatus: string;
 }
 

@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import DeleteProduct from "./DeleteProduct";
 import ReviewProduct from "./ReviewProduct";
 import { ProductStatus } from "../../utils/enum";
+import { formatDate, formatTime } from "../../utils/dateTime/dateFormatter";
 
 const AllProducts: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -165,26 +166,6 @@ const AllProducts: React.FC = () => {
                 return <HelpCircle className="w-3 h-3 mr-2" />;
         }
     };
-
-    const formatDate = (isoString: string) => {
-        const date = new Date(isoString);
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-        const year = date.getFullYear();
-
-        return `${day}-${month}-${year}`;
-    };
-
-    const formatTime = (isoString: string) => {
-        const date = new Date(isoString);
-        return date.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true,
-            timeZone: 'UTC',
-        });
-    };
-
 
     // Table configuration
     const columns: TableColumn[] = [
