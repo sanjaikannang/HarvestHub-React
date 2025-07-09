@@ -7,6 +7,7 @@ import { ArrowLeftFromLine, ArrowRight, ArrowRightFromLine, Bell, MoveHorizontal
 import toast from "react-hot-toast";
 import Approvred from '../../../public/stamp/verified_stamp.png'
 import { useNavigate } from "react-router-dom";
+import { formatDate, formatTime } from "../../utils/dateTime/dateFormatter";
 
 const AllProducts: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -94,12 +95,12 @@ const AllProducts: React.FC = () => {
     };
 
     return (
-        <>          
+        <>
             <main className="px-4 py-4 min-h-screen">
                 {/* Header */}
                 <div className="mb-6">
                     <div className="flex justify-between items-center">
-                        <div>                           
+                        <div>
                             {pagination && (
                                 <p className="text-sm font-semibold text-gray-600 mt-1">
                                     Total - {pagination.totalProducts} products
@@ -162,12 +163,8 @@ const AllProducts: React.FC = () => {
 
                                         <div className="border-t border-gray-300">
                                             <div className="flex justify-center items-center gap-2 mb-2 mt-2">
-                                                <span className="text-sm font-semibold text-gray-700">
-                                                    {new Date(product.bidStartDate).toLocaleDateString('en-US', {
-                                                        year: 'numeric',
-                                                        month: 'long',
-                                                        day: 'numeric'
-                                                    })}
+                                                <span className="text-sm font-semibold text-gray-700">                                                 
+                                                    {formatDate(product.bidStartDate)}
                                                 </span>
                                             </div>
 
@@ -186,11 +183,7 @@ const AllProducts: React.FC = () => {
                                                 <div className="text-center">
                                                     <div className="bg-white border-l border-t border-b border-gray-300 rounded-l-4xl py-1">
                                                         <span className="text-sm font-bold text-green-600">
-                                                            {new Date(product.bidStartTime).toLocaleTimeString('en-US', {
-                                                                hour: '2-digit',
-                                                                minute: '2-digit',
-                                                                hour12: true
-                                                            })}
+                                                            {formatTime(product.bidStartTime)}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -203,11 +196,7 @@ const AllProducts: React.FC = () => {
                                                 <div className="text-center">
                                                     <div className="bg-white border-r border-t border-b border-gray-300 rounded-r-4xl py-1">
                                                         <span className="text-sm font-bold text-red-600">
-                                                            {new Date(product.bidEndTime).toLocaleTimeString('en-US', {
-                                                                hour: '2-digit',
-                                                                minute: '2-digit',
-                                                                hour12: true
-                                                            })}
+                                                            {formatTime(product.bidEndTime)}
                                                         </span>
                                                     </div>
                                                 </div>
