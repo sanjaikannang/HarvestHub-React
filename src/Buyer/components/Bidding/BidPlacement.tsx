@@ -155,16 +155,15 @@ const BidPlacement = ({
             {/* Desktop Sidebar */}
             <div className="lg:sticky lg:top-20 lg:h-fit space-y-4">
                 {/* Current Price & Timer */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hidden lg:block">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3 hidden lg:block">
                     <div className="text-center space-y-4">
-                        <div>
+                        <div className="border-b border-gray-300">
                             <p className="text-sm text-gray-600 mb-1">
                                 {biddingStatus === BiddingStatus.NOT_STARTED ? 'Starts In' :
                                     biddingStatus === BiddingStatus.ACTIVE ? 'Time Remaining' : 'Bidding Ended'}
                             </p>
-                            <p className="text-xl font-mono font-bold text-gray-900">
-                                {timeRemaining}
-                            </p>
+                            <p className="text-3xl font-mono text-orange-600">{timeRemaining}</p>
+                            <p className="text-[12px] text-gray-600 mb-4">Hours : Minutes : Seconds</p>
                         </div>
                         <div>
                             <p className="text-sm text-gray-600 mb-1">Current Price</p>
