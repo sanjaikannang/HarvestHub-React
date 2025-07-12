@@ -37,6 +37,7 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
     const productId = propProductId || urlProductId;
 
     const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
+    const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false);
 
     // Redux state
     const {
@@ -132,14 +133,21 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
 
     // Auto-refresh bids when bidding is active
     useEffect(() => {
-        if (biddingStatus === BiddingStatus.ACTIVE && productId) {
+        if (biddingStatus === BiddingStatus.ACTIVE && productId && autoRefreshEnabled) {
             const interval = setInterval(() => {
                 dispatch(getAllBids(productId));
-            }, 10000); // Refresh every 10 seconds
+            }, 3000); // Refresh every 3 seconds when auto-refresh is enabled
 
             return () => clearInterval(interval);
         }
-    }, [biddingStatus, productId, dispatch]);
+    }, [biddingStatus, productId, dispatch, autoRefreshEnabled]);
+
+    // Reset auto-refresh when bidding is not active
+    useEffect(() => {
+        if (biddingStatus !== BiddingStatus.ACTIVE) {
+            setAutoRefreshEnabled(false);
+        }
+    }, [biddingStatus]);
 
     const handlePlaceBidClick = () => {
         if (biddingStatus === BiddingStatus.ACTIVE) {
@@ -173,11 +181,14 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
         }
     };
 
-
     const handleRefreshBids = () => {
         if (productId) {
             dispatch(getAllBids(productId));
         }
+    };
+
+    const handleAutoRefreshToggle = (enabled: boolean) => {
+        setAutoRefreshEnabled(enabled);
     };
 
     // Format bids from Redux state
@@ -228,6 +239,8 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
                             totalBids={formattedBids.length}
                             highestBid={formattedBids.length > 0 ? formattedBids[0].currentBidAmount : 0}
                             startingPrice={product?.startingPrice}
+                            autoRefreshEnabled={autoRefreshEnabled}
+                            onAutoRefreshToggle={handleAutoRefreshToggle}
                         />
                         {biddingStatus === BiddingStatus.ACTIVE && (
                             <BidPlacement
@@ -258,6 +271,8 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
                                     totalBids={formattedBids.length}
                                     highestBid={formattedBids.length > 0 ? formattedBids[0].currentBidAmount : 0}
                                     startingPrice={product?.startingPrice}
+                                    autoRefreshEnabled={autoRefreshEnabled}
+                                    onAutoRefreshToggle={handleAutoRefreshToggle}
                                 />
                             </div>
                         </div>

@@ -11,7 +11,6 @@ import {
     RotateCw,
 } from "lucide-react";
 import { BiddingStatus } from "../../../utils/enum";
-import { useState } from "react";
 
 interface Bid {
     bidId: string;
@@ -39,6 +38,8 @@ interface BidHistoryProps {
     totalBids?: number;
     highestBid?: number;
     startingPrice?: number;
+    autoRefreshEnabled?: boolean;
+    onAutoRefreshToggle?: (enabled: boolean) => void;
 }
 
 const BidHistory = ({
@@ -50,7 +51,9 @@ const BidHistory = ({
     loading = false,
     totalBids = 0,
     highestBid = 0,
-    startingPrice = 0
+    startingPrice = 0,
+    autoRefreshEnabled = false,
+    onAutoRefreshToggle
 }: BidHistoryProps) => {
 
     const getAvatarColor = (index: number) => {
@@ -155,7 +158,11 @@ const BidHistory = ({
         </>
     );
 
-    const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false);
+    const handleAutoRefreshToggle = (enabled: boolean) => {
+        if (onAutoRefreshToggle) {
+            onAutoRefreshToggle(enabled);
+        }
+    };
 
     return (
         <>
@@ -270,7 +277,7 @@ const BidHistory = ({
                                         <div className="flex bg-gray-200 rounded-l-xl rounded-r-xl border border-gray-300">
                                             <button
                                                 type="button"
-                                                onClick={() => setAutoRefreshEnabled(true)}
+                                                onClick={() => handleAutoRefreshToggle(true)}
                                                 className={`px-2 py-0.5 text-[10px] rounded-l-xl transition-colors cursor-pointer ${autoRefreshEnabled
                                                     ? 'bg-green-500 text-white'
                                                     : 'text-gray-600 hover:text-gray-800'
@@ -280,7 +287,7 @@ const BidHistory = ({
                                             </button>
                                             <button
                                                 type="button"
-                                                onClick={() => setAutoRefreshEnabled(false)}
+                                                onClick={() => handleAutoRefreshToggle(false)}
                                                 className={`px-2 py-0.5 text-[10px] rounded-r-xl transition-colors cursor-pointer ${!autoRefreshEnabled
                                                     ? 'bg-green-500 text-white'
                                                     : 'text-gray-600 hover:text-gray-800'
@@ -288,7 +295,7 @@ const BidHistory = ({
                                             >
                                                 OFF
                                             </button>
-                                        </div>                               
+                                        </div>
                                     </div>
 
                                     <div className="flex justify-end">
@@ -301,7 +308,6 @@ const BidHistory = ({
                                         </button>
                                     </div>
                                 </div>
-
                             )}
                         </div>
                     </div>
