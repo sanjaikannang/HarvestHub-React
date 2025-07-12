@@ -7,7 +7,7 @@ import { AppDispatch, RootState } from "../../../State/store";
 import { fetchSpecificProduct, getAllBids, placeBid } from "../../../Services/biddingActions";
 import { BiddingStatus } from "../../../utils/enum";
 import BidPlacement from "./BidPlacement";
-import { formatDate, formatTime } from "../../../utils/dateTime/dateFormatter";
+import { adjustTimestampForIST, calculateTimeRemaining } from "../../../utils/dateTime/dateFormatter";
 
 interface Bid {
     bidId: string;
@@ -37,6 +37,7 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
     const productId = propProductId || urlProductId;
 
     const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
+    const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false);
 
     // Redux state
     const {
@@ -73,80 +74,45 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
         });
     };
 
-    // Helper function to parse formatted date and time back to Date object
-    const parseFormattedDateTime = (dateStr: string, timeStr: string): Date => {
-        // Parse date: "09-07-2025" -> day, month, year
-        const [day, month, year] = dateStr.split('-').map(Number);
-
-        // Parse time: "08:30 PM" -> hours, minutes, AM/PM
-        const [time, period] = timeStr.split(' ');
-        const [hours, minutes] = time.split(':').map(Number);
-
-        // Convert to 24-hour format
-        let hour24 = hours;
-        if (period === 'PM' && hours !== 12) {
-            hour24 += 12;
-        } else if (period === 'AM' && hours === 12) {
-            hour24 = 0;
+    // Function to determine bidding status based on start and end times
+    const determineBiddingStatus = (product: any): BiddingStatus => {
+        // console.log("Product:", product);
+        if (!product?.bidStartTime || !product?.bidEndTime) {
+            return BiddingStatus.NOT_STARTED;
         }
 
-        // Create date object (month is 0-indexed in JS Date)
-        return new Date(year, month - 1, day, hour24, minutes, 0);
-    };
-
-    const calculateTimeRemaining = (endDate: string, endTime: string): string => {
         const now = new Date();
-        const end = parseFormattedDateTime(endDate, endTime);
-        const diffInMs = end.getTime() - now.getTime();
+        const startTime = adjustTimestampForIST(product.bidStartTime);
+        const endTime = adjustTimestampForIST(product.bidEndTime);
 
-        if (diffInMs <= 0) return "00:00:00";
-
-        const hours = Math.floor(diffInMs / (1000 * 60 * 60));
-        const minutes = Math.floor((diffInMs % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diffInMs % (1000 * 60)) / 1000);
-
-        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        if (now < startTime) {
+            return BiddingStatus.NOT_STARTED;
+        } else if (now >= startTime && now < endTime) {
+            return BiddingStatus.ACTIVE;
+        } else {
+            return BiddingStatus.ENDED;
+        }
     };
 
-    const calculateCountdown = (startDate: string, startTime: string): string => {
-        const now = new Date();
-        const start = parseFormattedDateTime(startDate, startTime);
-        const diffInMs = start.getTime() - now.getTime();
-
-        if (diffInMs <= 0) return "00:00:00";
-
-        const hours = Math.floor(diffInMs / (1000 * 60 * 60));
-        const minutes = Math.floor((diffInMs % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diffInMs % (1000 * 60)) / 1000);
-
-        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    };
-
-    const determineBiddingStatus = (product: any): BiddingStatus => {
-        if (!product) return BiddingStatus.NOT_STARTED;
-
-        const now = new Date();
-        const startTime = parseFormattedDateTime(product.bidStartDate, product.bidStartTime);
-        const endTime = parseFormattedDateTime(product.bidEndDate, product.bidEndTime);
-
-        if (now < startTime) return BiddingStatus.NOT_STARTED;
-        if (now > endTime) return BiddingStatus.ENDED;
-        return BiddingStatus.ACTIVE;
-    };
-
-    // Update bidding status and time remaining
+    // Updated useEffect for bidding status and time remaining
     useEffect(() => {
         if (!product) return;
 
         const updateStatus = () => {
             const status = determineBiddingStatus(product);
+            // console.log("Bidding Status:", status);
             setBiddingStatus(status);
 
             if (status === BiddingStatus.NOT_STARTED) {
-                setTimeRemaining(calculateCountdown(formatTime(product.bidStartTime), formatDate(product.bidStartTime)));
+                // Time remaining until bidding starts
+                const timeUntilStart = calculateTimeRemaining(product.bidStartTime);
+                setTimeRemaining(timeUntilStart);
             } else if (status === BiddingStatus.ACTIVE) {
-                setTimeRemaining(calculateTimeRemaining(formatTime(product.bidEndTime), formatDate(product.bidEndTime)));
+                // Time remaining until bidding ends
+                const timeUntilEnd = calculateTimeRemaining(product.bidEndTime);
+                setTimeRemaining(timeUntilEnd);
             } else {
+                // Bidding has ended
                 setTimeRemaining("00:00:00");
             }
         };
@@ -167,14 +133,21 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
 
     // Auto-refresh bids when bidding is active
     useEffect(() => {
-        if (biddingStatus === BiddingStatus.ACTIVE && productId) {
+        if (biddingStatus === BiddingStatus.ACTIVE && productId && autoRefreshEnabled) {
             const interval = setInterval(() => {
                 dispatch(getAllBids(productId));
-            }, 10000); // Refresh every 10 seconds
+            }, 3000); // Refresh every 3 seconds when auto-refresh is enabled
 
             return () => clearInterval(interval);
         }
-    }, [biddingStatus, productId, dispatch]);
+    }, [biddingStatus, productId, dispatch, autoRefreshEnabled]);
+
+    // Reset auto-refresh when bidding is not active
+    useEffect(() => {
+        if (biddingStatus !== BiddingStatus.ACTIVE) {
+            setAutoRefreshEnabled(false);
+        }
+    }, [biddingStatus]);
 
     const handlePlaceBidClick = () => {
         if (biddingStatus === BiddingStatus.ACTIVE) {
@@ -208,11 +181,14 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
         }
     };
 
-
     const handleRefreshBids = () => {
         if (productId) {
             dispatch(getAllBids(productId));
         }
+    };
+
+    const handleAutoRefreshToggle = (enabled: boolean) => {
+        setAutoRefreshEnabled(enabled);
     };
 
     // Format bids from Redux state
@@ -263,6 +239,8 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
                             totalBids={formattedBids.length}
                             highestBid={formattedBids.length > 0 ? formattedBids[0].currentBidAmount : 0}
                             startingPrice={product?.startingPrice}
+                            autoRefreshEnabled={autoRefreshEnabled}
+                            onAutoRefreshToggle={handleAutoRefreshToggle}
                         />
                         {biddingStatus === BiddingStatus.ACTIVE && (
                             <BidPlacement
@@ -293,6 +271,8 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
                                     totalBids={formattedBids.length}
                                     highestBid={formattedBids.length > 0 ? formattedBids[0].currentBidAmount : 0}
                                     startingPrice={product?.startingPrice}
+                                    autoRefreshEnabled={autoRefreshEnabled}
+                                    onAutoRefreshToggle={handleAutoRefreshToggle}
                                 />
                             </div>
                         </div>

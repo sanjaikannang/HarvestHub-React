@@ -110,7 +110,7 @@ export async function setBidModeAPI(productId: string, bidModeData: SetBidModeRe
 // Get Bid Mode API
 export async function getBidModeAPI(productId: string) {
     try {
-        const response = await apiClient.put(`/product/get-bid-mode/${productId}`);
+        const response = await apiClient.get(`/product/get-bid-mode/${productId}`);
         return response.data;
     } catch (error) {
         console.error('Get BidMode for a Product error:', error);

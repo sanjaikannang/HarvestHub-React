@@ -219,12 +219,6 @@ const AllProducts: React.FC = () => {
         },
         {
             key: 'bidStartTime',
-            label: 'Bid Date',
-            width: '120px',
-            align: 'left',
-        },
-        {
-            key: 'bidStartTime',
             label: 'Start Time',
             width: '120px',
             align: 'left',

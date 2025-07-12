@@ -1,5 +1,4 @@
 import {
-    RefreshCw,
     Clock,
     Shield,
     TrendingUp,
@@ -9,6 +8,7 @@ import {
     Timer,
     CheckCircle,
     AlertCircle,
+    RotateCw,
 } from "lucide-react";
 import { BiddingStatus } from "../../../utils/enum";
 
@@ -38,6 +38,8 @@ interface BidHistoryProps {
     totalBids?: number;
     highestBid?: number;
     startingPrice?: number;
+    autoRefreshEnabled?: boolean;
+    onAutoRefreshToggle?: (enabled: boolean) => void;
 }
 
 const BidHistory = ({
@@ -49,7 +51,9 @@ const BidHistory = ({
     loading = false,
     totalBids = 0,
     highestBid = 0,
-    startingPrice = 0
+    startingPrice = 0,
+    autoRefreshEnabled = false,
+    onAutoRefreshToggle
 }: BidHistoryProps) => {
 
     const getAvatarColor = (index: number) => {
@@ -154,6 +158,12 @@ const BidHistory = ({
         </>
     );
 
+    const handleAutoRefreshToggle = (enabled: boolean) => {
+        if (onAutoRefreshToggle) {
+            onAutoRefreshToggle(enabled);
+        }
+    };
+
     return (
         <>
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
@@ -196,7 +206,7 @@ const BidHistory = ({
                                         disabled={loading}
                                         className="flex items-center justify-center p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 cursor-pointer"
                                     >
-                                        <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
+                                        <RotateCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
                                     </button>
                                 )}
                             </div>
@@ -251,21 +261,53 @@ const BidHistory = ({
                         </div>
 
                         <div className="flex items-center space-x-4">
-                            <div className={`flex items-center px-4 py-1.5 rounded-full border ${statusConfig.color}`}>
+                            <div className={`flex items-center px-2 py-1 rounded-full border ${statusConfig.color}`}>
                                 {statusConfig.icon}
                                 <span className="ml-3 text-xs font-medium">
                                     {statusConfig.text}
                                 </span>
                             </div>
 
+                            {/* Controls - Right Side */}
                             {biddingStatus === BiddingStatus.ACTIVE && (
-                                <button
-                                    onClick={onRefreshBids}
-                                    disabled={loading}
-                                    className="flex items-center justify-center p-2.5 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 cursor-pointer"
-                                >
-                                    <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                                </button>
+                                <div className="flex flex-col space-y-2">
+                                    {/* First Row - Auto Refresh Toggle */}
+                                    <div className="flex items-center space-x-2">
+                                        <span className="text-xs text-gray-600">Auto Refresh:</span>
+                                        <div className="flex bg-gray-200 rounded-l-xl rounded-r-xl border border-gray-300">
+                                            <button
+                                                type="button"
+                                                onClick={() => handleAutoRefreshToggle(true)}
+                                                className={`px-2 py-0.5 text-[10px] rounded-l-xl transition-colors cursor-pointer ${autoRefreshEnabled
+                                                    ? 'bg-green-500 text-white'
+                                                    : 'text-gray-600 hover:text-gray-800'
+                                                    }`}
+                                            >
+                                                ON
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleAutoRefreshToggle(false)}
+                                                className={`px-2 py-0.5 text-[10px] rounded-r-xl transition-colors cursor-pointer ${!autoRefreshEnabled
+                                                    ? 'bg-green-500 text-white'
+                                                    : 'text-gray-600 hover:text-gray-800'
+                                                    }`}
+                                            >
+                                                OFF
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-end">
+                                        <button
+                                            onClick={onRefreshBids}
+                                            disabled={loading}
+                                            className="flex items-center justify-center p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 cursor-pointer"
+                                        >
+                                            <RotateCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                                        </button>
+                                    </div>
+                                </div>
                             )}
                         </div>
                     </div>
