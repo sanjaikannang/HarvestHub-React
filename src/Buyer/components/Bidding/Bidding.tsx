@@ -164,8 +164,7 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
 
         try {
             const bidRequest = {
-                bidAmount: Number(bidData.amount),
-                bidType: bidData.isAutomatic ? "Auto Bid" : "Manual Bid"
+                bidAmount: Number(bidData.amount),                
             };
 
             // You'll need to implement placeBid action in your Redux store
@@ -200,7 +199,7 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
             <>
                 <div className="min-h-screen flex items-center justify-center">
                     <div className="text-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500 mx-auto mb-4"></div>
                         <p className="text-gray-600">Loading product details...</p>
                     </div>
                 </div>
