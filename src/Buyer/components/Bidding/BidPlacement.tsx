@@ -53,7 +53,7 @@ const BidPlacement = ({
     const [bidAmount, setBidAmount] = useState("");
     const [isAutomaticBidding, setIsAutomaticBidding] = useState(false);
     const [automaticBidIncrement, setAutomaticBidIncrement] = useState("100");
-    const [maxAutoBidAmount, setMaxAutoBidAmount] = useState("");
+    const [isAutoBidEnabled, setIsAutoBidEnabled] = useState(false);
 
     // Get current product ID
     const productId = currentProduct?._id;
@@ -68,49 +68,64 @@ const BidPlacement = ({
     // Update local state when bid mode is fetched
     useEffect(() => {
         if (currentBidMode) {
-            setIsAutomaticBidding(currentBidMode.bidMode === "AUTO"); // Changed from bidType to bidMode
-            if (currentBidMode.bidMode === "AUTO") {
-                setAutomaticBidIncrement(currentBidMode.autoIncrementAmount?.toString() || "100"); // Changed from incrementAmount to autoIncrementAmount
+            const isAutoMode = currentBidMode.bidMode === "AUTO";
+            setIsAutomaticBidding(isAutoMode);
+            setIsAutoBidEnabled(isAutoMode);
+            if (isAutoMode) {
+                setAutomaticBidIncrement(currentBidMode.autoIncrementAmount?.toString() || "100");
             }
         }
     }, [currentBidMode]);
+
+    const currentHighestBid = bids.length > 0 ? bids[0].currentBidAmount : (currentProduct?.startingPrice || 0);
+    const minimumBidAmount = currentHighestBid + 1;
+
+    const handleEnableAutoBid = async () => {
+        if (!productId || !automaticBidIncrement) return;
+
+        try {
+            // Set the bid mode to automatic with increment amount
+            await dispatch(setBidMode(productId, {
+                bidMode: "AUTO",
+                autoIncrementAmount: Number(automaticBidIncrement)
+            }));
+
+            setIsAutoBidEnabled(true);
+        } catch (error) {
+            console.error('Error enabling auto bid:', error);
+        }
+    };
 
     const handleSubmitBid = async () => {
         if (!productId) return;
 
         try {
-            if (isAutomaticBidding) {
-                // First set the bid mode to automatic
-                await dispatch(setBidMode(productId, {
-                    bidMode: "AUTO", // Changed from bidType to bidMode
-                    autoIncrementAmount: Number(automaticBidIncrement)
-                }));
+            if (isAutomaticBidding && isAutoBidEnabled) {
+                // Calculate the bid amount: current highest bid + increment
+                const bidAmountToPlace = currentHighestBid + Number(automaticBidIncrement);
 
-                // Then place the initial bid
+                // Place the bid with the calculated amount
                 await onSubmitBid({
-                    amount: (currentHighestBid + Number(automaticBidIncrement)).toString(),
+                    amount: bidAmountToPlace.toString(),
                     isAutomatic: true,
                     increment: automaticBidIncrement
                 });
             } else {
-                // Set bid mode to manual first
+                // Manual bidding - set bid mode to manual first
                 await dispatch(setBidMode(productId, {
-                    bidMode: "MANUAL" // Changed from bidType to bidMode
+                    bidMode: "MANUAL"
                 }));
 
-                // Then place the manual bid using the prop function
+                // Then place the manual bid
                 await onSubmitBid({
                     amount: bidAmount,
                     isAutomatic: false
                 });
             }
 
-            // Reset form on success
-            if (!error) {
+            // Reset form on success for manual bidding
+            if (!isAutomaticBidding && !error) {
                 setBidAmount("");
-                setIsAutomaticBidding(false);
-                setAutomaticBidIncrement("100");
-                setMaxAutoBidAmount("");
                 onCloseBidSheet();
             }
         } catch (error) {
@@ -118,36 +133,33 @@ const BidPlacement = ({
         }
     };
 
-    const handleBidModeChange = async (isAuto: boolean) => {
-        if (!productId) return;
-
+    const handleBidModeChange = (isAuto: boolean) => {
         setIsAutomaticBidding(isAuto);
-
-        // Update bid mode on server
-        try {
-            if (isAuto) {
-                await dispatch(setBidMode(productId, {
-                    bidMode: "AUTO", // Changed from bidType to bidMode
-                    autoIncrementAmount: Number(automaticBidIncrement || 100) // Changed from incrementAmount to autoIncrementAmount
-                }));
-            } else {
-                await dispatch(setBidMode(productId, {
-                    bidMode: "MANUAL" // Changed from bidType to bidMode
-                }));
-            }
-        } catch (error) {
-            console.error('Error setting bid mode:', error);
-            // Revert the state change on error
-            setIsAutomaticBidding(!isAuto);
+        if (!isAuto) {
+            setIsAutoBidEnabled(false);
         }
     };
 
-    const currentHighestBid = bids.length > 0 ? bids[0].currentBidAmount : (currentProduct?.startingPrice || 0);
-    const minimumBidAmount = currentHighestBid + 1;
+    const handleDisableAutoBid = async () => {
+        if (!productId) return;
 
-    const isSubmitDisabled = isAutomaticBidding
-        ? !automaticBidIncrement || Number(automaticBidIncrement) <= 0 || !maxAutoBidAmount || Number(maxAutoBidAmount) <= currentHighestBid
-        : !bidAmount || Number(bidAmount) <= currentHighestBid;
+        try {
+            await dispatch(setBidMode(productId, {
+                bidMode: "MANUAL"
+            }));
+            setIsAutoBidEnabled(false);
+        } catch (error) {
+            console.error('Error disabling auto bid:', error);
+        }
+    };
+
+    // For manual bidding
+    const isManualSubmitDisabled = !isAutomaticBidding && (!bidAmount || Number(bidAmount) <= currentHighestBid);
+
+    // For auto bidding
+    const isAutoSubmitDisabled = isAutomaticBidding && (!automaticBidIncrement || Number(automaticBidIncrement) <= 0);
+
+    const isSubmitDisabled = isManualSubmitDisabled || isAutoSubmitDisabled;
 
     const isBiddingActive = biddingStatus === BiddingStatus.ACTIVE;
 
@@ -177,13 +189,13 @@ const BidPlacement = ({
                 </div>
 
                 {/* Desktop Place Bid */}
-                <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-3 hidden lg:block backdrop-blur-sm">
+                <div className="bg-white rounded-xl shadow-xl border border-gray-200 p-3 hidden lg:block backdrop-blur-sm">
                     {/* Header with enhanced styling */}
                     <div className="flex items-center justify-center mb-4">
                         <div className="flex items-center">
-                            <h3 className="text-xl font-semibold text-gray-900">Place Your Bid</h3>
+                            <h3 className="text-xl font-medium text-gray-900">Place Your Bid</h3>
                             {fetchingBidMode && (
-                                <div className="ml-2 animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                                <div className="ml-2 animate-spin rounded-full h-4 w-4 border-b-2 border-green-500"></div>
                             )}
                         </div>
                     </div>
@@ -202,7 +214,7 @@ const BidPlacement = ({
                             {/* Bidding Mode Toggle */}
                             <div className="space-y-3">
                                 <div className="grid grid-cols-2 gap-2">
-                                    <label className={`flex items-center justify-center rounded-lg border cursor-pointer transition-all duration-200 ${!isAutomaticBidding
+                                    <label className={`flex items-center justify-center rounded-md border cursor-pointer transition-all duration-200 ${!isAutomaticBidding
                                         ? 'border-emerald-500 bg-emerald-50 shadow-sm'
                                         : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
                                         }`}>
@@ -224,7 +236,7 @@ const BidPlacement = ({
                                         </div>
                                     </label>
 
-                                    <label className={`flex items-center justify-center rounded-lg border cursor-pointer transition-all duration-200 ${isAutomaticBidding
+                                    <label className={`flex items-center justify-center rounded-md border cursor-pointer transition-all duration-200 ${isAutomaticBidding
                                         ? 'border-emerald-500 bg-emerald-50 shadow-sm'
                                         : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
                                         }`}>
@@ -250,13 +262,12 @@ const BidPlacement = ({
 
                             {/* Automatic Bidding Setting */}
                             {isAutomaticBidding && (
-                                <div className="bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl border border-emerald-200 p-3 shadow-sm">
-                                    <div className="flex items-center space-x-2 mb-3">
-                                        <Info className="h-4 w-4 text-emerald-600" />
-                                        <span className="text-sm font-semibold text-emerald-800">Auto-Bid Configuration</span>
+                                <div className="bg-gray-50 rounded-lg border border-gray-300 p-2">
+                                    <div className="flex items-center justify-center space-x-2 mb-3">
+                                        <span className="text-sm font-medium text-gray-600">Auto-Bid Configuration</span>
                                     </div>
 
-                                    <div className="space-y-3">
+                                    <div className="space-y-2">
                                         <Input
                                             id="incrementAmount"
                                             label="Increment Amount"
@@ -265,8 +276,30 @@ const BidPlacement = ({
                                             value={automaticBidIncrement}
                                             onChange={(e) => setAutomaticBidIncrement(e.target.value)}
                                             placeholder="100"
-                                            min={minimumBidAmount}
+                                            min="1"
+                                            disabled={isAutoBidEnabled}
                                         />
+
+                                        {/* Show next bid amount */}
+                                        <div className="text-center">
+                                            <div className="text-[10px] text-gray-600">Your Next Bid Amount - <span className="text-red-500">₹ {(currentHighestBid + Number(automaticBidIncrement || 0)).toLocaleString()}</span></div>
+                                        </div>
+
+                                        {/* Auto bid status */}
+                                        {isAutoBidEnabled && (
+                                            <div className="bg-white border border-gray-300 rounded-sm py-1 px-2">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-xs text-green-600 font-medium">Auto-bidding enabled</span>
+                                                    <button
+                                                        onClick={handleDisableAutoBid}
+                                                        className="text-xs text-red-600 hover:text-red-700 cursor-pointer"
+                                                        disabled={settingBidMode}
+                                                    >
+                                                        Disable
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}
@@ -293,37 +326,62 @@ const BidPlacement = ({
                                 </div>
                             )}
 
-                            {/* Enhanced Submit Button */}
+                            {/* Submit Button */}
                             <div className="space-y-1">
-                                <button
-                                    onClick={handleSubmitBid}
-                                    disabled={isSubmitDisabled || placingBid || settingBidMode}
-                                    className={`w-full py-2 px-6 rounded-lg font-medium text-md duration-300 flex items-center justify-center space-x-3 shadow-lg ${isSubmitDisabled || placingBid || settingBidMode
-                                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed shadow-none'
-                                        : 'bg-green-500 text-white hover:bg-green-600 cursor-pointer'
-                                        }`}
-                                >
-                                    {placingBid || settingBidMode ? (
-                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                                    ) : (
-                                        <Gavel className="h-6 w-6" />
-                                    )}
-                                    <span>
-                                        {placingBid ? 'Placing Bid...' :
-                                            settingBidMode ? 'Setting Mode...' :
-                                                isAutomaticBidding ? 'Enable Auto Bid' : 'Place Bid'}
-                                    </span>
-                                </button>
+                                {/* Auto bidding buttons */}
+                                {isAutomaticBidding && !isAutoBidEnabled && (
+                                    <button
+                                        onClick={handleEnableAutoBid}
+                                        disabled={!automaticBidIncrement || Number(automaticBidIncrement) <= 0 || settingBidMode}
+                                        className={`w-full py-2 px-6 rounded-lg font-medium text-md duration-300 flex items-center justify-center space-x-3 shadow-lg ${!automaticBidIncrement || Number(automaticBidIncrement) <= 0 || settingBidMode
+                                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed shadow-none'
+                                            : 'bg-blue-500 text-white hover:bg-blue-600 cursor-pointer'
+                                            }`}
+                                    >
+                                        {settingBidMode ? (
+                                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                        ) : (
+                                            <Gavel className="h-6 w-6" />
+                                        )}
+                                        <span>
+                                            {settingBidMode ? 'Enabling Auto Bid...' : 'Enable Auto Bid'}
+                                        </span>
+                                    </button>
+                                )}
+
+                                {/* Place bid button (shows for manual or when auto is enabled) */}
+                                {(!isAutomaticBidding || isAutoBidEnabled) && (
+                                    <button
+                                        onClick={handleSubmitBid}
+                                        disabled={isSubmitDisabled || placingBid}
+                                        className={`w-full py-2 px-6 rounded-lg font-medium text-md duration-300 flex items-center justify-center space-x-3 shadow-lg ${isSubmitDisabled || placingBid
+                                            ? 'bg-gray-200 text-gray-500 cursor-not-allowed shadow-none'
+                                            : 'bg-green-500 text-white hover:bg-green-600 cursor-pointer'
+                                            }`}
+                                    >
+                                        {placingBid ? (
+                                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                        ) : (
+                                            <Gavel className="h-6 w-6" />
+                                        )}
+                                        <span>
+                                            {placingBid ? 'Placing Bid...' : 'Place Bid'}
+                                        </span>
+                                    </button>
+                                )}
 
                                 <div className="text-center">
                                     <p className="text-[8px] text-gray-500">
                                         {isAutomaticBidding
-                                            ? 'Auto-bidding will activate when someone outbids you'
+                                            ? isAutoBidEnabled
+                                                ? `Your bid: ₹${(currentHighestBid + Number(automaticBidIncrement)).toLocaleString()}`
+                                                : 'Enter increment amount and enable auto-bidding'
                                             : 'Your bid must be higher than the current price'
                                         }
                                     </p>
                                 </div>
                             </div>
+
                         </div>
                     )}
                 </div>
@@ -450,8 +508,8 @@ const BidPlacement = ({
                                                     </label>
                                                     <input
                                                         type="number"
-                                                        value={maxAutoBidAmount}
-                                                        onChange={(e) => setMaxAutoBidAmount(e.target.value)}
+                                                        // value={maxAutoBidAmount}
+                                                        // onChange={(e) => setMaxAutoBidAmount(e.target.value)}
                                                         placeholder="10,000"
                                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
                                                         min={currentHighestBid + 1}
@@ -466,9 +524,9 @@ const BidPlacement = ({
                                                     </div>
                                                     <div className="flex justify-between items-center text-xs mt-1">
                                                         <span className="text-gray-600">Maximum you'll pay:</span>
-                                                        <span className="font-bold text-red-600">
+                                                        {/* <span className="font-bold text-red-600">
                                                             ₹{Number(maxAutoBidAmount || 0).toLocaleString()}
-                                                        </span>
+                                                        </span> */}
                                                     </div>
                                                 </div>
                                             </div>
