@@ -77,18 +77,7 @@ const BidHistory = ({
 
     const getBidTypeDisplayName = (bidType: string) => {
         return bidType === "AUTO" ? "Auto Bid" : "Manual Bid";
-    };
-
-    const formatTimestamp = (bidTime: string) => {
-        const date = new Date(bidTime);
-        return date.toLocaleString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-        });
-    };
+    }
 
     const getStatusConfig = () => {
         switch (biddingStatus) {
@@ -439,9 +428,9 @@ const BidHistory = ({
 
                                                 <div className="text-xs text-gray-400">
                                                     <span className="hidden sm:inline">
-                                                        {formatTimestamp(bid.bidTime)}
+                                                        {new Date(bid.bidTime).toLocaleDateString('en-GB')}
                                                     </span>
-                                                    <span className="sm:hidden">{formatTimestamp(bid.bidTime)}</span>
+                                                    <span className="sm:hidden">{new Date(bid.bidTime).toLocaleDateString('en-GB')}</span>
                                                 </div>
                                             </div>
 
