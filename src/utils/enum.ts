@@ -18,3 +18,8 @@ export enum ProductStatus {
   SOLD = 'SOLD',
   CANCELLED = 'CANCELLED',
 }
+
+export enum BidType {
+  MANUAL = "MANUAL",
+  AUTO = "AUTO"
+}
