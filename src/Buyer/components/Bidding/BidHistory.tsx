@@ -51,7 +51,6 @@ const BidHistory = ({
     loading = false,
     totalBids = 0,
     highestBid = 0,
-    startingPrice = 0,
     autoRefreshEnabled = false,
     onAutoRefreshToggle
 }: BidHistoryProps) => {
@@ -443,14 +442,11 @@ const BidHistory = ({
                 )}
 
                 {/* Footer */}
-                <div className="px-3 sm:px-6 py-3 sm:py-4 bg-gray-50 border-t border-gray-200">
-                    <div className="flex items-center justify-between text-xs sm:text-sm text-gray-600 flex-wrap gap-2">
+                <div className="px-3 py-4 bg-gray-50 border-t border-gray-200">
+                    <div className="flex items-center justify-between text-xs sm:text-sm text-gray-600 flex-wrap">
                         <span>Total {totalBids} Bids</span>
-                        <div className="flex items-center space-x-2 sm:space-x-4 text-xs">
+                        <div className="flex items-center space-x-2 text-xs">
                             <span>Highest: ₹{highestBid}</span>
-                            <span className="hidden sm:inline">Starting: ₹{startingPrice}</span>
-                            <span className="hidden sm:inline">Auto-refresh: ON</span>
-                            <span className="sm:hidden">Auto: ON</span>
                         </div>
                     </div>
                 </div>

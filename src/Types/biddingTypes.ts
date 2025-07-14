@@ -32,7 +32,7 @@ export interface Bid {
 }
 
 export interface PlaceBidRequest {
-    bidAmount: number;
+    bidAmount?: number;
 }
 
 export interface PlaceBidResponse {
