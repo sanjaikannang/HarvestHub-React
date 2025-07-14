@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../State/store";
 import { setPage } from "../../State/Slices/adminSlice";
 import { fetchProducts } from "../../Services/adminActions";
-import { ArrowLeftFromLine, ArrowRight, ArrowRightFromLine, Bell, MoveHorizontal, Package } from "lucide-react";
+import { ArrowLeftFromLine, ArrowRight, ArrowRightFromLine, MoveHorizontal, Package } from "lucide-react";
 import toast from "react-hot-toast";
 import Approvred from '../../../public/stamp/verified_stamp.png'
 import { useNavigate } from "react-router-dom";
@@ -206,9 +206,9 @@ const AllProducts: React.FC = () => {
                                         {/* Buttons Section */}
                                         <div className="mt-4 flex gap-1.5">
                                             {/* Notification Button */}
-                                            <button className="bg-gray-200 hover:bg-gray-200 text-gray-600 hover:text-gray-800 py-2 px-2.5 rounded-md duration-300 flex-shrink-0 cursor-pointer">
+                                            {/* <button className="bg-gray-200 hover:bg-gray-200 text-gray-600 hover:text-gray-800 py-2 px-2.5 rounded-md duration-300 flex-shrink-0 cursor-pointer">
                                                 <Bell className="w-4 h-4" />
-                                            </button>
+                                            </button> */}
 
                                             {/* View Product Button */}
                                             <button
