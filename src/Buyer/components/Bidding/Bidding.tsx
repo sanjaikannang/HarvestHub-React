@@ -5,7 +5,7 @@ import ProductDetails from "./ProductDetails";
 import BidHistory from "./BidHistory";
 import { AppDispatch, RootState } from "../../../State/store";
 import { fetchSpecificProduct, getAllBids, placeBid } from "../../../Services/biddingActions";
-import { BiddingStatus } from "../../../utils/enum";
+import { BiddingStatus, BidType } from "../../../utils/enum";
 import BidPlacement from "./BidPlacement";
 import { adjustTimestampForIST, calculateTimeRemaining } from "../../../utils/dateTime/dateFormatter";
 
@@ -22,7 +22,7 @@ interface Bid {
     timeAgo: string;
     isWinningBid: boolean;
     bidStatus: string;
-    bidType: "MANUAL" | "AUTO";
+    bidType: BidType
 }
 
 interface BiddingProps {
@@ -30,16 +30,16 @@ interface BiddingProps {
 }
 
 const Bidding = ({ productId: propProductId }: BiddingProps) => {
+
     const { productId: urlProductId } = useParams<{ productId: string }>();
     const dispatch = useDispatch<AppDispatch>();
-
-    // Get the product ID from props or URL params
     const productId = propProductId || urlProductId;
-
     const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
     const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(false);
+    const [biddingStatus, setBiddingStatus] = useState<BiddingStatus>(BiddingStatus.NOT_STARTED);
+    const [timeRemaining, setTimeRemaining] = useState<string>("00:00:00");
+    const [isMobile, setIsMobile] = useState(false);
 
-    // Redux state
     const {
         currentProduct: product,
         loading,
@@ -48,14 +48,21 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
         placingBid
     } = useSelector((state: RootState) => state.bidding);
 
-    // const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
-    const [biddingStatus, setBiddingStatus] = useState<BiddingStatus>(BiddingStatus.NOT_STARTED);
-    const [timeRemaining, setTimeRemaining] = useState<string>("00:00:00");
+    // Check screen size on component mount and window resize
+    useEffect(() => {
+        const checkScreenSize = () => {
+            setIsMobile(window.innerWidth < 1024); // lg breakpoint
+        };
+
+        checkScreenSize();
+        window.addEventListener('resize', checkScreenSize);
+
+        return () => window.removeEventListener('resize', checkScreenSize);
+    }, []);
 
     // Updated formatBids function to match BidHistory interface
     const formatBids = (apiBids: any[]): Bid[] => {
         return apiBids.map((bid, index) => {
-
             return {
                 bidId: bid.bidId,
                 productId: bid.productId,
@@ -69,14 +76,13 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
                 timeAgo: bid.timeAgo,
                 isWinningBid: index === 0,
                 bidStatus: bid.bidStatus,
-                bidType: (bid.bidType === "AUTO") ? "AUTO" : "MANUAL"
+                bidType: bid.bidType === "AUTO" ? BidType.AUTO : BidType.MANUAL
             };
         });
     };
 
     // Function to determine bidding status based on start and end times
     const determineBiddingStatus = (product: any): BiddingStatus => {
-        // console.log("Product:", product);
         if (!product?.bidStartTime || !product?.bidEndTime) {
             return BiddingStatus.NOT_STARTED;
         }
@@ -94,7 +100,7 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
         }
     };
 
-    // Updated useEffect for bidding status and time remaining
+    // useEffect for bidding status and time remaining
     useEffect(() => {
         if (!product) return;
 
@@ -163,17 +169,18 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
         if (!productId) return;
 
         try {
-            const bidRequest = {
-                bidAmount: Number(bidData.amount),                
-            };
+            let bidRequest;
 
-            // You'll need to implement placeBid action in your Redux store
+            if (bidData.isAutomatic) {
+                bidRequest = {};
+            } else {
+                bidRequest = {
+                    bidAmount: Number(bidData.amount),
+                };
+            }
+
             await dispatch(placeBid(productId, bidRequest));
-
-            // Refresh bids after successful bid placement
             dispatch(getAllBids(productId));
-
-            // Close the bottom sheet
             setIsBottomSheetOpen(false);
         } catch (error) {
             console.error('Error placing bid:', error);
@@ -190,7 +197,7 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
         setAutoRefreshEnabled(enabled);
     };
 
-    // Format bids from Redux state
+    // Format bids
     const formattedBids = reduxBids ? formatBids(reduxBids) : [];
 
     // Loading state
@@ -221,43 +228,53 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
         );
     }
 
+    // Render mobile layout
+    if (isMobile) {
+        return (
+            <>
+                <div className="min-h-screen">
+                    <div className="max-w-9xl mx-auto px-4 py-6">
+                        <div className="space-y-4">
+                            <ProductDetails product={product} />
+                            <BidHistory
+                                bids={formattedBids}
+                                onPlaceBidClick={handlePlaceBidClick}
+                                onRefreshBids={handleRefreshBids}
+                                biddingStatus={biddingStatus}
+                                timeRemaining={timeRemaining}
+                                loading={fetchingBids}
+                                totalBids={formattedBids.length}
+                                highestBid={formattedBids.length > 0 ? formattedBids[0].currentBidAmount : 0}
+                                startingPrice={product?.startingPrice}
+                                autoRefreshEnabled={autoRefreshEnabled}
+                                onAutoRefreshToggle={handleAutoRefreshToggle}
+                            />
+                            {biddingStatus === BiddingStatus.ACTIVE && (
+                                <BidPlacement
+                                    bids={formattedBids}
+                                    isBottomSheetOpen={isBottomSheetOpen}
+                                    onCloseBidSheet={handleCloseBidSheet}
+                                    onSubmitBid={handleSubmitBid}
+                                    biddingStatus={biddingStatus}
+                                    timeRemaining={timeRemaining}
+                                    loading={placingBid}
+                                />
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </>
+        )
+    }
+
+    // Render desktop layout
     return (
         <>
             <div className="min-h-screen">
                 <div className="max-w-9xl mx-auto px-4 py-6">
-                    {/* Mobile Layout */}
-                    <div className="lg:hidden space-y-4">
-                        <ProductDetails product={product} />
-                        <BidHistory
-                            bids={formattedBids}
-                            onPlaceBidClick={handlePlaceBidClick}
-                            onRefreshBids={handleRefreshBids}
-                            biddingStatus={biddingStatus}
-                            timeRemaining={timeRemaining}
-                            loading={fetchingBids}
-                            totalBids={formattedBids.length}
-                            highestBid={formattedBids.length > 0 ? formattedBids[0].currentBidAmount : 0}
-                            startingPrice={product?.startingPrice}
-                            autoRefreshEnabled={autoRefreshEnabled}
-                            onAutoRefreshToggle={handleAutoRefreshToggle}
-                        />
-                        {biddingStatus === BiddingStatus.ACTIVE && (
-                            <BidPlacement
-                                bids={formattedBids}
-                                isBottomSheetOpen={isBottomSheetOpen}
-                                onCloseBidSheet={handleCloseBidSheet}
-                                onSubmitBid={handleSubmitBid}
-                                biddingStatus={biddingStatus}
-                                timeRemaining={timeRemaining}
-                                loading={placingBid}
-                            />
-                        )}
-                    </div>
-
-                    {/* Desktop Layout */}
-                    <div className="hidden lg:grid lg:grid-cols-3 lg:gap-4">
+                    <div className="grid grid-cols-3 gap-4">
                         {/* Left Column - Product Details */}
-                        <div className="lg:col-span-2">
+                        <div className="col-span-2">
                             <div className="space-y-4">
                                 <ProductDetails product={product} />
                                 <BidHistory
@@ -277,7 +294,7 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
                         </div>
 
                         {/* Right Column - Bid Placement */}
-                        <div className="lg:col-span-1">
+                        <div className="col-span-1">
                             <BidPlacement
                                 bids={formattedBids}
                                 isBottomSheetOpen={isBottomSheetOpen}
@@ -292,7 +309,7 @@ const Bidding = ({ productId: propProductId }: BiddingProps) => {
                 </div>
             </div>
         </>
-    );
+    )
 };
 
 export default Bidding;

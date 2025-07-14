@@ -101,12 +101,9 @@ const BidPlacement = ({
 
         try {
             if (isAutomaticBidding && isAutoBidEnabled) {
-                // Calculate the bid amount: current highest bid + increment
-                const bidAmountToPlace = currentHighestBid + Number(automaticBidIncrement);
-
-                // Place the bid with the calculated amount
+                // For automatic bidding, don't send amount - just call the API
                 await onSubmitBid({
-                    amount: bidAmountToPlace.toString(),
+                    amount: "", // Empty amount for auto-bidding
                     isAutomatic: true,
                     increment: automaticBidIncrement
                 });
